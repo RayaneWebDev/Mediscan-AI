@@ -78,12 +78,27 @@ def parse_args() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description="Build FAISS IndexFlatIP from metadata.csv")
 
-    parser.add_argument("--embedder", default="resnet50_radimagenet", help="Embedder name")
+    parser.add_argument(
+        "--embedder",
+        default="resnet50_radimagenet",
+        help=(
+            "Embedder name. "
+            "Examples: resnet50_radimagenet (visual), clip_vit_b32 (semantic)."
+        ),
+    )
 
     parser.add_argument(
         "--weights-path",
         default="weights/resnet50_radimagenet.pt",
         help="Path to embedder checkpoint",
+    )
+    parser.add_argument(
+        "--model-name",
+        default="openai/clip-vit-base-patch32",
+        help=(
+            "Model name for embedders that download pretrained weights (e.g. CLIP). "
+            "Ignored by embedders that do not use it."
+        ),
     )
 
     parser.add_argument(
@@ -95,16 +110,45 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--index-path",
         default="artifacts/index.faiss",
-        help="Output path for FAISS index",
+        help=(
+            "Output path for FAISS index. "
+            "Use a dedicated file per mode (e.g., index.faiss vs index_semantic.faiss)."
+        ),
     )
 
     parser.add_argument(
         "--ids-path",
         default="artifacts/ids.json",
-        help="Output path for indexed metadata IDs",
+        help=(
+            "Output path for indexed metadata rows aligned with FAISS row order. "
+            "Use a dedicated file per mode (e.g., ids.json vs ids_semantic.json)."
+        ),
     )
 
     return parser.parse_args()
+
+
+def build_embedder(args: argparse.Namespace):
+    """
+    Instantiate the selected embedder with mode-specific kwargs.
+
+    Why this helper exists:
+    - ResNet RadImageNet expects a local `weights_path`.
+    - CLIP expects a HuggingFace `model_name`.
+    - We keep one build script and route the right constructor args automatically.
+    """
+    normalized = args.embedder.strip().lower()
+    kwargs: dict[str, object] = {}
+
+    if normalized == "resnet50_radimagenet":
+        kwargs["weights_path"] = resolve_path(args.weights_path)
+    elif normalized == "clip_vit_b32":
+        kwargs["model_name"] = args.model_name
+    else:
+        # Backward-compatible fallback.
+        kwargs["weights_path"] = resolve_path(args.weights_path)
+
+    return get_embedder(args.embedder, **kwargs)
 
 
 def main() -> None:
@@ -125,10 +169,7 @@ def main() -> None:
 
     # Create embedder instance (ResNet50 RadImageNet by default).
     # weights_path is resolved to an absolute path.
-    embedder = get_embedder(
-        args.embedder,
-        weights_path=resolve_path(args.weights_path),
-    )
+    embedder = build_embedder(args)
 
     # Load ROCO small metadata records (in memory).
     dataset = RocoSmallDataset(metadata_csv=resolve_path(args.metadata))

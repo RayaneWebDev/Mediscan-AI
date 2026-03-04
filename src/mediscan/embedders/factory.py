@@ -15,6 +15,7 @@ Why a factory?
 from __future__ import annotations
 
 from .base import Embedder
+from .clip_vit_b32 import CLIPViTB32Embedder
 from .resnet50_radimagenet import ResNet50RadImageNetEmbedder
 
 
@@ -45,8 +46,10 @@ def get_embedder(name: str, **kwargs: object) -> Embedder:
     # Register embedders here.
     if normalized == ResNet50RadImageNetEmbedder.name:
         return ResNet50RadImageNetEmbedder(**kwargs)
+    if normalized == CLIPViTB32Embedder.name:
+        return CLIPViTB32Embedder(**kwargs)
 
-    supported = [ResNet50RadImageNetEmbedder.name]
+    supported = [ResNet50RadImageNetEmbedder.name, CLIPViTB32Embedder.name]
     raise ValueError(f"Unknown embedder '{name}'. Supported embedders: {supported}")
 
 

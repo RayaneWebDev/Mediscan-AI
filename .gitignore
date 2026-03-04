@@ -5,6 +5,7 @@ env/
 
 # Local/private resources (never version)
 data/
+artifacts/
 weights/
 .env
 
