@@ -1,0 +1,11 @@
+﻿rank;image_id;score;caption;cui
+1;ROCOv2_2023_train_000212;0.8516504332423211;Chest radiograph shows resolution of focal consolidation of the right lower lobe.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+2;ROCOv2_2023_train_001096;0.8497082233428955;A well-circumscribed mass at the middle lung field.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+3;ROCOv2_2023_train_000211;0.8378953337669373;Chest radiograph shows focal consolidation of the right lower lung.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+4;ROCOv2_2023_train_001354;0.8033217757940292;Follow-up chest film at 3 months after treatment. Mediastinum and both hilar nodes appeared normal. Note a decrease in size of superior mediastinal node (5.2 cm) and both hilar nodes (2.0 × 5.9 and 4 × 2 cm).;"[""C1306645"", ""C0817096"", ""C1996865""]"
+5;ROCOv2_2023_train_001913;0.8005683019757271;Chest X-ray on admission: left lower lobe alveolar infiltrate.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+6;ROCOv2_2023_train_000276;0.798992745578289;The preoperative chest X-ray shows the tracheal deviation to the right side.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+7;ROCOv2_2023_train_001972;0.7981356367468834;Chest X-ray finding. Chest radiograph showing left-sided pleural effusion (arrow).;"[""C1306645"", ""C0817096"", ""C1996865""]"
+8;ROCOv2_2023_train_001625;0.7816098242998124;Chest CT showed a irregular, spiculated nodule with cavity at the apicoposterior segment of the left upper lobe.;"[""C0040405""]"
+9;ROCOv2_2023_train_001624;0.7759641781449318;Chest X-ray on second hospital day, shows rapidly aggravated bilateral airspace consolidation.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+10;ROCOv2_2023_train_001414;0.7737337887287141;Positron emission tomography showed a vague and heterogeneously hypermetabolic mass.;"[""C0032743""]"

@@ -1,0 +1,41 @@
+# MEDISCAN AI — Évaluation qualité CUI (TQ1/TQ2)
+# Date,2026-03-17 15:01:40
+# Mode,visual
+# k,10
+# N requêtes évaluées,20
+# N résultats totaux,200
+
+# TQ1 — Taux de requêtes satisfaites
+seuil_m,valeur,seuil_attendu,statut
+>=1,1.0000,0.80,PASS
+>=2,0.3000,0.50,FAIL
+>=3,0.1500,0.20,FAIL
+
+# TQ2 — Part de résultats pertinents
+seuil_m,valeur,seuil_attendu,statut
+>=1,0.8950,0.30,PASS
+>=2,0.1950,0.12,PASS
+>=3,0.0950,0.05,PASS
+
+# DÉTAIL PAR REQUÊTE
+query_id,n_cui_query,max_communs_dans_top10
+ROCOv2_2023_train_011138,1,1
+ROCOv2_2023_train_002725,2,2
+ROCOv2_2023_train_027430,1,1
+ROCOv2_2023_train_024205,1,1
+ROCOv2_2023_train_022131,3,3
+ROCOv2_2023_train_014096,1,1
+ROCOv2_2023_train_010178,1,1
+ROCOv2_2023_train_053787,2,2
+ROCOv2_2023_train_008800,1,1
+ROCOv2_2023_train_058290,1,1
+ROCOv2_2023_train_041908,1,1
+ROCOv2_2023_train_003465,3,3
+ROCOv2_2023_train_003252,1,1
+ROCOv2_2023_train_009347,2,2
+ROCOv2_2023_train_021689,1,1
+ROCOv2_2023_train_023053,1,1
+ROCOv2_2023_train_050154,1,1
+ROCOv2_2023_train_059358,1,1
+ROCOv2_2023_train_002882,3,3
+ROCOv2_2023_train_055390,1,1

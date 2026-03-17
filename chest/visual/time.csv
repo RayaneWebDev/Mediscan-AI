@@ -1,0 +1,2 @@
+mode,query_image_id,query_image_path,embedder,k,results_count,query_seconds,render_seconds,total_seconds
+visual,ROCOv2_2023_train_000921,data/roco_small/images/ROCOv2_2023_train_000921.png,dinov2_base,10,10,2.0660,0.1219,2.1878

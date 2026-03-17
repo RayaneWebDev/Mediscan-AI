@@ -1,61 +1,71 @@
-# MEDISCAN AI
+# MEDISCAN CBIR
 
-MEDISCAN AI is a CPU-only CBIR project for radiology image retrieval.
-The pipeline builds vector embeddings, indexes them with FAISS, and retrieves top-k similar images.
+Prototype CBIR non clinique en imagerie médicale.
 
-Two retrieval modes are supported:
-- `visual`: ResNet50 RadImageNet embeddings (appearance similarity)
-- `semantic`: CLIP ViT-B/32 embeddings (concept-level similarity)
+Pipeline actuelle :
+- `visual` : `dinov2_base`
+- `semantic` : `biomedclip`
+- recherche : `FAISS IndexFlatIP`
+- exécution : CPU only
 
-## Quickstart
+## Données
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
+Dataset local par défaut :
+- images : `data/roco_small/images`
+- métadonnées : `data/roco_small/metadata.csv`
 
-## Model weights (not committed)
+## Construire les index
 
-Place the RadImageNet checkpoint at:
-
-`weights/resnet50_radimagenet.pt`
-
-The `weights/` directory is local-only and ignored by Git/SVN.
-
-## Main commands
-
-Build index:
+Mode visuel :
 
 ```bash
-python scripts/build_index.py --embedder resnet50_radimagenet
+python scripts/build_index.py \
+  --embedder dinov2_base \
+  --index-path artifacts/index.faiss \
+  --ids-path artifacts/ids.json
 ```
 
-Build semantic index (CLIP):
+Mode sémantique :
 
 ```bash
-python scripts/build_index.py --embedder clip_vit_b32 --index-path artifacts/index_semantic.faiss --ids-path artifacts/ids_semantic.json
+python scripts/build_index.py \
+  --embedder biomedclip \
+  --index-path artifacts/index_semantic.faiss \
+  --ids-path artifacts/ids_semantic.json
 ```
 
-Query top-k (visual mode):
+## Lancer une requête
+
+Mode visuel :
 
 ```bash
-python scripts/query.py --mode visual --image data/roco_small/images/<image_file> --k 5
+python scripts/query.py --mode visual --image data/roco_small/images/<IMAGE>.png --k 10
 ```
 
-Query top-k (semantic mode, image -> CLIP embedding):
+Mode sémantique :
 
 ```bash
-python scripts/query.py --mode semantic --image data/roco_small/images/<image_file> --k 5
+python scripts/query.py --mode semantic --image data/roco_small/images/<IMAGE>.png --k 10
 ```
 
-Generate demo grids (visual vs semantic):
+## Évaluation
+
+Qualité CUI :
 
 ```bash
-python scripts/demo_dual_mode_grid.py --image data/roco_small/images/<image_file> --k 15
+python scripts/evaluation/evaluate_cui.py --mode visual --k 10 --n-queries 50 --seed 42
+python scripts/evaluation/evaluate_cui.py --mode semantic --k 10 --n-queries 50 --seed 42
 ```
 
-## Versioning policy
+Benchmark :
 
-Only code, scripts, and docs are versioned.
-`data/`, `artifacts/`, `weights/`, `.venv/`, `.env`, and caches are excluded.
+```bash
+python scripts/evaluation/benchmark.py --mode visual --k 10 --n-queries 10 --n-warmup 2
+python scripts/evaluation/benchmark.py --mode semantic --k 10 --n-queries 10 --n-warmup 2
+```
+
+## Démo qualitative
+
+```bash
+python scripts/visualization/demo_dual_mode_grid.py --k 10
+```

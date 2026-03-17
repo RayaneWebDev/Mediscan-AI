@@ -1,0 +1,11 @@
+﻿rank;image_id;score;caption;cui
+1;ROCOv2_2023_train_002052;0.9091607391834259;Plain chest radiograph demonstrating pneumomediastinum (linear lucency outlining left heart border - lower white arrow) and subcutaneous emphysema (lucency visualized in left lower neck - upper white arrow);"[""C1306645"", ""C0817096"", ""C1996865""]"
+2;ROCOv2_2023_train_000888;0.9088027715682984;Retinal image.Regions of Interest (dashed line boundaries) and PoI (solid, circular boundaries).;"[""C0002978""]"
+3;ROCOv2_2023_train_000475;0.9059759378433228;Magnetic resonance GIST with contrast;"[""C0024485""]"
+4;ROCOv2_2023_train_002042;0.9031452693045139;EUS images of a gastrointestinal stromal tumor originating from muscularis propria.;"[""C0041618""]"
+5;ROCOv2_2023_train_001585;0.8999146610498429;Axial T2W image showing normal basal ganglia and normal corpus callosum (1), unaffected external capsule (2), normal Internal capsule (3) and spared thalami (4).;"[""C0024485""]"
+6;ROCOv2_2023_train_001581;0.8995890974998474;Axial T2W image showing discrete and confluent hyperintensities involving bilateral subcortical white matter in frontoparietal region.;"[""C0024485""]"
+7;ROCOv2_2023_train_001583;0.8963577903807164;Axial T2W image showing subcortical cystic areas in bilateral anterior temporal lobes.;"[""C0024485""]"
+8;ROCOv2_2023_train_000729;0.8958239443600178;Acoustic Radiation Force Impulse Imaging (S2000, 9L4 probe at 9M. Hz) with the ROI placed within a hypoechoic thyroid nodule in the left thyroid lobe measuring a velocity of 0.96 m/s.Histology revealed benign nodule.;"[""C0041618""]"
+9;ROCOv2_2023_train_002255;0.8935622036457063;Image showing the computed tomography scan.A large ill-defined enhancing mediastinal soft tissue density mass encasing the heart and major vessels (white arrow).;"[""C0040405""]"
+10;ROCOv2_2023_train_000900;0.8934643611311912;Radiological examination for bone showing absence of epiphysis at the lower end of femur and upper end of tibia in Twin A.;"[""C1306645"", ""C0023216"", ""C1999039""]"

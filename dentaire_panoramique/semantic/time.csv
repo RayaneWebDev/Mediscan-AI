@@ -1,0 +1,2 @@
+mode,query_image_id,query_image_path,embedder,k,results_count,query_seconds,render_seconds,total_seconds
+semantic,ROCOv2_2023_train_000321,data/roco_small/images/ROCOv2_2023_train_000321.png,biomedclip,10,10,6.9374,0.0962,7.0336

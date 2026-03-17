@@ -1,0 +1,6 @@
+﻿rank;image_id;score;caption;cui
+1;ROCOv2_2023_train_007475;0.8914777886122465;Portable upright chest radiograph, demonstrating loculated left-sided effusion with associated infiltrate and lobar pneumonia.;"[""C1306645"", ""C0817096"", ""C1999039""]"
+2;ROCOv2_2023_train_017802;0.8889179319143296;A chest X‐ray showed enlargement of the cardiac silhouette and bilateral costophrenic angle blunting;"[""C1306645"", ""C0817096"", ""C1996865""]"
+3;ROCOv2_2023_train_022713;0.8882157817482949;Thoracic anteroposterior view showing total laminectomy state before second operation.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+4;ROCOv2_2023_train_038621;0.887216219305992;Chest X-ray: arrow showing interstitial infiltrates in the right lung;"[""C1306645"", ""C0817096"", ""C1999039""]"
+5;ROCOv2_2023_train_038948;0.8871720217168331;Chest X-ray revealed diffuse bilateral infiltrates, consistent of COVID-19 pictures;"[""C1306645"", ""C0817096"", ""C1996865""]"

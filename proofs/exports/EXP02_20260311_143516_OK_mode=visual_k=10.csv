@@ -1,0 +1,11 @@
+﻿rank;image_id;score;caption;cui
+1;ROCOv2_2023_train_002377;0.8791153199970723;Upper abdominal X-ray showing the lost guidewire extending down the inferior vena cava on the right side of the abdomen.;"[""C1306645"", ""C0817096"", ""C1999039""]"
+2;ROCOv2_2023_train_001080;0.8695027835667134;The arteriogram obtained after contrast injection at the ostium of the left subclavian artery confirmed the extravasation (arrow) from the diverticular segment of the aberrant left subclavian artery.;"[""C0002978""]"
+3;ROCOv2_2023_train_002006;0.8689443975687028;False aneurysm of the right common iliac artery demonstrated.;"[""C0002978""]"
+4;ROCOv2_2023_train_002635;0.868476352095604;X-ray image for objectively structured clinical examination station.;"[""C1306645"", ""C0037949"", ""C0205129""]"
+5;ROCOv2_2023_train_000516;0.8676636241376401;Angiography following embolization with metallic minicoils: occlusion of arterial branches and closure of the AV fistula without extravasation of contrast medium.;"[""C0002978""]"
+6;ROCOv2_2023_train_002007;0.865162454545498;A covered stent securely placed in the right common and external iliac artery.;"[""C0002978""]"
+7;ROCOv2_2023_train_000572;0.8623469993472099;Transjugular portography in the same patient.;"[""C0002978""]"
+8;ROCOv2_2023_train_000117;0.8621427983045579;The initial X-ray at the time of injury. The injury was misinterpreted as left hemothorax (black arrow);"[""C1306645"", ""C0000726"", ""C1999039""]"
+9;ROCOv2_2023_train_000569;0.8619926899671555;Transjugular portography in a patient bleeding from gastric varices. Note that balloon tamponade did not suppress fundal varices filling.;"[""C0002978""]"
+10;ROCOv2_2023_train_002727;0.8605302095413208;The periapical radiograph of the implant and the screw-retained restoration (one piece) 38 months after implant loading. Almost no edgeal bone loss was noted around the implant.;"[""C1306645"", ""C0037303""]"

@@ -1,0 +1,11 @@
+﻿rank;image_id;score;caption;cui
+1;ROCOv2_2023_train_001778;0.929707445204258;- Miniplates provide greater anchorage, as they are secured to a wider base with two to three screws fixed in thicker bone areas where ordinary bone remodeling tends to occurs slowly when compared to other areas, as depicted by the images. Clinical case granted by Dr. Ertty Silva.;"[""C1306645"", ""C0037303""]"
+2;ROCOv2_2023_train_000157;0.9276860162615777;Panoramic radiograph showing osteomyelitis in the right mandibula due to extraction of the right mandibular second molar tooth.;"[""C1306645"", ""C0037303""]"
+3;ROCOv2_2023_train_000158;0.9206019431352617;Postoperative panoramic radiography after bony sequestra removed in 2013.;"[""C1306645"", ""C0037303""]"
+4;ROCOv2_2023_train_001427;0.9081751257181168;A case of multiple tonsilloliths on the left side;"[""C1306645"", ""C0037303""]"
+5;ROCOv2_2023_train_000214;0.9068027243018151;Panoramic radiograph at 60-month follow-up.;"[""C1306645"", ""C0037303""]"
+6;ROCOv2_2023_train_000322;0.9029480211436749;Panoramic radiograph depicting transmigrant maxillary right canine (case 20) with overretained deciduous right maxillary canine.;"[""C1306645"", ""C0037303""]"
+7;ROCOv2_2023_train_002044;0.8986990988254547;Orthopantomographic image showing a deep caries cavity in the left mandibular second premolar tooth and a radiolucent area in its apical region.;"[""C1306645"", ""C0037303""]"
+8;ROCOv2_2023_train_000321;0.8984275609254837;Panoramic radiograph depicting transmigrant mandibular left canine with enlarged follicle space showing Type 4 transmigration pattern (case 16). Overretained left maxillary and mandibular canines are present.;"[""C1306645"", ""C0037303""]"
+9;ROCOv2_2023_train_001721;0.8970198094844818;Panoramic radiograph with the first permanent molars highlighted.;"[""C1306645"", ""C0037303""]"
+10;ROCOv2_2023_train_002369;0.8965221717953682;Pre-treatment orthopantomography.;"[""C1306645"", ""C0037303""]"

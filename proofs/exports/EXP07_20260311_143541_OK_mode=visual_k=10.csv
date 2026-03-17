@@ -1,0 +1,11 @@
+﻿rank;image_id;score;caption;cui
+1;ROCOv2_2023_train_001637;0.8845462828874588;X-ray 06-2012.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+2;ROCOv2_2023_train_001176;0.8811175763607024;A chest roentgenogram showed a ring-shaped pericardial calcification (arrows).;"[""C1306645"", ""C0817096"", ""C1996865""]"
+3;ROCOv2_2023_train_000585;0.880742009729147;Chest radiography from case 1 showing a pneumomediastinum.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+4;ROCOv2_2023_train_002858;0.8670775905251504;Ray of right hand showed a healing of the lesion after 2 years of evolution;"[""C1306645"", ""C1140618"", ""C1996865""]"
+5;ROCOv2_2023_train_000921;0.864651619642973;Chest X-ray showing elevation of the right hemidiaphragm.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+6;ROCOv2_2023_train_000812;0.8644757598638535;7.4.18: XR abdomen acute complete w/chest: dilated small bowel loops in LUQ, air fluid levels in right mid abdomen, paucity of large bowel gas, suggestive of small bowel obstruction, suggestion of free air.;"[""C1306645"", ""C0000726"", ""C1999039""]"
+7;ROCOv2_2023_train_003004;0.8640348598361016;T1 weighted post-contrast coronal MRI;"[""C0024485""]"
+8;ROCOv2_2023_train_000407;0.8606229536235332;Plain abdominal radiographs suggested subileus.;"[""C1306645"", ""C0000726"", ""C1999039""]"
+9;ROCOv2_2023_train_000235;0.860136616230011;Post-op MRI Brain, T1W axial section showing a well-defined lobulated non-enhancing cystic lesion in right parietal lobe communicating with right lateral ventricle with dilated occipital horn.;"[""C0024485""]"
+10;ROCOv2_2023_train_002825;0.860132560133934;X-ray of newborn.;"[""C1306645"", ""C1999039""]"

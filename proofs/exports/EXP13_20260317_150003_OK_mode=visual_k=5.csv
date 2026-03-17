@@ -1,0 +1,6 @@
+﻿rank;image_id;score;caption;cui
+1;ROCOv2_2023_train_016713;0.8757474228739738;Chest X-ray (CXR) showing radiodense shadow at aortic knuckle and retrocardiac area (white arrows) with evidence of discontinuous linear calcification (upper white arrow).;"[""C1306645"", ""C0817096"", ""C1996865""]"
+2;ROCOv2_2023_train_030071;0.8714498415589333;Chest x-ray showing a nasogastric tube folded into both main bronchi of a patient.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+3;ROCOv2_2023_train_055824;0.867356089502573;Chest radiogram demonstrates a 7-French pigtail drainage catheter (arrow) after emergency percutaneous ultrasound-guided pericardiostomy for the hemopericardium.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+4;ROCOv2_2023_train_009073;0.8661598056554796;Chest X-ray showing pulmonary edema.;"[""C1306645"", ""C0817096"", ""C1999039""]"
+5;ROCOv2_2023_train_000211;0.8647799476981164;Chest radiograph shows focal consolidation of the right lower lung.;"[""C1306645"", ""C0817096"", ""C1996865""]"

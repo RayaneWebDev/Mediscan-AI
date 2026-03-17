@@ -1,0 +1,11 @@
+﻿rank;image_id;score;caption;cui
+1;ROCOv2_2023_train_001044;0.8934482097625733;Anterioposterior chest radiograph on a 43-year-old man treated with highly active antiretroviral therapy for over 8 years who presented with increasing shortness of breath over the past 3 months that had suddenly worsened, prompting hospital admission. The chest X-ray shows features of pulmonary edema. Subsequent investigations revealed congestive cardiomyopathy;"[""C1306645"", ""C0817096"", ""C1999039""]"
+2;ROCOv2_2023_train_002267;0.8882188066840171;Post-procedure chest radiograph.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+3;ROCOv2_2023_train_001027;0.8853766843676567;Pneumocystis carinii pneumonia. If left untreated, chest X-ray may progress to alveolar consolidation in 3 or 4 days. Infiltrates clear within 2 weeks, but in a proportion infection will be followed by coarse reticular opacification and fibrosis. Note the large cyst (arrow);"[""C1306645"", ""C0817096"", ""C1996865""]"
+4;ROCOv2_2023_train_000585;0.8795359648764134;Chest radiography from case 1 showing a pneumomediastinum.;"[""C1306645"", ""C0817096"", ""C1996865""]"
+5;ROCOv2_2023_train_000609;0.878115812689066;Scoliosis located at lumbar segment. The arrow indicates the scoliosis.;"[""C1306645"", ""C0037949"", ""C1999039""]"
+6;ROCOv2_2023_train_001039;0.8775512084364891;Aspergillosis. ABPA chest X-ray (CXR), manifesting as bilateral consolidation, mostly lower lobe, bronchiectasis and airway impaction or “finger in glove.” The consolidation in the CXR shown is much more diffuse;"[""C1306645"", ""C0817096"", ""C1996865""]"
+7;ROCOv2_2023_train_002353;0.8773362182080746;Fusion of the posterior aspect of the 3rd and 4th right ribs.;"[""C1306645"", ""C0817096"", ""C1999039""]"
+8;ROCOv2_2023_train_001119;0.8739110276103019;Normal Chest X-ray 26 hours post admission (24/09/2020);"[""C1306645"", ""C0817096"", ""C1999039""]"
+9;ROCOv2_2023_train_001159;0.8738625712692738;Biceps vincula (mesotendon). The biceps tendon obtains its blood supply from a mesotendon (arrow), also called vincula tendinum.;"[""C0024485""]"
+10;ROCOv2_2023_train_002501;0.8735425367951393;Chest X-ray AP: Bilateral diffuse alveolar infiltration.;"[""C1306645"", ""C0817096"", ""C1999039""]"

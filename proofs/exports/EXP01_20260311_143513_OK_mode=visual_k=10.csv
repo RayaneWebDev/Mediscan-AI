@@ -1,0 +1,11 @@
+﻿rank;image_id;score;caption;cui
+1;ROCOv2_2023_train_000547;0.8747115939855576;Axial view brain MRI showing peripheral enhancing lesion with an unchanged size (red arrow) and with decreased size of vasogenic edema (yellow arrow).;"[""C0024485""]"
+2;ROCOv2_2023_train_000575;0.8647452354431153;Magnetic resonance imaging. Gadolinium-enhanced axial T1 image showing a meningeal enhancement at the left parietal lobe;"[""C0024485""]"
+3;ROCOv2_2023_train_001383;0.8641977578401565;Axial view computed tomography angiogram (CTA) image of the carotid arteries showing a thrombus in the right common carotid artery extending into carotid bifurcation.;"[""C0040405""]"
+4;ROCOv2_2023_train_002485;0.8559421345591545;MRI-guided localization. Axial, T1W non– fat-suppressed MRI image shows a thin magnetic susceptibility artifact (arrow) due to the localization wire in place. The lesion (arrowhead) is seen near the tip;"[""C0024485""]"
+5;ROCOv2_2023_train_000546;0.8535921439528467;Axial brain MRI showing decrease in size of cystic mass (red arrow).;"[""C0024485""]"
+6;ROCOv2_2023_train_000574;0.8472229018807411;Magnetic resonance imaging. Contrast enhanced Axial T1 image showing a temporoparietal hypointense area with few petechial lesions;"[""C0024485""]"
+7;ROCOv2_2023_train_000307;0.8386331543326377;CT scan with sagittal view of inferior vena cava thrombus;"[""C0040405""]"
+8;ROCOv2_2023_train_000155;0.837978509068489;Preoperative Axial T2 of the skull base revealed multiple fluid-fluid levels with hemorrhagic areas (white arrow) are consistent with associated aneurysmal bone cyst.;"[""C0024485""]"
+9;ROCOv2_2023_train_000221;0.8361300259828568;Magnetic resonance imaging (MRI) coronal slices showing bilateral subchondral geodes and thinned cortical of mandibular condylar process;"[""C0024485""]"
+10;ROCOv2_2023_train_001349;0.8317112058401108;Sagittal T2-weighted magnetic resonance imaging shows diffuse bone marrow signal change, endplate destruction and epidural abscess formation at the L2–3 level.;"[""C0024485""]"

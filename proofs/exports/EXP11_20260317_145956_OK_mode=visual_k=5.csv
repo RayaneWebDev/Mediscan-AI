@@ -1,0 +1,6 @@
+﻿rank;image_id;score;caption;cui
+1;ROCOv2_2023_train_002676;0.8969343103468419;Initial panoramic radiograph showing a solitary oval, well-defined, radiopaque mass (white arrow), 13 mm×11 mm in size, abutting with the inferior border of the left angle of the mandible.;"[""C1306645"", ""C0037303""]"
+2;ROCOv2_2023_train_044828;0.8964273728430272;Lemos asymmetry analysis performed on patient with normal occlusion.;"[""C1306645"", ""C0037303""]"
+3;ROCOv2_2023_train_043958;0.8926271133124829;Postoperative radiograph with proper alignment of teeth;"[""C1306645"", ""C0037303""]"
+4;ROCOv2_2023_train_012048;0.8895724438130856;Left parotid gland sialography of patient 2 shows sialodochitis with sialadenitis. The Stensen duct exhibits dilatation with local strictures showing sausage-string structures. The intraglandular ductules also show irregular dilatation.;"[""C1306645"", ""C0037303""]"
+5;ROCOv2_2023_train_021139;0.8888634115457535;A panoramic radiograph shows an osteolytic lesion in the left posterior maxilla, with resorption of the hard palate and the floor of the maxillary sinus.;"[""C1306645"", ""C0037303""]"

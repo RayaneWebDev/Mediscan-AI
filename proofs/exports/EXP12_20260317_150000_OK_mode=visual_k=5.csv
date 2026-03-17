@@ -1,0 +1,6 @@
+﻿rank;image_id;score;caption;cui
+1;ROCOv2_2023_train_043156;0.9232122376561165;Orthopantomogram reveals missing teeth (24, 25, 26, 27,  and  28) with unhealed sockets.;"[""C1306645"", ""C0037303""]"
+2;ROCOv2_2023_train_058354;0.9231101110577583;Orthopanoramic postoperative view that shows a satisfying healing of the bone defect.;"[""C1306645"", ""C0037303""]"
+3;ROCOv2_2023_train_007618;0.9172852247953416;OPG showing large unilateral radiolucencies extending from the 1st permanent molar along the ascending ramus up to the neck of the condyle and involving coronoid process and thinning of the lower border and bowing of angle of mandible.;"[""C1306645"", ""C0037303""]"
+4;ROCOv2_2023_train_051323;0.916469044238329;Route of the incisive canal of the mandible [MIC].;"[""C1306645"", ""C0037303""]"
+5;ROCOv2_2023_train_018896;0.9156900368630887;Posttreatment orthopantomograph.;"[""C1306645"", ""C0037303""]"
