@@ -9,9 +9,17 @@ Le depot peut etre clone et demarre localement ; meme si `data/` n'est pas prese
 ### Installation
 
 ```bash
+brew install git-lfs
+git lfs install
 git clone https://github.com/OzanTaskin/mediscan-cbir.git
 cd mediscan-cbir
 make setup
+```
+
+Si le depot a deja ete clone avant l'installation de Git LFS ; execute ensuite :
+
+```bash
+git lfs pull
 ```
 
 Si tu ne veux pas utiliser `make` :
