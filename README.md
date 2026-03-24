@@ -4,7 +4,7 @@ Guide unique du projet MEDISCAN ; architecture ; contraintes ; fichiers ; script
 
 ## 0. Demarrage rapide apres un clone
 
-Le depot peut etre clone et demarre localement ; meme si `data/` et `artifacts/` ne sont pas presents ; le frontend et le backend peuvent quand meme demarrer
+Le depot peut etre clone et demarre localement ; meme si `data/` n'est pas present ; le frontend et le backend peuvent quand meme demarrer
 
 ### Installation
 
@@ -47,8 +47,8 @@ Puis ouvrir :
 
 ### Important
 
-- sans `data/` et `artifacts/` ; le site se lance ; l'API repond ; mais la recherche reelle n'est pas disponible
-- avec `data/` et `artifacts/` ; la recherche fonctionne normalement
+- sans `data/` ; le site se lance ; l'API repond ; mais la recherche reelle et l'affichage des images du corpus ne sont pas disponibles
+- avec `data/` ; la recherche fonctionne normalement ; les artifacts de retrieval sont deja versionnes dans le depot
 - si les ressources de recherche sont absentes ; l'API renvoie maintenant une erreur explicite au lieu de planter au demarrage
 
 ## 1. Objet du projet

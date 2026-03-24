@@ -1,0 +1,11 @@
+{
+  "mode": "visual",
+  "embedder": "dinov2_base",
+  "dataset_metadata": "data/roco_train_full/metadata.csv",
+  "index_path": "artifacts/index.faiss",
+  "ids_path": "artifacts/ids.json",
+  "snapshot_dir": "artifacts/snapshots/stable_full_20260322_191616",
+  "ntotal": 59962,
+  "dim": 768,
+  "status": "validated"
+}

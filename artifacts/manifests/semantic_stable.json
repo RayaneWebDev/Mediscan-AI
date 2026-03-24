@@ -1,0 +1,12 @@
+{
+  "mode": "semantic",
+  "embedder": "biomedclip",
+  "dataset_metadata": "data/roco_train_full/metadata.csv",
+  "index_path": "artifacts/index_semantic.faiss",
+  "ids_path": "artifacts/ids_semantic.json",
+  "snapshot_dir": "artifacts/snapshots/stable_full_20260322_191616",
+  "ntotal": 59962,
+  "dim": 512,
+  "status": "validated",
+  "note": "Rebuilt on the full dataset and verified against embeddings produced by the current BioMedCLIP model."
+}

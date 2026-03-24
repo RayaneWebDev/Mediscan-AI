@@ -1,0 +1,132 @@
+{
+  "_meta": {
+    "description": "Classification des CUI ROCO par type sémantique",
+    "version": "1.0",
+    "date": "2026-03-24",
+    "types": {
+      "modalite": "Type d'examen d'imagerie (CT, IRM, radio...)",
+      "anatomie": "Région anatomique du corps (poumon, pelvis...)",
+      "vue": "Angle ou projection de la prise de vue",
+      "finding": "Trouvaille clinique, pathologie ou dispositif médical"
+    },
+    "metrics": {
+      "TM": "Taux Modalite - pour mode visuel - meme type d'examen",
+      "TA": "Taux Anatomie - pour mode visuel - meme region du corps",
+      "TP": "Taux Pathologie - pour mode semantique - meme finding/pathologie"
+    }
+  },
+  "C0040405": {
+    "label_fr": "Scanner CT",
+    "label_en": "Computed Tomography",
+    "type": "modalite",
+    "freq": 20459
+  },
+  "C1306645": {
+    "label_fr": "Radiographie",
+    "label_en": "Plain Radiograph",
+    "type": "modalite",
+    "freq": 16603
+  },
+  "C0024485": {
+    "label_fr": "IRM",
+    "label_en": "Magnetic Resonance Imaging",
+    "type": "modalite",
+    "freq": 9790
+  },
+  "C0041618": {
+    "label_fr": "Echographie",
+    "label_en": "Ultrasonography",
+    "type": "modalite",
+    "freq": 8305
+  },
+  "C0002978": {
+    "label_fr": "Angiographie",
+    "label_en": "Angiography",
+    "type": "modalite",
+    "freq": 3958
+  },
+  "C0032743": {
+    "label_fr": "Scintigraphie / PET scan",
+    "label_en": "Nuclear Medicine Scintigraphy",
+    "type": "modalite",
+    "freq": 350
+  },
+  "C0817096": {
+    "label_fr": "Thorax / Poumon",
+    "label_en": "Lung / Chest",
+    "type": "anatomie",
+    "freq": 5463
+  },
+  "C0037303": {
+    "label_fr": "Crane / Machoire",
+    "label_en": "Head / Jaw / Spine",
+    "type": "anatomie",
+    "freq": 3216
+  },
+  "C0023216": {
+    "label_fr": "Hanche / Membre inferieur",
+    "label_en": "Hip / Lower Limb",
+    "type": "anatomie",
+    "freq": 2293
+  },
+  "C0000726": {
+    "label_fr": "Abdomen",
+    "label_en": "Abdomen",
+    "type": "anatomie",
+    "freq": 1747
+  },
+  "C0030797": {
+    "label_fr": "Pelvis / Voies urinaires",
+    "label_en": "Pelvis / Urinary tract",
+    "type": "anatomie",
+    "freq": 1257
+  },
+  "C0037005": {
+    "label_fr": "Epaule",
+    "label_en": "Shoulder",
+    "type": "anatomie",
+    "freq": 4
+  },
+  "C0205129": {
+    "label_fr": "Vue laterale",
+    "label_en": "Lateral view",
+    "type": "vue",
+    "freq": 1868
+  },
+  "C1140618": {
+    "label_fr": "Vue antero-posterieure",
+    "label_en": "Anteroposterior view",
+    "type": "vue",
+    "freq": 1119
+  },
+  "C0205106": {
+    "label_fr": "Projection speciale",
+    "label_en": "Special projection",
+    "type": "vue",
+    "freq": 29
+  },
+  "C1999039": {
+    "label_fr": "Dispositif medical / Implant / Prothese",
+    "label_en": "Medical device / Implant / Prosthesis",
+    "type": "finding",
+    "freq": 7111
+  },
+  "C1996865": {
+    "label_fr": "Anomalie pulmonaire",
+    "label_en": "Lung finding / Chest opacity",
+    "type": "finding",
+    "freq": 3393
+  },
+  "C0037949": {
+    "label_fr": "Chirurgie rachidienne / Pathologie spinale",
+    "label_en": "Spinal surgery / Spinal pathology",
+    "type": "finding",
+    "freq": 1073
+  },
+  "C0006141": {
+    "label_fr": "Lesion mammaire / Mammographie",
+    "label_en": "Breast lesion / Mammogram finding",
+    "type": "finding",
+    "freq": 56
+  }
+}
