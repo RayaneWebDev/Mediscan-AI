@@ -2,6 +2,51 @@
 
 Guide unique du projet MEDISCAN ; architecture ; contraintes ; fichiers ; scripts ; tests ; commandes
 
+## 0. Demarrage rapide apres un clone
+
+Le depot peut etre clone et demarre localement ; meme si `data/` et `artifacts/` ne sont pas presents ; le frontend et le backend peuvent quand meme demarrer
+
+### Installation
+
+```bash
+git clone https://github.com/OzanTaskin/mediscan-cbir.git
+cd mediscan-cbir
+make setup
+```
+
+Si tu ne veux pas utiliser `make` :
+
+```bash
+python3 -m venv .venv
+./.venv/bin/pip install -r requirements.txt
+cd frontend && npm ci && cd ..
+```
+
+### Lancement
+
+Terminal 1 :
+
+```bash
+make run-backend
+```
+
+Terminal 2 :
+
+```bash
+make run-frontend
+```
+
+Puis ouvrir :
+
+- frontend ; `http://127.0.0.1:5173/`
+- backend ; `http://127.0.0.1:8000/api/health`
+
+### Important
+
+- sans `data/` et `artifacts/` ; le site se lance ; l'API repond ; mais la recherche reelle n'est pas disponible
+- avec `data/` et `artifacts/` ; la recherche fonctionne normalement
+- si les ressources de recherche sont absentes ; l'API renvoie maintenant une erreur explicite au lieu de planter au demarrage
+
 ## 1. Objet du projet
 
 MEDISCAN AI est un prototype universitaire de recherche d'images par le contenu en imagerie medicale ; il ne produit aucun diagnostic et ne doit pas etre utilise dans un contexte clinique

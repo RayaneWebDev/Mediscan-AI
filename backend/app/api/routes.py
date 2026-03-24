@@ -3,6 +3,7 @@ from fastapi.responses import FileResponse
 
 from backend.app.config import ALLOWED_MODES
 from backend.app.models.schema import SearchResponse
+from backend.app.services.search_service import SearchUnavailableError
 from mediscan.runtime import PROJECT_ROOT
 
 router = APIRouter()
@@ -48,6 +49,8 @@ async def search_image(
         return SearchResponse(**payload)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except SearchUnavailableError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     except FileNotFoundError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     except RuntimeError as exc:

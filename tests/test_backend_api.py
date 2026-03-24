@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from PIL import Image
 
 from backend.app.main import app
-from backend.app.services.search_service import SearchService
+from backend.app.services.search_service import SearchService, SearchUnavailableError
 from mediscan.search import SearchResources
 
 
@@ -165,6 +165,22 @@ def test_search_rejects_corrupted_image(client):
     )
     assert response.status_code == 400
     assert "Invalid image" in response.json()["detail"]
+
+
+def test_search_returns_503_when_mode_resources_are_missing():
+    fake_resources = MagicMock(spec=SearchResources)
+    fake_resources.embedder = FakeEmbedder()
+    app.state.search_service = SearchService(resources={"visual": fake_resources})
+    client = TestClient(app, raise_server_exceptions=False)
+
+    response = client.post(
+        "/api/search",
+        files={"image": ("q.png", make_png_bytes(), "image/png")},
+        data={"mode": "semantic", "k": "5"},
+    )
+
+    assert response.status_code == 503
+    assert "unavailable" in response.json()["detail"].lower()
 
 
 # ---------------------------------------------------------------------------

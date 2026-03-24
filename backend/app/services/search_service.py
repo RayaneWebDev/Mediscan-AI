@@ -9,6 +9,10 @@ from backend.app.config import ALLOWED_CONTENT_TYPES, ALLOWED_MODES, MAX_K
 from mediscan.search import SearchResources, query
 
 
+class SearchUnavailableError(RuntimeError):
+    """Raised when a requested retrieval mode is not available at runtime."""
+
+
 class SearchService:
     """Validates user input and delegates to the mediscan search pipeline."""
 
@@ -50,6 +54,15 @@ class SearchService:
         except (UnidentifiedImageError, OSError) as exc:
             raise ValueError("Invalid image file") from exc
 
+    def _get_resources(self, mode: str) -> SearchResources:
+        resources = self._resources.get(mode)
+        if resources is None:
+            raise SearchUnavailableError(
+                f"Search mode '{mode}' is unavailable on this instance. "
+                "Install the required data/artifacts or rebuild the stable indexes."
+            )
+        return resources
+
     def search(
         self,
         *,
@@ -71,7 +84,7 @@ class SearchService:
                 temp_path = Path(handle.name)
 
             self._verify_image(temp_path)
-            resources = self._resources[normalized_mode]
+            resources = self._get_resources(normalized_mode)
             results = query(resources=resources, image=temp_path, k=k)
             return {
                 "mode": normalized_mode,
