@@ -47,7 +47,7 @@ export default function SettingsMenu() {
               {[
                 { id: "light", label: lang === "fr" ? "Clair" : "Light", Icon: Sun },
                 { id: "dark",  label: lang === "fr" ? "Sombre" : "Dark",  Icon: Moon },
-              ].map(({ id, label }) => (
+              ].map(({ id, label, Icon }) => (
                 <button
                   key={id}
                   onClick={() => setTheme(id)}
