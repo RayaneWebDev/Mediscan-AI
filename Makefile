@@ -1,8 +1,8 @@
 PYTHON311 := $(shell command -v python3.11 2>/dev/null)
 PYTHON := ./.venv311/bin/python
-PIP := ./.venv311/bin/pip
-PYTEST := ./.venv311/bin/pytest
-UVICORN := ./.venv311/bin/uvicorn
+PIP := $(PYTHON) -m pip
+PYTEST := $(PYTHON) -m pytest
+UVICORN := $(PYTHON) -m uvicorn
 
 .PHONY: setup-python setup-frontend setup run-backend run-frontend dev test
 

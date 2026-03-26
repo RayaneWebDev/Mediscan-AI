@@ -48,8 +48,8 @@ fi
 if [ ! -f ".venv311/bin/activate" ]; then
     echo "→ Création de l'environnement Python 3.11..."
     python3.11 -m venv .venv311
-    .venv311/bin/pip install -q --upgrade pip
-    .venv311/bin/pip install -q -r requirements.txt
+    .venv311/bin/python -m pip install -q --upgrade pip
+    .venv311/bin/python -m pip install -q -r requirements.txt
     echo "✓ Environnement Python prêt"
 fi
 
@@ -65,7 +65,7 @@ lsof -ti:5173 | xargs kill -9 2>/dev/null || true
 # ── Backend ──────────────────────────────────────────────────────────────────
 echo "→ Démarrage du backend (port 8000)..."
 PYTHONPATH="$PROJECT_DIR/src:$PROJECT_DIR" \
-    .venv311/bin/uvicorn backend.app.main:app \
+    .venv311/bin/python -m uvicorn backend.app.main:app \
     --host 127.0.0.1 --port 8000 --reload \
     > /tmp/mediscan-backend.log 2>&1 &
 BACKEND_PID=$!

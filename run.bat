@@ -80,8 +80,8 @@ if not exist ".venv311\Scripts\activate.bat" (
         echo [ERREUR] Impossible de creer le venv.
         pause & exit /b 1
     )
-    .venv311\Scripts\pip install -q --upgrade pip
-    .venv311\Scripts\pip install -q -r requirements.txt
+    .venv311\Scripts\python.exe -m pip install -q --upgrade pip
+    .venv311\Scripts\python.exe -m pip install -q -r requirements.txt
     echo      OK
 ) else (
     echo [1/3] Venv deja present, installation ignoree.
@@ -107,7 +107,7 @@ for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8000" 2^>nul') do (
 )
 
 set PYTHONPATH=%cd%\src;%cd%
-start "MediScan-Backend" /b cmd /c "set PYTHONPATH=%cd%\src;%cd% && .venv311\Scripts\uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 > %TEMP%\mediscan-backend.log 2>&1"
+start "MediScan-Backend" /b cmd /c "set PYTHONPATH=%cd%\src;%cd% && .venv311\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 > %TEMP%\mediscan-backend.log 2>&1"
 
 REM Attente health check
 echo  En attente du backend (max 30s)...

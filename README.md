@@ -142,7 +142,7 @@ make run-backend
 
 # Windows
 set PYTHONPATH=src;.
-.venv311\Scripts\uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
+.venv311\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 **Terminal 2 — Frontend :**
@@ -162,8 +162,8 @@ make setup
 
 # Windows
 py -3.11 -m venv .venv311
-.venv311\Scripts\pip install --upgrade pip
-.venv311\Scripts\pip install -r requirements.txt
+.venv311\Scripts\python.exe -m pip install --upgrade pip
+.venv311\Scripts\python.exe -m pip install -r requirements.txt
 cd frontend && npm ci && cd ..
 ```
 
@@ -194,6 +194,20 @@ Installer Node 22 LTS : https://nodejs.org/
 ```bash
 echo 'export PATH="/opt/homebrew/opt/python@3.11/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
+```
+
+### J'ai déplacé/renommé le dossier du projet et `./run.sh` ne marche plus
+Les virtualenv Python contiennent parfois des chemins absolus. Si le projet a été déplacé, l'ancien `.venv311` peut être cassé.
+
+```bash
+rm -rf .venv311
+./run.sh
+```
+
+Ou relancer le backend via le Python du venv :
+
+```bash
+PYTHONPATH=src:. .venv311/bin/python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 ### Port déjà utilisé
