@@ -6,7 +6,7 @@ from threading import Lock
 
 from PIL import Image, UnidentifiedImageError
 
-from backend.app.config import ALLOWED_CONTENT_TYPES, ALLOWED_MODES, MAX_K, MONGO_URI, DB_NAME, COLLECTION_NAME
+from backend.app.config import ALLOWED_CONTENT_TYPES, ALLOWED_MODES, MAX_K
 from mediscan.search import SearchResources, load_resources, query, query_text
 
 
@@ -20,15 +20,6 @@ class SearchService:
     def __init__(self, resources: dict[str, SearchResources]) -> None:
         self._resources = resources
         self._resources_lock = Lock()
-
-        # MongoDB is optional — only connect if MONGO_URI is configured.
-        self._mongo_collection = None
-        if MONGO_URI:
-            try:
-                from pymongo import MongoClient
-                self._mongo_collection = MongoClient(MONGO_URI)[DB_NAME][COLLECTION_NAME]
-            except Exception:
-                pass  # MongoDB unavailable, fall back to raw results
 
     @staticmethod
     def _normalize_mode(mode: str) -> str:
@@ -86,31 +77,6 @@ class SearchService:
             self._resources[mode] = resources
             return resources
 
-    def _enrich_with_mongo(self, results: list[dict]) -> list[dict]:
-        """Optionally enrich results with MongoDB metadata. Falls back to raw results."""
-        if self._mongo_collection is None:
-            return results
-
-        enriched = []
-        for res in results:
-            try:
-                db_info = self._mongo_collection.find_one({"image_id": res["image_id"]})
-            except Exception:
-                # MongoDB unreachable (timeout, network, auth) — skip enrichment
-                return results
-            if db_info:
-                enriched.append({
-                    "rank":     res.get("rank", 0),
-                    "image_id": res["image_id"],
-                    "score":    float(res.get("score", 0)),
-                    "caption":  db_info.get("caption", res.get("caption", "")),
-                    "cui":      db_info.get("cui", res.get("cui", "")),
-                    "path":     res.get("path", ""),
-                })
-            else:
-                enriched.append(res)
-        return enriched
-
     def search(
         self,
         *,
@@ -135,17 +101,21 @@ class SearchService:
             resources = self._get_resources(normalized_mode)
             results = query(resources=resources, image=temp_path, k=k)
             return {
-                "mode":        normalized_mode,
-                "embedder":    resources.embedder.name,
+                "mode": normalized_mode,
+                "embedder": resources.embedder.name,
                 "query_image": filename,
-                "results":     self._enrich_with_mongo(results),
+                "results": results,
             }
         finally:
             if temp_path is not None:
                 temp_path.unlink(missing_ok=True)
 
     def search_text(self, *, text: str, k: int) -> dict:
-        """Text-to-image search using BioMedCLIP semantic index."""
+        """Text-to-image search using BioMedCLIP semantic index.
+
+        Forces mode='semantic'. The semantic FAISS index must exist.
+        Raises SearchUnavailableError (→ HTTP 503) if artifacts are missing.
+        """
         text = text.strip()
         if not text:
             raise ValueError("Query text is empty")
@@ -156,8 +126,8 @@ class SearchService:
         resources = self._get_resources("semantic")
         results = query_text(resources=resources, text=text, k=k)
         return {
-            "mode":       "semantic",
-            "embedder":   resources.embedder.name,
+            "mode": "semantic",
+            "embedder": resources.embedder.name,
             "query_text": text,
-            "results":    self._enrich_with_mongo(results),
+            "results": results,
         }

@@ -27,8 +27,8 @@ export default function SettingsMenu() {
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-surface/88 backdrop-blur-xl shadow-lg text-text hover:bg-bg-soft transition-all text-xs font-semibold"
       >
-        <ThemeIcon className="w-4 h-4 text-primary" strokeWidth={1.8} />
-        <span className="uppercase">{lang}</span>
+        <ThemeIcon key={theme} className="w-4 h-4 text-primary theme-icon-enter" strokeWidth={1.8} />
+        <span key={lang} className="uppercase lang-label-enter">{lang}</span>
         <ChevronDown
           className={`w-3 h-3 text-muted transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           strokeWidth={2}
@@ -50,7 +50,10 @@ export default function SettingsMenu() {
               ].map(({ id, label, Icon }) => (
                 <button
                   key={id}
-                  onClick={() => setTheme(id)}
+                  onClick={(e) => {
+                    const r = e.currentTarget.getBoundingClientRect();
+                    setTheme(id, r.left + r.width / 2, r.top + r.height / 2);
+                  }}
                   className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer
                     ${theme === id
                       ? "bg-gradient-to-r from-primary to-accent text-white shadow-sm"
