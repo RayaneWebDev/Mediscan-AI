@@ -21,7 +21,7 @@ export default function SettingsMenu() {
   const ThemeIcon = theme === "dark" ? Moon : Sun;
 
   return (
-    <div ref={ref} className="fixed top-4 right-4 z-50">
+    <div ref={ref} className="relative z-50">
       {/* Bouton déclencheur */}
       <button
         onClick={() => setOpen((o) => !o)}

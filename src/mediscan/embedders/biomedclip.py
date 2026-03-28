@@ -35,6 +35,7 @@ class BioMedCLIPEmbedder(Embedder):
         )
         self._model.to(self._device)
         self._model.eval()
+        self._tokenizer = open_clip.get_tokenizer(self._model_name)
 
         output_dim = getattr(getattr(self._model, "visual", None), "output_dim", None)
         if output_dim is None:
@@ -53,6 +54,18 @@ class BioMedCLIPEmbedder(Embedder):
             features = self._model.encode_image(input_tensor)
 
         return normalize_embedding(features.squeeze(0).cpu().numpy(), self.dim)
+
+    def encode_text(self, text: str) -> np.ndarray:
+        """Encode a text query into a 512-dim L2-normalised float32 vector.
+
+        Uses BioMedCLIP's text encoder (PubMedBERT), aligned with the image
+        encoder in the same embedding space. Truncates to 77 tokens automatically.
+        Only English medical text is supported.
+        """
+        tokens = self._tokenizer([text]).to(self._device)
+        with torch.no_grad():
+            features = self._model.encode_text(tokens)
+        return normalize_embedding(features.squeeze(0).float().cpu().numpy(), self.dim)
 
 
 __all__ = ["BioMedCLIPEmbedder"]

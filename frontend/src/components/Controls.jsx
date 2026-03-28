@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { LangContext } from "../context/lang-context";
 
-export default function Controls({ mode, onModeChange, k, onKChange, onSearch, disabled }) {
+export default function Controls({ mode, onModeChange, k, onKChange, onSearch, disabled, showModeToggle = true }) {
   const { t } = useContext(LangContext);
   const sliderBg = mode === "visual"
     ? "[&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:bg-primary"
@@ -10,40 +10,42 @@ export default function Controls({ mode, onModeChange, k, onKChange, onSearch, d
   return (
     <div className={`rounded-2xl p-5 shadow-sm flex flex-wrap gap-5 items-end transition-all ${mode === "visual" ? "bg-primary/5 border border-primary/20" : "bg-accent/5 border border-accent/20"}`}>
       {/* Mode toggle */}
-      <div className="flex-1 min-w-[220px]">
-        <label className="block text-xs text-muted mb-2 font-semibold uppercase tracking-wider">
-          Analysis Mode
-        </label>
-        <div className="flex rounded-xl overflow-hidden border border-border bg-bg">
-          <button
-            onClick={() => onModeChange("visual")}
-            className={`flex-1 py-2.5 px-4 text-sm font-medium flex items-center justify-center gap-2 transition-all cursor-pointer
-              ${mode === "visual"
-                ? "bg-primary text-white shadow-sm"
-                : "text-muted hover:text-text hover:bg-border/50"
-              }`}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" />
-            </svg>
-            {t.search.modeVisual}
-          </button>
-          <button
-            onClick={() => onModeChange("semantic")}
-            className={`flex-1 py-2.5 px-4 text-sm font-medium flex items-center justify-center gap-2 transition-all border-l border-border cursor-pointer
-              ${mode === "semantic"
-                ? "bg-accent text-white shadow-sm"
-                : "text-muted hover:text-text hover:bg-border/50"
-              }`}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-            </svg>
-            {t.search.modeSemantic}
-          </button>
+      {showModeToggle && (
+        <div className="flex-1 min-w-[220px]">
+          <label className="block text-xs text-muted mb-2 font-semibold uppercase tracking-wider">
+            Analysis Mode
+          </label>
+          <div className="flex rounded-xl overflow-hidden border border-border bg-bg">
+            <button
+              onClick={() => onModeChange("visual")}
+              className={`flex-1 py-2.5 px-4 text-sm font-medium flex items-center justify-center gap-2 transition-all cursor-pointer
+                ${mode === "visual"
+                  ? "bg-primary text-white shadow-sm"
+                  : "text-muted hover:text-text hover:bg-border/50"
+                }`}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" />
+              </svg>
+              {t.search.modeVisual}
+            </button>
+            <button
+              onClick={() => onModeChange("semantic")}
+              className={`flex-1 py-2.5 px-4 text-sm font-medium flex items-center justify-center gap-2 transition-all border-l border-border cursor-pointer
+                ${mode === "semantic"
+                  ? "bg-accent text-white shadow-sm"
+                  : "text-muted hover:text-text hover:bg-border/50"
+                }`}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+              </svg>
+              {t.search.modeSemantic}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* K slider */}
       <div className="flex-1 min-w-[200px]">

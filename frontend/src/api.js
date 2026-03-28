@@ -22,3 +22,18 @@ export async function searchImage(file, mode, k) {
 export function imageUrl(imageId) {
   return `${API_BASE}/images/${encodeURIComponent(imageId)}`;
 }
+
+export async function searchText(text, k) {
+  const response = await fetch(`${API_BASE}/search-text`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, k }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `Erreur ${response.status}`);
+  }
+
+  return response.json();
+}

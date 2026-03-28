@@ -7,7 +7,7 @@ from threading import Lock
 from PIL import Image, UnidentifiedImageError
 
 from backend.app.config import ALLOWED_CONTENT_TYPES, ALLOWED_MODES, MAX_K
-from mediscan.search import SearchResources, load_resources, query
+from mediscan.search import SearchResources, load_resources, query, query_text
 
 
 class SearchUnavailableError(RuntimeError):
@@ -109,3 +109,25 @@ class SearchService:
         finally:
             if temp_path is not None:
                 temp_path.unlink(missing_ok=True)
+
+    def search_text(self, *, text: str, k: int) -> dict:
+        """Text-to-image search using BioMedCLIP semantic index.
+
+        Forces mode='semantic'. The semantic FAISS index must exist.
+        Raises SearchUnavailableError (→ HTTP 503) if artifacts are missing.
+        """
+        text = text.strip()
+        if not text:
+            raise ValueError("Query text is empty")
+        if len(text) > 500:
+            raise ValueError("Query text too long (max 500 characters)")
+        self._validate_k(k)
+
+        resources = self._get_resources("semantic")
+        results = query_text(resources=resources, text=text, k=k)
+        return {
+            "mode": "semantic",
+            "embedder": resources.embedder.name,
+            "query_text": text,
+            "results": results,
+        }

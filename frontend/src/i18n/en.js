@@ -190,6 +190,66 @@ export const en = {
       desc3: "No signup, no limits",
     },
     footer: "HIPAA Compliant · Your data stays private · No advertisements",
+
+    hub: {
+      badge: "Medical image search engine",
+      headline: "Medical Search",
+      description: "Choose your search type.",
+      imageCard: {
+        title: "By image",
+        subtitle: "Visual & semantic analysis",
+        desc: "Upload a radiograph or medical image to find the closest matching cases in the database.",
+        features: [
+          "Visual structure analysis",
+          "Semantic image comparison",
+          "Results ranked by similarity",
+        ],
+        cta: "Analyse an image",
+      },
+      textCard: {
+        title: "By description",
+        subtitle: "Natural language search",
+        desc: "Describe a medical case in English and retrieve matching images by medical meaning.",
+        features: [
+          "Search by medical meaning",
+          "Natural language — English",
+          "Semantically relevant results",
+        ],
+        cta: "Describe a case",
+      },
+      choose: {
+        title: "Which approach to choose?",
+        imageLabel: "By image — if you:",
+        imageItems: [
+          "Have a radiograph or scan to analyse",
+          "Are looking for visually similar cases",
+          "Want to compare anatomical structures",
+        ],
+        textLabel: "By description — if you:",
+        textItems: [
+          "Don't have an image available",
+          "Know the diagnosis or pathology",
+          "Want to explore a medical concept",
+        ],
+      },
+    },
+
+    image: {
+      headline: "Image Search",
+      back: "Back",
+    },
+
+    text: {
+      headline: "Medical Text Search",
+      badge: "Semantic Analysis · Natural Language",
+      label: "Medical query",
+      langNote: "in English",
+      placeholder: "E.g.: chest X-ray bilateral pneumonia...",
+      back: "Back",
+      searching: "Analysing...",
+      error: "An error occurred.",
+      step3: "Results",
+    },
   },
 
   // Features Page

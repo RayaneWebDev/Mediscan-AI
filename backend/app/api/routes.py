@@ -1,8 +1,9 @@
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 
 from backend.app.config import ALLOWED_MODES
-from backend.app.models.schema import SearchResponse
+from backend.app.models.schema import SearchResponse, TextSearchResponse
 from backend.app.services.search_service import SearchUnavailableError
 from mediscan.runtime import PROJECT_ROOT
 
@@ -55,6 +56,28 @@ async def search_image(
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+class TextSearchRequest(BaseModel):
+    text: str
+    k: int = 5
+
+
+@router.post("/search-text", response_model=TextSearchResponse)
+async def search_text(body: TextSearchRequest, request: Request) -> TextSearchResponse:
+    """Text-to-image search using BioMedCLIP semantic index.
+
+    Accepts a medical text query (English) and returns top-k matching images.
+    Always uses the semantic mode (BioMedCLIP). No image upload required.
+    """
+    service = _get_service(request)
+    try:
+        payload = service.search_text(text=body.text, k=body.k)
+        return TextSearchResponse(**payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except SearchUnavailableError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
 @router.get("/images/{image_id}")

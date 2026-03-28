@@ -1,7 +1,6 @@
 import { useState, useContext } from "react";
 import { LangContext } from "../context/lang-context";
 import { Plus, Minus, ArrowRight } from "lucide-react";
-import Footer from "./Footer"; // Assure-toi que le chemin vers ton Footer est correct
 
 export default function FAQPage({ onPageChange }) {
   const { t } = useContext(LangContext);
@@ -106,8 +105,6 @@ export default function FAQPage({ onPageChange }) {
         </div>
       </section>
 
-      {/* Footer injecté avec la fonction de navigation */}
-      <Footer onPageChange={onPageChange} />
     </div>
   );
 }

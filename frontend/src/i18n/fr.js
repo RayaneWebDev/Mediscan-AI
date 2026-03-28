@@ -190,6 +190,66 @@ export const fr = {
       desc3: "Aucune inscription, aucune limite",
     },
     footer: "Conforme HIPAA · Vos données restent privées · Aucune publicité",
+
+    hub: {
+      badge: "Moteur de recherche d'images médicales",
+      headline: "Recherche médicale",
+      description: "Choisissez votre type de recherche.",
+      imageCard: {
+        title: "Par l'image",
+        subtitle: "Analyse visuelle & sémantique",
+        desc: "Importez une radiographie ou image médicale pour retrouver les cas les plus proches dans la base.",
+        features: [
+          "Analyse des structures visuelles",
+          "Comparaison sémantique des images",
+          "Résultats classés par similarité",
+        ],
+        cta: "Analyser une image",
+      },
+      textCard: {
+        title: "Par description",
+        subtitle: "Recherche en langage naturel",
+        desc: "Décrivez un cas médical en anglais et retrouvez les images correspondantes par signification médicale.",
+        features: [
+          "Recherche par signification médicale",
+          "Langage naturel — en anglais",
+          "Résultats sémantiquement pertinents",
+        ],
+        cta: "Décrire un cas",
+      },
+      choose: {
+        title: "Quelle approche choisir ?",
+        imageLabel: "Par image — si vous :",
+        imageItems: [
+          "Avez une radiographie ou un scan à analyser",
+          "Cherchez des cas visuellement similaires",
+          "Voulez comparer des structures anatomiques",
+        ],
+        textLabel: "Par description — si vous :",
+        textItems: [
+          "N'avez pas d'image disponible",
+          "Connaissez le diagnostic ou la pathologie",
+          "Voulez explorer un concept médical",
+        ],
+      },
+    },
+
+    image: {
+      headline: "Recherche par image",
+      back: "Retour",
+    },
+
+    text: {
+      headline: "Recherche par texte médical",
+      badge: "Analyse sémantique · Langage naturel",
+      label: "Requête médicale",
+      langNote: "en anglais",
+      placeholder: "Ex : chest X-ray bilateral pneumonia...",
+      back: "Retour",
+      searching: "Analyse en cours...",
+      error: "Une erreur est survenue.",
+      step3: "Résultats",
+    },
   },
 
   // Features Page

@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { useContext } from "react";
 import { LangContext } from "../context/lang-context";
-import Footer from '../components/Footer';
 
 const benefitIcons = {
   route: Route,

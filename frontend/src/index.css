@@ -81,19 +81,20 @@ button {
   border-radius: 6px;
 }
 
-/* Logo — light mode: multiply fuse le fond blanc dans la barre */
-.theme-logo {
-  mix-blend-mode: multiply;
-  opacity: 0.97;
-  transition: filter 200ms ease, opacity 200ms ease;
+/* Navbar logo stays true to the original artwork while getting a touch more
+   clarity on darker backgrounds. */
+.nav-logo {
+  display: block;
+  opacity: 1;
+  transition:
+    filter 200ms ease,
+    opacity 200ms ease,
+    transform 200ms ease;
 }
 
-/* Dark mode: feColorMatrix rend les pixels blancs vraiment transparents,
-   les couleurs du logo restent intactes → se fond parfaitement dans la barre */
-[data-theme="dark"] .theme-logo {
-  mix-blend-mode: normal;
-  opacity: 1;
-  filter: url(#remove-white-logo);
+[data-theme="dark"] .nav-logo {
+  filter: brightness(1.08) saturate(1.08) contrast(1.04)
+    drop-shadow(0 8px 18px rgba(0, 0, 0, 0.24));
 }
 
 /* Hero image wrapper — mask creates real transparency at edges,
@@ -112,4 +113,15 @@ button {
 
 [data-theme="dark"] .hero-preview {
   filter: brightness(1.05) saturate(1.15) contrast(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

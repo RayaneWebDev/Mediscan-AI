@@ -125,6 +125,56 @@ def query(
     return results
 
 
+def query_text(
+    *,
+    resources: SearchResources,
+    text: str,
+    k: int,
+) -> list[dict[str, Any]]:
+    """Run a text-to-image top-k retrieval on pre-loaded resources.
+
+    Requires an embedder that implements encode_text() (i.e. BioMedCLIPEmbedder).
+    Uses the same FAISS index as image queries — no rebuild needed.
+    """
+    if not 0 < k <= MAX_K:
+        raise ValueError(f"k must be between 1 and {MAX_K}")
+    if not hasattr(resources.embedder, "encode_text"):
+        raise ValueError(
+            f"Embedder '{resources.embedder.name}' does not support encode_text(). "
+            "Use mode='semantic' (BioMedCLIP) for text queries."
+        )
+
+    text = text.strip()
+    if not text:
+        raise ValueError("Query text is empty")
+
+    query_vector = resources.embedder.encode_text(text).reshape(1, -1).astype(np.float32)
+    faiss.normalize_L2(query_vector)
+
+    search_k = compute_search_k(k, resources.index.ntotal)
+    scores, indices = resources.index.search(query_vector, search_k)
+
+    results: list[dict[str, Any]] = []
+    for idx, score in zip(indices[0], scores[0]):
+        if idx < 0:
+            continue
+        row = resources.rows[idx]
+        results.append(
+            {
+                "rank": len(results) + 1,
+                "score": float(score),
+                "image_id": str(row.get("image_id", "")),
+                "path": str(row.get("path", "")),
+                "caption": str(row.get("caption", "")),
+                "cui": str(row.get("cui", "")),
+            }
+        )
+        if len(results) >= k:
+            break
+
+    return results
+
+
 def search_image(
     *,
     mode: str,
@@ -153,4 +203,4 @@ def search_image(
     return resources.embedder.name, str(resolve_path(image)), results
 
 
-__all__ = ["MAX_K", "SearchResources", "load_resources", "query", "search_image"]
+__all__ = ["MAX_K", "SearchResources", "load_resources", "query", "query_text", "search_image"]

@@ -1,7 +1,6 @@
 import { ChevronDown, Mail, Info, BadgeEuro } from "lucide-react";
 import { useState, useContext } from "react";
 import { LangContext } from "../context/lang-context";
-import Footer from '../components/Footer';
 
 export default function ContactPage() {
   const { t } = useContext(LangContext);

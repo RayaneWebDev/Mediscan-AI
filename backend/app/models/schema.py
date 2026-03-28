@@ -15,3 +15,10 @@ class SearchResponse(BaseModel):
     embedder: str
     query_image: str
     results: list[SearchResult]
+
+
+class TextSearchResponse(BaseModel):
+    mode: str
+    embedder: str
+    query_text: str
+    results: list[SearchResult]
