@@ -17,7 +17,7 @@ export default function UploadZone({ file, onFileSelect, onRemove }) {
 
   if (file) {
     return (
-      <div className="flex justify-center mt-4">
+      <div className="flex justify-center mt-4 self-start">
         <div className="relative rounded-2xl overflow-hidden shadow-md border border-border bg-surface">
           <img
             src={URL.createObjectURL(file)}
