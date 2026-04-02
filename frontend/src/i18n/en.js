@@ -11,10 +11,10 @@ export const en = {
 
   // Home Page
   home: {
-    badge: "Clinical AI Analysis",
+    badge: "Interpretive AI Analysis",
     headline1: "Reduce Uncertainty.",
     headline2: "Accelerate Diagnosis.",
-    description: "Unlocking the visual archives of medicine with MediScan AI. Search by content, find similar cases instantly, and elevate clinical precision.",
+    description: "Unlocking the visual archives of medicine with MEDISCAN AI. Search by content, find similar cases instantly, and elevate clinical precision.",
     cta1: "Scan & Search",
     cta1Link: "/search",
     cta2Link: "/features",
@@ -27,7 +27,7 @@ export const en = {
       value2: "< 2s",
       title3: "Diagnostic Accuracy",
       value3: "95%+",
-      title4: "Clinical Support",
+      title4: "Interpretive Support",
       value4: "24/7",
     },
 
@@ -80,7 +80,7 @@ export const en = {
         {
           num: "2",
           title: "Analyze",
-          desc: "MediScan AI analyzes visual and clinical features instantly.",
+          desc: "MEDISCAN AI analyzes visual and clinical features instantly.",
         },
         {
           num: "3",
@@ -99,7 +99,7 @@ export const en = {
         use: "Use when: Comparative anatomy, morphology matching, or structural similarity.",
       },
       semantic: {
-        title: "Clinical Analysis",
+        title: "Interpretive Analysis",
         desc: "Discover cases with comparable pathology and clinical significance.",
         use: "Use when: Disease finding, diagnostic reasoning, or evidence-based case selection.",
       },
@@ -135,7 +135,7 @@ export const en = {
       headline: "Powerful Features",
       list: [
         { title: "Lightning Speed", desc: "Sub-second latency on millions of images" },
-        { title: "Clinical Intelligence", desc: "AI trained on annotated medical datasets" },
+        { title: "Interpretive Intelligence", desc: "AI trained on annotated medical datasets" },
         { title: "Multi-Modal", desc: "All imaging types and modalities supported" },
         { title: "Secure", desc: "Enterprise-grade security and compliance" },
         { title: "Analytics", desc: "Track usage patterns and clinical outcomes" },
@@ -165,7 +165,7 @@ export const en = {
     searching: "Analyzing your image...",
     error: "Error connecting to server.",
     modeVisual: "Visual Analysis",
-    modeSemantic: "Clinical Analysis",
+    modeSemantic: "Interpretive Analysis",
     numResults: "Results",
     search: "Search",
     howWorks: "Two Analysis Modes",
@@ -176,7 +176,7 @@ export const en = {
       use: "Use when: Looking for anatomically similar cases",
     },
     semantic: {
-      name: "Clinical Analysis",
+      name: "Interpretive Analysis",
       icon: "hospital",
       desc: "Find cases with similar clinical significance and pathology.",
       use: "Use when: Looking for specific diseases or clinical conditions",
@@ -184,7 +184,7 @@ export const en = {
     highlights: {
       title1: "Instant Results",
       desc1: "< 1 second search time",
-      title2: "Clinically Relevant",
+      title2: "Interpretively Relevant",
       desc2: "AI-trained on medical datasets",
       title3: "Completely Free",
       desc3: "No signup, no limits",
@@ -268,7 +268,7 @@ export const en = {
         features: ["10+ imaging modalities", "Cross-modality search", "Format agnostic"],
       },
       {
-        title: "Clinical Validation",
+        title: "Interpretive Validation",
         desc: "AI trained on 100K+ clinically-annotated images from peer-reviewed datasets.",
         features: ["Biomedical AI models", "Clinical confidence scores", "Evidence-backed"],
       },
@@ -292,9 +292,9 @@ export const en = {
 
   // About Page
   about: {
-    headline: "About MediScan AI",
+    headline: "About MEDISCAN AI",
     description:
-      "MediScan AI is dedicated to transforming medical imaging analysis with cutting-edge AI technology and clinical expertise.",
+      "MEDISCAN AI is dedicated to transforming medical imaging analysis with cutting-edge AI technology and clinical expertise.",
     mission: {
       title: "Our Mission",
       text: "To empower healthcare professionals with fast, accurate, and intuitive AI-driven image search and diagnostic support.",
@@ -314,7 +314,7 @@ export const en = {
     },
     cta: {
       title: "Want to Learn More?",
-      description: "Reach out to our team and discover how MediScan AI can help your organization.",
+      description: "Reach out to our team and discover how MEDISCAN AI can help your organization.",
       buttonText: "Contact Us",
     },
   },
@@ -356,15 +356,15 @@ export const en = {
 
   // How It Works
   howItWorks: {
-    headline: "How MediScan AI Works",
+    headline: "How MEDISCAN AI Works",
     description: "Clinical image search powered by advanced AI and clinical reasoning.",
     pipeline: {
       title: "The Search Pipeline",
       steps: [
-        { label: "Clinical Image", icon: "📋" },
+        { label: "Interpretive Image", icon: "📋" },
         { label: "AI Analysis", icon: "⚙️" },
         { label: "Feature Extraction", icon: "📊" },
-        { label: "Clinical Index", icon: "🗄️" },
+        { label: "Interpretive Index", icon: "🗄️" },
         { label: "Top Results", icon: "✅" },
       ],
     },
@@ -380,7 +380,7 @@ export const en = {
             desc: "Deep learning models extract meaningful visual patterns from the image.",
           },
           {
-            title: "Clinical Context Integration",
+            title: "Interpretive Context Integration",
             desc: "Combines visual features with anatomical and clinical knowledge.",
           },
           {
@@ -394,7 +394,7 @@ export const en = {
         ],
       },
       semantic: {
-        name: "Clinical Analysis",
+        name: "Interpretive Analysis",
         model: "Biomedical Language Model",
         desc: "Understands clinical context, pathology, and diagnostic significance.",
         steps: [
@@ -403,7 +403,7 @@ export const en = {
             desc: "Models trained on 100K+ clinically-annotated medical images.",
           },
           {
-            title: "Clinical Reasoning",
+            title: "Interpretive Reasoning",
             desc: "Recognizes diseases, conditions, and clinical patterns.",
           },
           {
@@ -428,7 +428,7 @@ export const en = {
         ],
       },
       semantic: {
-        title: "Use Clinical Analysis when:",
+        title: "Use Interpretive Analysis when:",
         cases: [
           "You're searching for a specific diagnosis or condition",
           "Images come from different modalities or sources",
@@ -441,7 +441,7 @@ export const en = {
   // FAQ
   faq: {
     headline: "Frequently Asked Questions",
-    description: "Find answers to common questions about MediScan AI's technology and integration.",
+    description: "Find answers to common questions about MEDISCAN AI's technology and integration.",
     categories: {
       general: "General",
       technical: "Technical",
@@ -450,8 +450,8 @@ export const en = {
     items: [
       { 
         category: "general",
-        q: "What is the main purpose of MediScan AI?", 
-        r: "MediScan AI is a specialized search engine designed for clinicians. It allows them to find similar medical cases from vast databases using both visual features and clinical metadata to assist in diagnostic decision-making." 
+        q: "What is the main purpose of MEDISCAN AI?", 
+        r: "MEDISCAN AI is a specialized search engine designed for clinicians. It allows them to find similar medical cases from vast databases using both visual features and clinical metadata to assist in diagnostic decision-making." 
       },
       { 
         category: "general",
@@ -461,12 +461,12 @@ export const en = {
       { 
         category: "general",
         q: "Is it a diagnostic tool?", 
-        r: "No, MediScan AI is a decision-support tool. it provides similar cases and relevant literature, but the final diagnostic responsibility remains with the healthcare professional." 
+        r: "No, MEDISCAN AI is a decision-support tool. it provides similar cases and relevant literature, but the final diagnostic responsibility remains with the healthcare professional." 
       },
       
       { 
         category: "technical",
-        q: "How does the 'Visual Search' differ from 'Clinical Search'?", 
+        q: "How does the 'Visual Search' differ from 'Interpretive Search'?", 
         r: "Visual Search (Signature Search) analyzes pixel patterns to find similar shapes and textures. Clinical Search uses AI to understand the pathology and find cases with the same medical meaning, even if they look different." 
       },
       { 
@@ -489,7 +489,7 @@ export const en = {
       { 
         category: "security",
         q: "Where is the medical data stored?", 
-        r: "By default, MediScan AI processes images in-memory (volatile) and does not store patient-identifiable information (PII) on our research servers without explicit institutional agreement." 
+        r: "By default, MEDISCAN AI processes images in-memory (volatile) and does not store patient-identifiable information (PII) on our research servers without explicit institutional agreement." 
       },
       { 
         category: "security",

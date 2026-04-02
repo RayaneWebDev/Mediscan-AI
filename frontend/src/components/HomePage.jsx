@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useContext } from "react";
 import { LangContext } from "../context/lang-context";
+import { useTheme } from "../context/useTheme";
 
 const benefitIcons = {
   route: Route,
@@ -55,7 +56,9 @@ function UseCaseCard({ title, description, icon }) {
 
 export default function HomePage({ onPageChange }) {
   const { t } = useContext(LangContext);
+  const { theme } = useTheme();
   const content = t.home;
+  const heroPreviewSrc = theme === "dark" ? "/HomePres-dark.png" : "/HomePres.jpg";
 
   return (
     <div className="bg-bg transition-colors duration-300 -mt-16 md:-mt-20">
@@ -88,10 +91,10 @@ export default function HomePage({ onPageChange }) {
 
         {/* Right - Visual */}
         <div className="hidden md:flex absolute right-0 top-0 bottom-0 w-[54%] items-center justify-center px-6 lg:px-12">
-          <div className="absolute inset-y-0 left-0 w-32 lg:w-48 bg-gradient-to-r from-bg-soft to-transparent z-10" />
+          <div className="pointer-events-none absolute inset-y-0 -left-20 w-56 bg-gradient-to-r from-transparent via-bg-soft/70 to-transparent lg:-left-24 lg:w-72 z-10" />
           <div className="hero-frame relative z-0 w-full max-w-[760px]">
             <img
-              src="/HomePres.jpg"
+              src={heroPreviewSrc}
               alt="MEDISCAN AI interface preview"
               className="hero-preview w-full max-h-[72vh] object-contain object-center select-none"
               draggable="false"
@@ -103,7 +106,7 @@ export default function HomePage({ onPageChange }) {
         <div className="md:hidden w-full px-6 pb-12">
           <div className="hero-frame">
             <img
-              src="/HomePres.jpg"
+              src={heroPreviewSrc}
               alt="MEDISCAN AI interface preview"
               className="hero-preview w-full object-contain select-none"
               draggable="false"

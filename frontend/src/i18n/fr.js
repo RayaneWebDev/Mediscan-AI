@@ -14,7 +14,7 @@ export const fr = {
     badge: "Analyse Médicale par IA",
     headline1: "Réduire l'incertitude.",
     headline2: "Accélérer le diagnostic.",
-    description: "Déverrouiller les archives visuelles de la médecine avec MediScan AI. Rechercher par contenu, trouver des cas similaires instantanément, et élever la précision clinique.",
+    description: "Déverrouiller les archives visuelles de la médecine avec MEDISCAN AI. Rechercher par contenu, trouver des cas similaires instantanément, et élever la précision clinique.",
     cta1: "Scanner & Chercher",
     cta1Link: "/search",
     cta2Link: "/features",
@@ -27,7 +27,7 @@ export const fr = {
       value2: "< 2s",
       title3: "Précision Diagnostique",
       value3: "95%+",
-      title4: "Support Clinique",
+      title4: "Support Interprétatif",
       value4: "24/7",
     },
 
@@ -80,7 +80,7 @@ export const fr = {
         {
           num: "2",
           title: "Analyser",
-          desc: "MediScan AI analyse les caractéristiques visuelles et cliniques instantanément.",
+          desc: "MEDISCAN AI analyse les caractéristiques visuelles et cliniques instantanément.",
         },
         {
           num: "3",
@@ -99,7 +99,7 @@ export const fr = {
         use: "Utiliser quand : Anatomie comparative, correspondance morphologique, similarité structurelle.",
       },
       semantic: {
-        title: "Analyse Clinique",
+        title: "Analyse Interprétative",
         desc: "Découvrez les cas avec pathologie et signification clinique comparables.",
         use: "Utiliser quand : Découverte de maladie, raisonnement diagnostique, sélection basée sur les preuves.",
       },
@@ -135,7 +135,7 @@ export const fr = {
       headline: "Fonctionnalités Puissantes",
       list: [
         { title: "Vitesse Éclair", desc: "Latence inférieure à la seconde sur des millions d'images" },
-        { title: "Intelligence Clinique", desc: "IA entraînée sur des ensembles de données médicales annotées" },
+        { title: "Intelligence Interprétative", desc: "IA entraînée sur des ensembles de données médicales annotées" },
         { title: "Multi-Modal", desc: "Tous les types et modalités d'imagerie supportés" },
         { title: "Sécurisé", desc: "Sécurité et conformité de classe entreprise" },
         { title: "Analyse", desc: "Suivre les modèles d'utilisation et les résultats cliniques" },
@@ -165,7 +165,7 @@ export const fr = {
     searching: "Analyse de votre image...",
     error: "Erreur de connexion au serveur.",
     modeVisual: "Analyse Visuelle",
-    modeSemantic: "Analyse Clinique",
+    modeSemantic: "Analyse Interprétative",
     numResults: "Résultats",
     search: "Chercher",
     howWorks: "Deux Modes d'Analyse",
@@ -176,7 +176,7 @@ export const fr = {
       use: "Utiliser quand : Chercher des cas anatomiquement similaires",
     },
     semantic: {
-      name: "Analyse Clinique",
+      name: "Analyse Interprétative",
       icon: "hospital",
       desc: "Trouvez les cas avec une signification clinique et une pathologie similaires.",
       use: "Utiliser quand : Chercher des maladies ou conditions cliniques spécifiques",
@@ -184,7 +184,7 @@ export const fr = {
     highlights: {
       title1: "Résultats Instantanés",
       desc1: "< 1 seconde de temps de recherche",
-      title2: "Cliniquement Pertinent",
+      title2: "Interprétativement Pertinent",
       desc2: "IA entraînée sur des ensembles de données médicales",
       title3: "Complètement Gratuit",
       desc3: "Aucune inscription, aucune limite",
@@ -268,7 +268,7 @@ export const fr = {
         features: ["10+ modalités d’imagerie", "Recherche intermodalités", "Agnostique au format"],
       },
       {
-        title: "Validation Clinique",
+        title: "Validation Interprétative",
         desc: "IA entraînée sur plus de 100K images médicales annotées cliniquement issues d’ensembles de données évalués par les pairs.",
         features: ["Modèles IA biomédicaux", "Scores de confiance cliniques", "Étayé par des preuves"],
       },
@@ -326,9 +326,9 @@ export const fr = {
     formPrivacy: "Nous respectons votre confidentialité. Vos informations ne seront jamais partagées.",
   },
   about: {
-    headline: "À propos de MediScan AI",
+    headline: "À propos de MEDISCAN AI",
     description:
-      "MediScan AI est dédié à transformer l'analyse d'imagerie médicale grâce à l'IA de pointe et à l'expertise clinique.",
+      "MEDISCAN AI est dédié à transformer l'analyse d'imagerie médicale grâce à l'IA de pointe et à l'expertise clinique.",
     mission: {
       title: "Notre Mission",
       text: "Permettre aux professionnels de santé d'accéder à une recherche d'images rapide, précise et intuitive, soutenue par l'IA.",
@@ -348,22 +348,22 @@ export const fr = {
     },
     cta: {
       title: "Vous voulez en savoir plus ?",
-      description: "Contactez notre équipe et découvrez comment MediScan AI peut aider votre organisation.",
+      description: "Contactez notre équipe et découvrez comment MEDISCAN AI peut aider votre organisation.",
       buttonText: "Nous Contacter",
     },
   },
 
   // How It Works
   howItWorks: {
-    headline: "Comment Fonctionne MediScan AI",
+    headline: "Comment Fonctionne MEDISCAN AI",
     description: "Recherche d'images cliniques alimentée par l'IA avancée et le raisonnement clinique.",
     pipeline: {
       title: "Le Pipeline de Recherche",
       steps: [
-        { label: "Image Clinique", icon: "📋" },
+        { label: "Image Interprétative", icon: "📋" },
         { label: "Analyse IA", icon: "⚙️" },
         { label: "Extraction de Caractéristiques", icon: "📊" },
-        { label: "Index Clinique", icon: "🗄️" },
+        { label: "Index Interprétatif", icon: "🗄️" },
         { label: "Meilleurs Résultats", icon: "✅" },
       ],
     },
@@ -379,7 +379,7 @@ export const fr = {
             desc: "Les modèles d'apprentissage profond extraient les motifs visuels significatifs.",
           },
           {
-            title: "Intégration du Contexte Clinique",
+            title: "Intégration du Contexte Interprétatif",
             desc: "Combine les caractéristiques visuelles avec les connaissances anatomiques et cliniques.",
           },
           {
@@ -393,7 +393,7 @@ export const fr = {
         ],
       },
       semantic: {
-        name: "Analyse Clinique",
+        name: "Analyse Interprétative",
         model: "Modèle de Langage Biomédical",
         desc: "Comprend le contexte clinique, la pathologie et la signification diagnostique.",
         steps: [
@@ -402,7 +402,7 @@ export const fr = {
             desc: "Modèles entraînés sur 100K+ images médicales annotées cliniquement.",
           },
           {
-            title: "Raisonnement Clinique",
+            title: "Raisonnement Interprétatif",
             desc: "Reconnaît les maladies, conditions et motifs cliniques.",
           },
           {
@@ -427,7 +427,7 @@ export const fr = {
         ],
       },
       semantic: {
-        title: "Utiliser l'Analyse Clinique quand :",
+        title: "Utiliser l'Analyse Interprétative quand :",
         cases: [
           "Vous recherchez un diagnostic ou une condition spécifique",
           "Les images proviennent de modalités ou de sources différentes",
@@ -440,7 +440,7 @@ export const fr = {
   // FAQ
   faq: {
     headline: "Questions Fréquentes",
-    description: "Trouvez des réponses aux questions courantes sur la technologie et l'intégration de MediScan AI.",
+    description: "Trouvez des réponses aux questions courantes sur la technologie et l'intégration de MEDISCAN AI.",
     categories: {
       general: "Général",
       technical: "Technique",
@@ -450,8 +450,8 @@ export const fr = {
       // --- GÉNÉRAL ---
       { 
         category: "general",
-        q: "Quel est l'objectif principal de MediScan AI ?", 
-        r: "MediScan AI est un moteur de recherche spécialisé conçu pour les cliniciens. Il leur permet de trouver des cas médicaux similaires dans de vastes bases de données en utilisant à la fois des caractéristiques visuelles et des métadonnées cliniques pour faciliter la prise de décision diagnostique." 
+        q: "Quel est l'objectif principal de MEDISCAN AI ?", 
+        r: "MEDISCAN AI est un moteur de recherche spécialisé conçu pour les cliniciens. Il leur permet de trouver des cas médicaux similaires dans de vastes bases de données en utilisant à la fois des caractéristiques visuelles et des métadonnées cliniques pour faciliter la prise de décision diagnostique." 
       },
       { 
         category: "general",
@@ -461,13 +461,13 @@ export const fr = {
       { 
         category: "general",
         q: "S'agit-il d'un outil de diagnostic ?", 
-        r: "Non, MediScan AI est un outil d'aide à la décision. Il fournit des cas similaires et la littérature pertinente, mais la responsabilité diagnostique finale incombe exclusivement au professionnel de santé." 
+        r: "Non, MEDISCAN AI est un outil d'aide à la décision. Il fournit des cas similaires et la littérature pertinente, mais la responsabilité diagnostique finale incombe exclusivement au professionnel de santé." 
       },
       
       // --- TECHNIQUE ---
       { 
         category: "technical",
-        q: "Quelle est la différence entre la recherche 'Visuelle' et la recherche 'Clinique' ?", 
+        q: "Quelle est la différence entre la recherche 'Visuelle' et la recherche 'Interprétative' ?", 
         r: "La recherche visuelle (Signature Search) analyse les motifs de pixels pour trouver des formes et des textures similaires. La recherche clinique utilise l'IA pour comprendre la pathologie et trouver des cas ayant la même signification médicale, même s'ils semblent visuellement différents." 
       },
       { 
@@ -490,7 +490,7 @@ export const fr = {
       { 
         category: "security",
         q: "Où sont stockées les données médicales ?", 
-        r: "Par défaut, MediScan AI traite les images en mémoire (volatiles) et ne stocke pas d'informations d'identification personnelle (PII) sur nos serveurs de recherche sans un accord institutionnel explicite." 
+        r: "Par défaut, MEDISCAN AI traite les images en mémoire (volatiles) et ne stocke pas d'informations d'identification personnelle (PII) sur nos serveurs de recherche sans un accord institutionnel explicite." 
       },
       { 
         category: "security",

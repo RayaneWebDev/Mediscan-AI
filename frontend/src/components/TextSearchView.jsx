@@ -29,7 +29,7 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
   }
 
   useEffect(() => {
-    onChromeToneChange?.("primary");
+    onChromeToneChange?.("accent");
   }, [onChromeToneChange]);
 
   async function handleSearch() {

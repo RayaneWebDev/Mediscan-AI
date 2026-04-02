@@ -143,10 +143,6 @@ button {
   transition: filter 200ms ease;
 }
 
-[data-theme="dark"] .hero-preview {
-  filter: brightness(1.05) saturate(1.15) contrast(1.05);
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

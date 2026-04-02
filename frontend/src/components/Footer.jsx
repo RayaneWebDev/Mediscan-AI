@@ -21,7 +21,7 @@ const Icons = {
           
             {/* 1. Branding */}
             <div>
-                <h4 className="font-bold mb-4 text-lg">MediScan AI</h4>
+                <h4 className="font-bold mb-4 text-lg">MEDISCAN AI</h4>
                 <p className="text-sm text-footer-muted leading-relaxed">
                     {content.footer.tagline}
                 </p>
@@ -106,7 +106,7 @@ const Icons = {
         {/* Bas du footer */}
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-start md:items-center text-sm text-footer-muted gap-6">
         
-        <p>© {currentYear} MediScan AI. {content.footer.rights}</p>
+        <p>© {currentYear} MEDISCAN AI. {content.footer.rights}</p>
             
         <div className="flex items-center gap-6">
             <span className="text-[10px] uppercase tracking-widest opacity-70">

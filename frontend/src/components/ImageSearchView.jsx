@@ -208,8 +208,8 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
   const themeClass = isAccent ? "from-accent-pale to-surface" : "from-primary-pale to-surface";
 
   useEffect(() => {
-    onChromeToneChange?.("primary");
-  }, [onChromeToneChange]);
+    onChromeToneChange?.(isAccent ? "accent" : "primary");
+  }, [isAccent, onChromeToneChange]);
 
   return (
     <div className={`bg-gradient-to-b ${themeClass} transition-colors duration-300`}>

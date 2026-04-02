@@ -12,12 +12,18 @@ export default function SearchPage({ onNavVisibility, onFooterVisibility, onChro
   const timer = useRef(null);
 
   const VIEW_TO_BG = { hub: "bg-bg", image: "bg-primary-pale", text: "bg-accent-pale" };
+  const TONE_TO_BG = { default: "bg-bg", primary: "bg-primary-pale", accent: "bg-accent-pale" };
+
+  function handleToneChange(tone) {
+    setNavBg(TONE_TO_BG[tone] ?? "bg-bg");
+    onChromeToneChange?.(tone);
+  }
 
   // On mount: hub state (nav visible, footer hidden, no scroll)
   useEffect(() => {
     onNavVisibility?.(true);
     onFooterVisibility?.(false);
-    onChromeToneChange?.("default");
+    handleToneChange("default");
     document.body.style.overflow = "hidden";
 
     return () => {
@@ -35,7 +41,7 @@ export default function SearchPage({ onNavVisibility, onFooterVisibility, onChro
     setNavBg(VIEW_TO_BG[nextView]);
     if (nextView === "hub") {
       onFooterVisibility?.(false);
-      onChromeToneChange?.("default");
+      handleToneChange("default");
     }
 
     setVisible(false);
@@ -48,7 +54,7 @@ export default function SearchPage({ onNavVisibility, onFooterVisibility, onChro
         document.body.style.overflow = "hidden";
       } else {
         onFooterVisibility?.(true);
-        onChromeToneChange?.("primary");
+        handleToneChange(nextView === "text" ? "accent" : "primary");
         document.body.style.overflow = "";
       }
 
@@ -58,8 +64,8 @@ export default function SearchPage({ onNavVisibility, onFooterVisibility, onChro
 
   const views = {
     hub:   <SearchHubView   onChooseImage={() => navigate("image")} onChooseText={() => navigate("text")} />,
-    image: <ImageSearchView onBack={() => navigate("hub")} />,
-    text:  <TextSearchView  onBack={() => navigate("hub")} />,
+    image: <ImageSearchView onBack={() => navigate("hub")} onChromeToneChange={handleToneChange} />,
+    text:  <TextSearchView  onBack={() => navigate("hub")} onChromeToneChange={handleToneChange} />,
   };
 
   return (

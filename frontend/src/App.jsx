@@ -129,7 +129,6 @@ function AppInner() {
           onNavVisibility={handleNavVisibility}
           onFooterVisibility={handleFooterVisibility}
           onChromeToneChange={setNavTone}
-          chromeTone={navTone}
         />
       </main>
 

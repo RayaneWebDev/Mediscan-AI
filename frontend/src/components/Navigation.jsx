@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { LangContext } from "../context/lang-context";
 import LanguageSelector from "./LanguageSelector";
 
@@ -9,6 +9,32 @@ export default function Navigation({
   tone = "default",
 }) {
   const { t } = useContext(LangContext);
+  const [scrollHidden, setScrollHidden] = useState(false);
+  const lastY = useRef(0);
+  const turnY = useRef(0);
+  const goingDown = useRef(true);
+
+  useEffect(() => {
+    function onScroll() {
+      const y = window.scrollY;
+      const down = y > lastY.current;
+
+      if (down !== goingDown.current) {
+        turnY.current = lastY.current;
+        goingDown.current = down;
+      }
+
+      if (down && y > 300) setScrollHidden(true);
+      if (!down && turnY.current - y > 60) setScrollHidden(false);
+      if (y <= 10) setScrollHidden(false);
+
+      lastY.current = y;
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const show = visible && !scrollHidden;
 
   const shellToneClass =
     tone === "primary"
@@ -29,10 +55,10 @@ export default function Navigation({
     <nav
       className="sticky top-0 z-50 bg-transparent"
       style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(-10px)",
-        pointerEvents: visible ? "auto" : "none",
-        transition: "opacity 280ms ease, transform 380ms cubic-bezier(0.16, 1, 0.3, 1)",
+        opacity: show ? 1 : 0,
+        transform: show ? "translateY(0)" : "translateY(-100%)",
+        pointerEvents: show ? "auto" : "none",
+        transition: "opacity 500ms ease, transform 600ms cubic-bezier(0.16, 1, 0.3, 1)",
         willChange: "opacity, transform",
       }}
     >
@@ -44,8 +70,8 @@ export default function Navigation({
           >
             <img
               src="/Logo-2.svg"
-              alt="MediScan AI"
-              className="nav-logo h-[clamp(42px,12vw,68px)] w-auto object-contain object-left"
+              alt="MEDISCAN AI"
+              className="nav-logo h-[clamp(32px,8vw,48px)] w-auto object-contain object-left"
             />
           </button>
 
