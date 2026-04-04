@@ -1,3 +1,10 @@
+"""
+Tests unitaires pour le script de requête CLI de MEDISCAN.
+
+Vérifie que la fonction principale 'run_query' transmet correctement tous les 
+arguments (mode, chemin d'image, k, etc.) au moteur de recherche interne.
+"""
+
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -5,6 +12,9 @@ from scripts import query as query_module
 
 
 def test_run_query_forwards_arguments():
+    """
+    - Vérifie le passage correct des arguments de la ligne de commande à la fonction de recherche d'image.
+    """
     args = SimpleNamespace(
         mode="visual",
         image="query.png",

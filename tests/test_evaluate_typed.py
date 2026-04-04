@@ -1,4 +1,11 @@
-"""Tests unitaires pour evaluate_typed (metriques TM / TA / TP)."""
+"""
+Tests unitaires pour l'évaluation typée de MEDISCAN.
+
+Vérifie le calcul des métriques de précision par catégorie médicale :
+- TM (Taux Modalité) : Correspondance du type d'examen.
+- TA (Taux Anatomie) : Correspondance de la zone corporelle.
+- TP (Taux Pathologie/Finding) : Correspondance des observations médicales.
+"""
 
 import json
 from pathlib import Path
@@ -30,6 +37,10 @@ FAKE_CATEGORIES = {
 # ---------------------------------------------------------------------------
 
 def test_split_cui_by_type_modalite_only():
+    """ 
+    - Vérifie que la fonction sépare correctement une liste de CUI 
+      en groupes (modalité, anatomie, etc.) selon le dictionnaire. 
+    """
     result = module.split_cui_by_type({"MOD1", "MOD2"}, FAKE_CATEGORIES)
     assert result["modalite"] == {"MOD1", "MOD2"}
     assert result["anatomie"] == set()
@@ -37,6 +48,9 @@ def test_split_cui_by_type_modalite_only():
 
 
 def test_split_cui_by_type_mixte():
+    """ 
+    - Vérifie que la fonction gère correctement un ensemble de CUI de types différents.
+    """
     result = module.split_cui_by_type({"MOD1", "ANA1", "FIN1"}, FAKE_CATEGORIES)
     assert result["modalite"] == {"MOD1"}
     assert result["anatomie"] == {"ANA1"}
@@ -44,12 +58,19 @@ def test_split_cui_by_type_mixte():
 
 
 def test_split_cui_by_type_inconnu_ignore():
+    """
+    - Vérifie que les CUI inconnus (non présents dans le dictionnaire) sont simplement ignorés.
+    """
     result = module.split_cui_by_type({"INCONNU", "MOD1"}, FAKE_CATEGORIES)
     assert result["modalite"] == {"MOD1"}
     assert "INCONNU" not in result["modalite"]
 
 
 def test_split_cui_by_type_vide():
+    """
+    - Vérifie que la fonction gère correctement un ensemble de CUI vide,
+      en renvoyant des ensembles vides pour chaque catégorie.
+    """
     result = module.split_cui_by_type(set(), FAKE_CATEGORIES)
     assert all(len(v) == 0 for v in result.values())
 
@@ -59,7 +80,9 @@ def test_split_cui_by_type_vide():
 # ---------------------------------------------------------------------------
 
 def test_compute_metrics_tm_parfait():
-    """Tous les resultats ont meme modalite -> TM = 1.0"""
+    """
+    - Tous les resultats ont meme modalite -> TM = 1.0
+    """
     query_results = [
         {"hit_modalite": 1, "hit_anatomie": 0, "hit_finding": 0,
          "has_anatomie_cui": 0, "has_finding_cui": 0, "n_results": 2},
@@ -78,7 +101,9 @@ def test_compute_metrics_tm_parfait():
 
 
 def test_compute_metrics_ta_none_si_pas_anatomie():
-    """Si aucune requete n'a de CUI anatomie -> TA doit etre None."""
+    """
+    - Si aucune requete n'a de CUI anatomie -> TA doit etre None.
+    """
     query_results = [
         {"hit_modalite": 1, "hit_anatomie": 0, "hit_finding": 0,
          "has_anatomie_cui": 0, "has_finding_cui": 0, "n_results": 1},
@@ -93,7 +118,9 @@ def test_compute_metrics_ta_none_si_pas_anatomie():
 
 
 def test_compute_metrics_ta_calcule_sur_sous_ensemble():
-    """TA calcule uniquement sur les requetes ayant un CUI anatomie."""
+    """
+    - TA calcule uniquement sur les requetes ayant un CUI anatomie.
+    """
     query_results = [
         # requete AVEC anatomie -> hit
         {"hit_modalite": 1, "hit_anatomie": 1, "hit_finding": 0,
@@ -116,7 +143,9 @@ def test_compute_metrics_ta_calcule_sur_sous_ensemble():
 
 
 def test_compute_metrics_tp_calcule_sur_sous_ensemble():
-    """TP calcule uniquement sur les requetes ayant un CUI finding."""
+    """
+    - TP calcule uniquement sur les requetes ayant un CUI finding.
+    """
     query_results = [
         {"hit_modalite": 1, "hit_anatomie": 0, "hit_finding": 1,
          "has_anatomie_cui": 0, "has_finding_cui": 1, "n_results": 2},
@@ -150,7 +179,9 @@ def test_compute_metrics_vide():
 # ---------------------------------------------------------------------------
 
 def test_evaluate_integration(tmp_path):
-    """Verifie que evaluate() produit les bons flags pour chaque resultat."""
+    """
+    - Verifie que evaluate() produit les bons flags pour chaque resultat.
+    """
     image_path = tmp_path / "query.png"
     Image.new("RGB", (8, 8)).save(image_path)
 
@@ -204,6 +235,10 @@ def test_evaluate_integration(tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_load_categories(tmp_path):
+    """
+    - Vérifie que le chargement des catégories à partir d'un fichier JSON fonctionne correctement,
+      en filtrant les métadonnées et en structurant les données par type.
+    """
     fake = {
         "_meta": {"description": "test"},
         "C0040405": {"label_fr": "Scanner CT", "type": "modalite", "freq": 100},

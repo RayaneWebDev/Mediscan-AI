@@ -1,3 +1,10 @@
+"""
+Tests unitaires et d'intégration pour l'API MEDISCAN.
+
+Vérifie le bon fonctionnement des endpoints, la validation des entrées
+et la gestion des erreurs sans charger les modèles IA réels (utilisation de Mocks).
+"""
+
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -16,12 +23,17 @@ from mediscan.search import SearchResources
 # ---------------------------------------------------------------------------
 
 class FakeEmbedder:
+    """ 
+    - Simule un modèle d'IA pour les tests. 
+    """
     name = "dinov2_base"
     dim = 768
 
 
 def _make_fake_service() -> SearchService:
-    """Build a SearchService with mocked resources (no real model loaded)."""
+    """
+    - Créez un service de recherche avec des ressources simulées (aucun modèle réel chargé).
+    """
     fake_resources = MagicMock(spec=SearchResources)
     fake_resources.embedder = FakeEmbedder()
     return SearchService(resources={"visual": fake_resources, "semantic": fake_resources})
@@ -29,18 +41,26 @@ def _make_fake_service() -> SearchService:
 
 @pytest.fixture()
 def client():
-    """TestClient with a fake SearchService injected into app.state."""
+    """
+    - TestClient avec un faux SearchService injecté dans app.state
+    """
     app.state.search_service = _make_fake_service()
     return TestClient(app, raise_server_exceptions=False)
 
 
 def make_png_bytes() -> bytes:
+    """
+    - Génère un petit fichier PNG en mémoire pour les tests de téléchargement d'images.
+    """
     buffer = BytesIO()
     Image.new("RGB", (8, 8), color=(255, 0, 0)).save(buffer, format="PNG")
     return buffer.getvalue()
 
 
 def make_jpeg_bytes() -> bytes:
+    """
+    - Génère un petit fichier JPEG en mémoire pour les tests de téléchargement d'images.
+    """
     buffer = BytesIO()
     Image.new("RGB", (8, 8), color=(0, 255, 0)).save(buffer, format="JPEG")
     return buffer.getvalue()
@@ -51,6 +71,9 @@ def make_jpeg_bytes() -> bytes:
 # ---------------------------------------------------------------------------
 
 def test_health_endpoint(client):
+    """ 
+    - Vérifie que l'API répond 'ok' sur la route de santé. 
+    """
     response = client.get("/api/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
@@ -62,6 +85,10 @@ def test_health_endpoint(client):
 
 @patch("backend.app.services.search_service.query")
 def test_search_returns_results_visual(mock_query, client):
+    """ 
+    - Teste une recherche visuelle réussie.
+    - On simule (mock) la réponse du moteur de recherche Faiss.
+    """
     mock_query.return_value = [
         {"rank": 1, "image_id": "img1", "score": 0.9, "path": "p.png", "caption": "c", "cui": "[]"},
     ]
@@ -80,6 +107,10 @@ def test_search_returns_results_visual(mock_query, client):
 
 @patch("backend.app.services.search_service.query")
 def test_search_returns_results_semantic(mock_query, client):
+    """
+    - Teste une recherche sémantique réussie.
+    - On simule (mock) la réponse du moteur de recherche Faiss.
+    """
     mock_query.return_value = [
         {"rank": 1, "image_id": "img2", "score": 0.85, "path": "p.png", "caption": "c", "cui": "[]"},
     ]
@@ -94,6 +125,9 @@ def test_search_returns_results_semantic(mock_query, client):
 
 @patch("backend.app.services.search_service.query")
 def test_search_default_mode_and_k(mock_query, client):
+    """
+    - Teste les valeurs par défaut pour le mode et k.
+    """
     mock_query.return_value = []
     response = client.post(
         "/api/search",
@@ -108,6 +142,9 @@ def test_search_default_mode_and_k(mock_query, client):
 # ---------------------------------------------------------------------------
 
 def test_search_rejects_invalid_mode(client):
+    """ 
+    - Vérifie que l'API refuse un mode de recherche inconnu (Erreur 400). 
+    """
     response = client.post(
         "/api/search",
         files={"image": ("q.png", make_png_bytes(), "image/png")},
@@ -118,6 +155,9 @@ def test_search_rejects_invalid_mode(client):
 
 
 def test_search_rejects_k_zero(client):
+    """ 
+    - Vérifie que l'API détecte et refuse un fichier qui n'est pas une vraie image. 
+    """
     response = client.post(
         "/api/search",
         files={"image": ("q.png", make_png_bytes(), "image/png")},
@@ -128,6 +168,9 @@ def test_search_rejects_k_zero(client):
 
 
 def test_search_rejects_k_too_large(client):
+    """ 
+    - Vérifie que l'API refuse une valeur de k trop grande (Erreur 400). 
+    """
     response = client.post(
         "/api/search",
         files={"image": ("q.png", make_png_bytes(), "image/png")},
@@ -138,6 +181,9 @@ def test_search_rejects_k_too_large(client):
 
 
 def test_search_rejects_invalid_content_type(client):
+    """
+    - Vérifie que l'API refuse un fichier avec un type de contenu non supporté (Erreur 400). 
+    """
     response = client.post(
         "/api/search",
         files={"image": ("q.txt", b"not-an-image", "text/plain")},
@@ -148,6 +194,9 @@ def test_search_rejects_invalid_content_type(client):
 
 
 def test_search_rejects_empty_image(client):
+    """
+    - Vérifie que l'API détecte et refuse un fichier image vide. 
+    """
     response = client.post(
         "/api/search",
         files={"image": ("q.png", b"", "image/png")},
@@ -158,6 +207,9 @@ def test_search_rejects_empty_image(client):
 
 
 def test_search_rejects_corrupted_image(client):
+    """
+    - Vérifie que l'API détecte et refuse un fichier qui n'est pas une vraie image. 
+    """
     response = client.post(
         "/api/search",
         files={"image": ("q.png", b"not-a-real-png", "image/png")},
@@ -168,6 +220,9 @@ def test_search_rejects_corrupted_image(client):
 
 
 def test_search_returns_503_when_mode_resources_are_missing():
+    """
+    - Simule une situation où les ressources nécessaires pour un mode de recherche ne sont pas chargées.
+    """
     fake_resources = MagicMock(spec=SearchResources)
     fake_resources.embedder = FakeEmbedder()
     app.state.search_service = SearchService(resources={"visual": fake_resources})
@@ -188,6 +243,9 @@ def test_search_returns_503_when_mode_resources_are_missing():
 # ---------------------------------------------------------------------------
 
 def test_get_image_returns_file(client, tmp_path):
+    """
+    - Vérifie que l'API retourne une image existante avec le bon type de contenu.
+    """
     image_path = tmp_path / "test_img.png"
     Image.new("RGB", (8, 8)).save(image_path)
 
@@ -198,18 +256,29 @@ def test_get_image_returns_file(client, tmp_path):
 
 
 def test_get_image_returns_404_for_missing(client):
+    """
+    - Vérifie que l'API retourne une erreur 404 pour une image non existante.
+    """
     with patch("backend.app.api.routes.IMAGES_DIR", Path("/nonexistent")):
         response = client.get("/api/images/does_not_exist")
     assert response.status_code == 404
 
 
 def test_get_image_rejects_dots_in_id(client):
+    """ 
+    - Test de sécurité : vérifie que l'on ne peut pas injecter de caractères 
+      spéciaux dans l'ID pour tenter d'accéder à des fichiers système.
+    """
     response = client.get("/api/images/..passwd")
     assert response.status_code == 400
     assert "Invalid image ID" in response.json()["detail"]
 
 
 def test_get_image_rejects_special_characters(client):
+    """ 
+    - Test de sécurité : vérifie que l'on ne peut pas injecter de caractères 
+      spéciaux dans l'ID pour tenter d'accéder à des fichiers système.
+    """
     response = client.get("/api/images/img@evil")
     assert response.status_code == 400
     assert "Invalid image ID" in response.json()["detail"]

@@ -1,10 +1,10 @@
 """
-DINOv2 base embedder implementation (CPU-only).
+Implémentation de l'encodeur d'images DINOv2 base (version CPU uniquement).
 
-This embedder uses the public `facebook/dinov2-base` vision transformer as a
-strong image-only feature extractor. It is a good fit for the visual branch:
-the model is optimized for general-purpose image representations rather than
-image-text alignment.
+Cet encodeur utilise le modèle public 'facebook/dinov2-base' (Vision Transformer) 
+comme extracteur de caractéristiques visuelles performant. Il est idéal pour la 
+branche visuelle : le modèle est optimisé pour des représentations d'images 
+généralistes plutôt que pour l'alignement image-texte.
 """
 
 from __future__ import annotations
@@ -18,7 +18,9 @@ from .utils import configure_torch_cpu_threads, normalize_embedding
 
 
 class DINOv2BaseEmbedder(Embedder):
-    """DINOv2 base image embedder for the visual branch."""
+    """
+    - Encodeur d'images DINOv2 base pour la branche visuelle.
+    """
 
     name = "dinov2_base"
     dim = 768
@@ -38,6 +40,19 @@ class DINOv2BaseEmbedder(Embedder):
             self.dim = int(hidden_size)
 
     def encode_pil(self, image: PILImage.Image) -> np.ndarray:
+        """
+        Encode une image PIL en un vecteur d'embedding.
+
+        Paramètres
+        ----------
+        image : PIL.Image.Image
+            L'image d'entrée à traiter.
+
+        Retours
+        -------
+        np.ndarray
+            Vecteur d'embedding 1D normalisé L2 de forme (768,).
+        """
         if not isinstance(image, PILImage.Image):
             raise TypeError("encode_pil expects a PIL.Image.Image instance")
 

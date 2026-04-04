@@ -1,3 +1,10 @@
+"""
+Endpoints de l'API de recherche Mediscan.
+
+Ce module définit les routes FastAPI pour la recherche d'images médicales 
+par téléchargement, par texte, ou par IDs.
+"""
+
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
@@ -12,12 +19,24 @@ router = APIRouter()
 
 
 def _get_service(request: Request):
-    """Retrieve the SearchService loaded at startup."""
+    """ 
+    - Récupère l'instance globale de SearchService.
+    - Le service est stocké dans l'état de l'application (app.state) lors du démarrage.
+    """
     return request.app.state.search_service
 
 
 def _sanitize_image_id(image_id: str) -> str:
-    """Allow only the stable dataset ID characters used by the project."""
+    """
+    Args:
+        image_id: L'ID brut à vérifier.
+    
+    Returns:
+        L'ID nettoyé s'il est valide.
+        
+    Raises:
+        HTTPException: Si l'ID contient des caractères non autorisés.
+    """
     safe_id = "".join(c for c in image_id if c.isalnum() or c in ("_", "-"))
     if safe_id != image_id:
         raise HTTPException(status_code=400, detail="Invalid image ID")
@@ -25,10 +44,12 @@ def _sanitize_image_id(image_id: str) -> str:
 
 
 def _hf_image_url(image_id: str) -> str:
-    """Build the HuggingFace dataset URL for a given image ID.
+    """
+    Génère l'URL HuggingFace correspondant à un identifiant d'image. 
 
-    Image IDs follow the pattern ROCOv2_2023_train_XXXXXX.
-    Images are split into folders of 1000: images_01, images_02, ...
+    - Détermine dynamiquement le dossier (images_01, images_02, etc.) en fonction
+    du numéro de séquence présent dans l'ID ROCOv2.
+    - Les identifiants d'images suivent le format ROCOv2_2023_train_XXXXXX.
     """
     num_str = image_id.split("_")[-1]
     folder_idx = (int(num_str) - 1) // 1000 + 1
@@ -38,16 +59,19 @@ def _hf_image_url(image_id: str) -> str:
 
 @router.get("/health")
 def health() -> dict[str, str]:
+    """Vérifie si l'API est opérationnelle."""
     return {"status": "ok"}
 
 
 @router.post("/search", response_model=SearchResponse)
-async def search_image(
-    request: Request,
-    image: UploadFile = File(...),
-    mode: str = Form("visual"),
-    k: int = Form(5),
-) -> SearchResponse:
+async def search_image(request: Request, image: UploadFile = File(...), mode: str = Form("visual"), k: int = Form(5),) -> SearchResponse:
+    """
+    Recherche par similarité à partir d'un fichier image.
+    
+    - Le fichier image autorisé (PNG, JPG).
+    - Le mode 'visual' ou 'semantic'.
+    - Le nombre k de résultats voulus.
+    """
     service = _get_service(request)
     try:
         image_bytes = await image.read()
@@ -80,7 +104,11 @@ class TextSearchRequest(BaseModel):
 
 @router.post("/search-text", response_model=TextSearchResponse)
 async def search_text(body: TextSearchRequest, request: Request) -> TextSearchResponse:
-    """Text-to-image search using BioMedCLIP semantic index."""
+    """
+    - Recherche 'Text-to-Image' via l'index sémantique.
+    - Permet de trouver des images médicales à partir d'une description textuelle
+      en utilisant les capacités multimodales de BioMedCLIP.
+    """
     service = _get_service(request)
     try:
         payload = service.search_text(text=body.text, k=body.k)
@@ -99,7 +127,9 @@ async def search_text(body: TextSearchRequest, request: Request) -> TextSearchRe
 
 @router.get("/images/{image_id}")
 async def get_image(image_id: str) -> RedirectResponse:
-    """Redirect to the HuggingFace dataset image."""
+    """ 
+    - Redirige directement vers l'image hébergée sur HuggingFace. 
+    """
     safe_id = _sanitize_image_id(image_id)
     return RedirectResponse(url=_hf_image_url(safe_id))
 
@@ -112,7 +142,9 @@ class IdSearchRequest(BaseModel):
 
 @router.post("/search-by-id", response_model=IdSearchResponse)
 async def search_by_id(body: IdSearchRequest, request: Request) -> IdSearchResponse:
-    """Relance une recherche depuis un image_id existant."""
+    """
+    - Lance une recherche de similarité à partir d'une seule image existante (via ID).
+    """
     service = _get_service(request)
     try:
         safe_id = _sanitize_image_id(body.image_id)
@@ -144,7 +176,10 @@ class IdsSearchRequest(BaseModel):
 
 @router.post("/search-by-ids", response_model=IdsSearchResponse)
 async def search_by_ids(body: IdsSearchRequest, request: Request) -> IdsSearchResponse:
-    """Recherche par centroide depuis plusieurs image_ids selectionnes."""
+    """
+    - Recherche par centroïde à partir d'une sélection de plusieurs images sélectionnées.
+    - Combine les vecteurs des images sélectionnées en utilisant le max des embeddings.
+    """
     service = _get_service(request)
     try:
         safe_ids = [_sanitize_image_id(iid) for iid in body.image_ids]

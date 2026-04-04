@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Build a FAISS index from one metadata CSV and one embedder."""
+"""
+Permet de construire un index FAISS à partir d'un fichier CSV de métadonnées et d'un outil d'intégration.
+"""
 
 from __future__ import annotations
 
@@ -20,6 +22,9 @@ configure_cpu_environment()
 
 
 def parse_args() -> argparse.Namespace:
+    """
+    - Gestion des arguments en ligne de commande pour la construction de l'index.
+    """
     parser = argparse.ArgumentParser(description="Build a FAISS index from metadata.csv")
     parser.add_argument("--embedder", default="dinov2_base")
     parser.add_argument("--model-name", default=None)
@@ -32,6 +37,9 @@ def parse_args() -> argparse.Namespace:
 
 
 def _checkpoint_paths(prefix: str | Path | None) -> dict[str, Path] | None:
+    """
+    - Génère les chemins de fichiers pour les checkpoints (métadonnées, vecteurs, ids) à partir d'un préfixe.
+    """
     if prefix is None:
         return None
 
@@ -45,12 +53,18 @@ def _checkpoint_paths(prefix: str | Path | None) -> dict[str, Path] | None:
 
 
 def _atomic_write_text(path: Path, content: str) -> None:
+    """
+    - Écrit du texte dans un fichier de manière atomique pour éviter les corruptions.
+    """
     tmp_path = path.with_name(f"{path.name}.tmp")
     tmp_path.write_text(content, encoding="utf-8")
     tmp_path.replace(path)
 
 
 def _atomic_save_npy(path: Path, matrix: np.ndarray) -> None:
+    """
+    - Sauvegarde une matrice NumPy dans un fichier de manière atomique.
+    """ 
     tmp_path = path.with_name(f"{path.name}.tmp")
     with tmp_path.open("wb") as handle:
         np.save(handle, matrix)
@@ -64,6 +78,10 @@ def _load_checkpoint(
     embedder_dim: int,
     metadata_path: Path,
 ) -> tuple[list[np.ndarray], list[dict[str, Any]], int, int]:
+    """
+    - Tente de charger un checkpoint existant et valide pour reprendre l'indexation.
+    - Vérifie la cohérence du checkpoint avec les paramètres actuels.
+    """
     checkpoint_paths = _checkpoint_paths(checkpoint_prefix)
     if checkpoint_paths is None:
         return [], [], 0, 0
@@ -122,6 +140,10 @@ def _save_checkpoint(
     processed_records: int,
     skipped: int,
 ) -> None:
+    """
+    - Sauvegarde un checkpoint avec les vecteurs, les métadonnées et les stats d'indexation.
+    - Utilise des écritures atomiques pour garantir l'intégrité du checkpoint.
+    """
     checkpoint_paths = _checkpoint_paths(checkpoint_prefix)
     if checkpoint_paths is None:
         return
@@ -167,6 +189,10 @@ def _maybe_save_checkpoint(
     indexed_rows: list[dict[str, Any]],
     skipped: int,
 ) -> None:
+    """
+    - Vérifie si un checkpoint doit être sauvegardé à ce stade de 
+      l'indexation en fonction du paramètre checkpoint_every.
+    """
     if checkpoint_every <= 0 or current_record % checkpoint_every != 0:
         return
 
@@ -183,6 +209,10 @@ def _maybe_save_checkpoint(
 
 
 def main() -> None:
+    """
+    - Point d'entrée principal : initialise l'embedder, gère la reprise par checkpoint,
+      encode les images du dataset et sauvegarde l'index FAISS et les identifiants.
+    """
     args = parse_args()
     set_faiss_threads(faiss)
 

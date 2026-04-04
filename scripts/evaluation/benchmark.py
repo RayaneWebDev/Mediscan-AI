@@ -1,4 +1,9 @@
-"""Measure retrieval performance metrics for MEDISCAN."""
+"""
+Outil de mesure des performances (Benchmark) pour MEDISCAN.
+
+Ce script calcule le temps d'encodage et de recherche sur un échantillon 
+d'images pour vérifier que le système respecte les seuils selon le cahier des recettes.
+"""
 
 from __future__ import annotations
 
@@ -18,11 +23,15 @@ from mediscan.runtime import build_embedder, default_config_for_mode, resolve_pa
 
 configure_cpu_environment()
 
-SEUIL_TE2E_30K = 5.0
-SEUIL_STABILITE = 0.20
+# Seuils de performance à respecter
+SEUIL_TE2E_30K = 5.0 # Temps maximum pour une recherche avec 30k images dans l'index
+SEUIL_STABILITE = 0.20 # Variation maximum acceptée entre les requêtes (20%)
 
 
 def parse_args() -> argparse.Namespace:
+    """ 
+    - Gestion des arguments en ligne de commande (mode, k, nombre de requêtes). 
+    """
     parser = argparse.ArgumentParser(description="Benchmark MEDISCAN retrieval")
     parser.add_argument("--mode", default="visual", choices=("visual", "semantic"))
     parser.add_argument("--k", type=int, default=10)
@@ -38,6 +47,9 @@ def parse_args() -> argparse.Namespace:
 
 
 def load_index(index_path: Path) -> faiss.Index:
+    """ 
+    - Charge l'index vectoriel Faiss depuis le disque. 
+    """
     if not index_path.exists():
         raise FileNotFoundError(f"Index FAISS introuvable : {index_path}")
     index = faiss.read_index(str(index_path))
@@ -46,6 +58,9 @@ def load_index(index_path: Path) -> faiss.Index:
 
 
 def pick_query_images(images_dir: Path, n: int, seed: int) -> list[Path]:
+    """ 
+    - Sélectionne aléatoirement un lot d'images pour servir de requêtes de test. 
+    """
     all_images = sorted(images_dir.glob("*.png")) + sorted(images_dir.glob("*.jpg"))
     if not all_images:
         raise FileNotFoundError(f"Aucune image trouvée dans {images_dir}")
@@ -55,6 +70,10 @@ def pick_query_images(images_dir: Path, n: int, seed: int) -> list[Path]:
 
 
 def measure_one_query(image_path: Path, embedder, index: faiss.Index, k: int) -> dict[str, float]:
+    """
+    - Mesure le temps d'encodage et de recherche pour une image donnée.
+    - Retourne un dictionnaire avec les temps mesurés : tembed, tsearch, tserver, te2e.
+    """
     te2e_start = time.perf_counter()
 
     with Image.open(image_path) as image:
@@ -82,6 +101,10 @@ def measure_one_query(image_path: Path, embedder, index: faiss.Index, k: int) ->
 
 
 def compute_stats(values: list[float]) -> dict[str, float]:
+    """
+    - Calcule les statistiques de base (min, max, moyenne, dispersion) pour une liste de valeurs.
+    - Calcule également un ratio de stabilité (dispersion/moyenne) pour évaluer la variabilité des temps.
+    """
     minimum = min(values)
     maximum = max(values)
     average = sum(values) / len(values)
@@ -97,6 +120,9 @@ def compute_stats(values: list[float]) -> dict[str, float]:
 
 
 def check_seuils(stats_te2e: dict[str, float]) -> None:
+    """ 
+    Vérifie si les résultats moyens dépassent les limites fixées. 
+    """
     average = stats_te2e["moyenne"]
     stability = stats_te2e["stabilite_ratio"]
     print(f"te2e moyen: {average:.3f}s (seuil <= {SEUIL_TE2E_30K}s)")
@@ -111,6 +137,10 @@ def save_csv(
     k: int,
     n_images: int,
 ) -> Path:
+""" 
+- Sauvegarde les mesures détaillées et les stats dans un fichier CSV. 
+- Le CSV contient à la fois les temps individuels pour chaque requête et les statistiques globales.
+"""
     output_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     csv_path = output_dir / f"perf_measures_{timestamp}.csv"
@@ -148,6 +178,10 @@ def save_csv(
 
 
 def main() -> None:
+    """ 
+    - Orchestre le benchmark : warmup, mesures réelles et export. 
+    - Vérifie les seuils de performance et sauvegarde les résultats dans un CSV.
+    """
     args = parse_args()
     if args.k <= 0:
         raise ValueError("--k doit être strictement positif")

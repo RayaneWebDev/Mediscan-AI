@@ -1,3 +1,7 @@
+"""
+Gère le chargement des modèles, la recherche Faiss et MongoDB.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -14,13 +18,20 @@ from mediscan.search import SearchResources, load_resources, query, query_text
 
 
 class SearchUnavailableError(RuntimeError):
-    """Raised when a requested retrieval mode is not available at runtime."""
+    """
+    Lancé lorsqu'un mode de récupération demandé n'est pas disponible lors de l'exécution.
+    """
 
 
 class SearchService:
-    """Validates user input and delegates to the mediscan search pipeline."""
+    """
+    - Valide les données saisies par l'utilisateur et les délègue au pipeline de recherche Mediscan.
+    """
 
     def __init__(self, resources: dict[str, SearchResources]) -> None:
+        """
+        - Initialise le service avec les index Faiss et la connexion MongoDB.
+        """
         self._resources = resources
         self._resources_lock = Lock()
 
@@ -31,10 +42,15 @@ class SearchService:
                 from pymongo import MongoClient
                 self._mongo_collection = MongoClient(MONGO_URI)[DB_NAME][COLLECTION_NAME]
             except Exception:
-                pass  # MongoDB unavailable, fall back to raw results
+                pass  
+
+    # --- Méthodes de validation ---
 
     @staticmethod
     def _normalize_mode(mode: str) -> str:
+        """ 
+        - Vérifie que le mode choisi (visual/semantic) est supporté.     
+        """
         normalized_mode = mode.strip().lower()
         if normalized_mode not in ALLOWED_MODES:
             raise ValueError(f"Unsupported mode: {mode}")
@@ -42,26 +58,41 @@ class SearchService:
 
     @staticmethod
     def _validate_k(k: int) -> None:
+        """ 
+        - Vérifie que le nombre de résultats demandés (k) est dans les limites autorisées.
+        """
         if not 0 < k <= MAX_K:
             raise ValueError(f"k must be between 1 and {MAX_K}")
 
     @staticmethod
     def _validate_content_type(content_type: str | None) -> None:
+        """
+        - Vérifie que le type de contenu du fichier image est autorisé (JPEG/PNG).
+        """
         if content_type and content_type not in ALLOWED_CONTENT_TYPES:
             raise ValueError("Only JPEG and PNG images are accepted")
 
     @staticmethod
     def _validate_image_bytes(image_bytes: bytes) -> None:
+        """
+        - Vérifie que les données de l'image ne sont pas vides.
+        """
         if not image_bytes:
             raise ValueError("Uploaded image is empty")
 
     @staticmethod
     def _pick_suffix(filename: str) -> str:
+        """
+        - Choisit l'extension de fichier appropriée pour le fichier temporaire.
+        """
         suffix = Path(filename or "query.png").suffix.lower()
         return suffix if suffix in {".jpg", ".jpeg", ".png"} else ".png"
 
     @staticmethod
     def _verify_image(temp_path: Path) -> None:
+        """ 
+        - Vérifie que le fichier envoyé est bien une image valide. 
+        """
         try:
             with Image.open(temp_path) as image:
                 image.verify()
@@ -69,6 +100,9 @@ class SearchService:
             raise ValueError("Invalid image file") from exc
 
     def _get_resources(self, mode: str) -> SearchResources:
+        """
+        - Récupère l'index et le modèle en mémoire. 
+        """
         resources = self._resources.get(mode)
         if resources is not None:
             return resources
@@ -81,16 +115,18 @@ class SearchService:
             try:
                 resources = load_resources(mode=mode)
             except Exception as exc:
-                raise SearchUnavailableError(
-                    f"Search mode '{mode}' is unavailable on this instance. "
-                    "Install the required data/artifacts or rebuild the stable indexes."
-                ) from exc
+                raise SearchUnavailableError(f"Search mode '{mode}' is unavailable on this instance. 
+                ""Install the required data/artifacts or rebuild the stable indexes.") 
+                from exc
 
             self._resources[mode] = resources
             return resources
 
     def _enrich_with_mongo(self, results: list[dict]) -> list[dict]:
-        """Optionally enrich results with MongoDB metadata. Falls back to raw results."""
+        """
+        - Pour chaque résultat de Faiss, on va chercher les détails médicaux 
+            dans MongoDB (organe, modalité, etc.).
+        """
         if self._mongo_collection is None:
             return results
 
@@ -99,8 +135,8 @@ class SearchService:
             try:
                 db_info = self._mongo_collection.find_one({"image_id": res["image_id"]})
             except Exception:
-                # MongoDB unreachable (timeout, network, auth) — skip enrichment
                 return results
+            
             if db_info:
                 enriched.append({
                     "rank":     res.get("rank", 0),
@@ -108,7 +144,10 @@ class SearchService:
                     "score":    float(res.get("score", 0)),
                     "caption":  db_info.get("caption", res.get("caption", "")),
                     "cui":      db_info.get("cui", res.get("cui", "")),
-                    "path":     res.get("path", ""),
+                    "path":     db_info.get("file_name", res.get("path", "")),
+                    "modalite": db_info.get("modalite"),
+                    "organe":   db_info.get("organe"),
+                    "mo":       db_info.get("mo"),
                 })
             else:
                 enriched.append(res)
@@ -123,6 +162,9 @@ class SearchService:
         mode: str = "visual",
         k: int = 5,
     ) -> dict:
+        """
+        - Recherche classique à partir d'une image téléchargée.
+        """
         normalized_mode = self._normalize_mode(mode)
         self._validate_k(k)
         self._validate_content_type(content_type)
@@ -148,7 +190,9 @@ class SearchService:
                 temp_path.unlink(missing_ok=True)
 
     def search_text(self, *, text: str, k: int) -> dict:
-        """Text-to-image search using BioMedCLIP semantic index."""
+        """
+        - Recherche texte-image utilisant l'index sémantique BioMedCLIP.
+        """
         text = text.strip()
         if not text:
             raise ValueError("Query text is empty")
@@ -172,7 +216,9 @@ class SearchService:
         mode: str = "visual",
         k: int = 5,
     ) -> dict:
-        """Relance une recherche depuis un image_id existant."""
+        """
+        Relance une recherche depuis un image_id existant.
+        """
         normalized_mode = self._normalize_mode(mode)
         self._validate_k(k)
 
@@ -208,8 +254,9 @@ class SearchService:
         mode: str = "visual",
         k: int = 5,
     ) -> dict:
-        """Recherche par centroide — moyenne des embeddings de plusieurs images.
-        Les images sont telechargees et encodees en parallele pour de meilleures performances.
+        """
+        - Recherche par centroide — moyenne des embeddings de plusieurs images.
+        - Les images sont telechargees et encodees en parallele pour de meilleures performances.
         """
         if not image_ids:
             raise ValueError("La liste d'image_ids est vide")
@@ -227,7 +274,9 @@ class SearchService:
         import faiss as faiss_lib
 
         def download_and_encode(image_id: str):
-            """Telecharge et encode une image — execute en parallele."""
+            """
+            - Telecharge et encode une image — execute en parallele.
+            """
             num_str = image_id.split("_")[-1]
             folder_idx = (int(num_str) - 1) // 1000 + 1
             folder_name = f"images_{folder_idx:02d}"
@@ -272,6 +321,9 @@ class SearchService:
                 "path": str(row.get("path", "")),
                 "caption": str(row.get("caption", "")),
                 "cui": str(row.get("cui", "")),
+                "modalite": None,
+                "organe":   None,
+                "mo":       None,
             })
             if len(results) >= k:
                 break

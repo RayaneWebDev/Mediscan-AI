@@ -1,3 +1,11 @@
+"""
+Tests d'intégration pour le moteur de recherche MEDISCAN.
+
+Vérifie que la chaîne de traitement (Image -> Vecteur -> Faiss -> Métadonnées)
+fonctionne correctement pour les modes visuel et sémantique, et que l'exclusion
+de l'image de requête (auto-recherche) est bien gérée.
+"""
+
 import json
 from pathlib import Path
 from unittest.mock import patch
@@ -10,15 +18,22 @@ from mediscan.search import SearchResources
 
 
 class FakeVisualIndex:
+    """ 
+    - Simule un index Faiss pour DINOv2 (768 dimensions). 
+    """
     ntotal = 2
     d = 768
 
     def search(self, query_vector, search_k):
         assert search_k == 2
+        # Renvoie des scores de similarité et des indices factices
         return np.array([[0.99, 0.88]], dtype=np.float32), np.array([[0, 1]], dtype=np.int64)
 
 
 class FakeSemanticIndex:
+    """ 
+    - Simule un index Faiss pour BioMedCLIP (512 dimensions). 
+    """
     ntotal = 2
     d = 512
 
@@ -44,6 +59,10 @@ class FakeSemanticEmbedder:
 
 
 def make_paths(tmp_path: Path, mode: str) -> tuple[Path, Path, Path]:
+    """
+    - Crée des fichiers temporaires pour la requête, l'index et les IDs,
+        adaptés au mode de recherche (visuel ou sémantique).
+    """
     query_path = tmp_path / "query.png"
     result_path = tmp_path / "result.png"
     Image.new("RGB", (8, 8)).save(query_path)
@@ -67,6 +86,10 @@ def make_paths(tmp_path: Path, mode: str) -> tuple[Path, Path, Path]:
 
 
 def test_search_image_visual_returns_faiss_order(tmp_path):
+    """
+    - Vérifie que la recherche d'image en mode visuel 
+      retourne les résultats dans l'ordre défini par l'index Faiss simulé.
+    """
     query_path, index_path, ids_path = make_paths(tmp_path, "visual")
 
     with patch("mediscan.search.default_config_for_mode", return_value=("dinov2_base", index_path, ids_path)), \
@@ -85,6 +108,10 @@ def test_search_image_visual_returns_faiss_order(tmp_path):
 
 
 def test_search_image_semantic_returns_faiss_order(tmp_path):
+    """
+    - Vérifie que la recherche d'image en mode sémantique
+      retourne les résultats dans l'ordre défini par l'index Faiss simulé.
+    """
     query_path, index_path, ids_path = make_paths(tmp_path, "semantic")
 
     with patch("mediscan.search.default_config_for_mode", return_value=("biomedclip", index_path, ids_path)), \
@@ -104,6 +131,9 @@ def test_search_image_semantic_returns_faiss_order(tmp_path):
 
 
 class FakeSemanticIndexSingle:
+    """
+    - Simule un index Faiss pour BioMedCLIP avec un seul résultat (512 dimensions).
+    """
     ntotal = 1
     d = 512
 
@@ -112,7 +142,9 @@ class FakeSemanticIndexSingle:
 
 
 def test_query_with_preloaded_resources(tmp_path):
-    """Test that query() works with pre-loaded SearchResources."""
+    """
+    - Vérifiez que la fonction query() fonctionne avec des ressources de recherche préchargées.
+    """
     query_path = tmp_path / "query.png"
     result_path = tmp_path / "result.png"
     Image.new("RGB", (8, 8)).save(query_path)

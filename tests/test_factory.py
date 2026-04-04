@@ -1,20 +1,37 @@
+"""
+Tests unitaires pour la Factory des Embedders de MEDISCAN.
+
+Vérifie que le système de sélection de modèles (Factory Design Pattern)
+instancie les bonnes classes, gère la casse (majuscules/minuscules) et 
+lève les exceptions appropriées en cas de modèle inconnu.
+"""
+
 import pytest
 
 from mediscan.embedders.factory import get_embedder
 
 
 class FakeDino:
+    """ 
+    - Simule la classe DINOv2 pour tester l'instanciation. 
+    """
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
 
 class FakeBioMed:
+    """ 
+    - Simule la classe BioMedCLIP pour tester l'instanciation. 
+    """
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
 
 @pytest.fixture(autouse=True)
 def registry_patch(monkeypatch):
+    """
+    - Remplace temporairement le registre réel par nos classes factices.
+    """
     monkeypatch.setattr(
         "mediscan.embedders.factory.EMBEDDER_REGISTRY",
         {
@@ -25,16 +42,28 @@ def registry_patch(monkeypatch):
 
 
 def test_get_embedder_returns_registered_class():
+    """
+    - Vérifie que get_embedder() retourne une instance de la classe correcte 
+      pour un nom d'embedder valide.
+    """
     embedder = get_embedder("dinov2_base", model_name="facebook/dinov2-base")
     assert isinstance(embedder, FakeDino)
     assert embedder.kwargs["model_name"] == "facebook/dinov2-base"
 
 
 def test_get_embedder_is_case_insensitive():
+    """
+    - Vérifie que get_embedder() gère correctement les noms d'embedders 
+      avec des majuscules/minuscules.
+    """
     embedder = get_embedder("  BIOMEDCLIP  ")
     assert isinstance(embedder, FakeBioMed)
 
 
 def test_get_embedder_unknown_raises():
+    """
+    - Vérifie que get_embedder() lève une ValueError avec un message approprié 
+      lorsqu'un nom d'embedder inconnu est demandé.
+    """
     with pytest.raises(ValueError, match="Supported embedders"):
         get_embedder("unknown")

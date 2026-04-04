@@ -1,16 +1,17 @@
-"""Evaluation complete MediScan AI — mode visual et semantic.
+"""
+Évaluation complète MediScan AI — modes visual et semantic.
 
 Mode visual (DINOv2) :
-    - TM  : Taux Modalite      (via CUI)
-    - TA  : Taux Anatomie      (via CUI, X-rays uniquement)
-    - SSIM: Similarite structurelle pixel a pixel
-    - HIST: Similarite histogramme niveaux de gris
+    - TM   : Taux Modalité       (via CUI)
+    - TA   : Taux Anatomie       (via CUI, X-rays uniquement)
+    - SSIM : Similarité structurelle pixel à pixel
+    - HIST : Similarité histogramme niveaux de gris
 
 Mode semantic (BioMedCLIP) :
-    - TM         : Taux Modalite   (via CUI)
-    - TA         : Taux Anatomie   (via CUI, X-rays uniquement)
-    - TP         : Taux Pathologie (via CUI)
-    - Precision@k: Proportion de resultats partageant au moins 1 CUI avec la requete
+    - TM          : Taux Modalité   (via CUI)
+    - TA          : Taux Anatomie   (via CUI, X-rays uniquement)
+    - TP          : Taux Pathologie (via CUI)
+    - Precision@k : Proportion de résultats partageant au moins 1 CUI avec la requête
 
 Usage :
     python scripts/evaluation/evaluate_full.py --mode visual   --k 10 --n-queries 200 --seed 42
@@ -71,12 +72,18 @@ CATEGORIES_PATH = Path("artifacts/cui_categories.json")
 # ---------------------------------------------------------------------------
 
 def load_categories(path: Path = CATEGORIES_PATH) -> dict[str, dict]:
+    """
+    - Charge les catégories CUI depuis un fichier JSON.
+    """
     with path.open(encoding="utf-8") as f:
         raw = json.load(f)
     return {k: v for k, v in raw.items() if not k.startswith("_")}
 
 
 def parse_cui(cui_raw: str) -> set[str]:
+    """
+    - Vérifie que les chaînes CUI (souvent stockées en JSON dans la DB).
+    """
     if not cui_raw or not cui_raw.strip():
         return set()
     try:
@@ -92,6 +99,9 @@ def split_cui_by_type(
     cuis: set[str],
     categories: dict[str, dict],
 ) -> dict[str, set[str]]:
+    """
+    - Sépare les CUI d'une requête ou d'un résultat en catégories.
+    """
     result: dict[str, set[str]] = {
         "modalite": set(),
         "anatomie": set(),
@@ -110,7 +120,9 @@ def split_cui_by_type(
 # ---------------------------------------------------------------------------
 
 def load_image_gray(path: Path) -> np.ndarray | None:
-    """Charge une image en niveaux de gris normalises [0,1]."""
+    """
+    - Charge une image en niveaux de gris normalises [0,1].
+    """
     try:
         with Image.open(path) as img:
             gray = img.convert("L").resize((128, 128))
@@ -120,10 +132,10 @@ def load_image_gray(path: Path) -> np.ndarray | None:
 
 
 def compute_ssim(img1: np.ndarray, img2: np.ndarray) -> float:
-    """SSIM simplifie entre deux images en niveaux de gris [0,1].
-
-    Formule standard (Wang et al. 2004) avec constantes C1, C2.
-    Pas de dependance scikit-image — calcul direct avec numpy.
+    """
+    - SSIM simplifie entre deux images en niveaux de gris [0,1].
+    - Formule standard (Wang et al. 2004) avec constantes C1, C2.
+    - Pas de dependance scikit-image — calcul direct avec numpy.
     """
     C1 = (0.01) ** 2
     C2 = (0.03) ** 2
@@ -141,10 +153,10 @@ def compute_ssim(img1: np.ndarray, img2: np.ndarray) -> float:
 
 
 def compute_hist_similarity(img1: np.ndarray, img2: np.ndarray, bins: int = 64) -> float:
-    """Similarite histogramme par intersection normalisee.
-
-    Mesure si les deux images ont une distribution de niveaux de gris similaire.
-    Valeur entre 0 (aucune similarite) et 1 (distributions identiques).
+    """
+    - Similarite histogramme par intersection normalisee.
+    - Mesure si les deux images ont une distribution de niveaux de gris similaire.
+    - Valeur entre 0 (aucune similarite) et 1 (distributions identiques).
     """
     h1, _ = np.histogram(img1.flatten(), bins=bins, range=(0.0, 1.0))
     h2, _ = np.histogram(img2.flatten(), bins=bins, range=(0.0, 1.0))
@@ -173,6 +185,9 @@ def pick_query_rows(
     n: int,
     seed: int,
 ) -> list[dict]:
+    """
+    - Filtre les entrées pour ne garder que celles avec des CUI exploitables.
+    """
     evaluable = [r for r in rows if parse_cui(r.get("cui", ""))]
     if not evaluable:
         raise ValueError("Aucune entree avec CUI trouvee dans ids.json")
@@ -193,6 +208,10 @@ def evaluate(
     categories: dict[str, dict],
     mode: str,
 ) -> tuple[list[dict], list[dict]]:
+    """
+    - Evalue les requetes en utilisant la fonction de recherche 
+      et en calculant les metriques de qualite.
+    """
     query_results: list[dict] = []
     result_details: list[dict] = []
 
@@ -305,6 +324,10 @@ def compute_metrics(
     result_details: list[dict],
     mode: str,
 ) -> dict[str, float | None]:
+    """
+    - Calcule les metriques globales (TM, TA, TP, Precision@k) a partir des resultats individuels.
+    - Gère les cas où certaines metriques ne sont pas calculables (ex: TA si pas de CUI anatomie).
+    """
     total_q = len(query_results)
     total_r = len(result_details)
 
@@ -371,6 +394,10 @@ def compute_metrics(
 # ---------------------------------------------------------------------------
 
 def print_results(metrics: dict, mode: str, k: int, seed: int) -> None:
+    """
+    - Affiche les metriques de maniere lisible dans la console.
+    - Indique les seuils de validation et si chaque metrique est PASS/FAIL.
+    """
     seuils = SEUILS[mode]
 
     print(f"\n{'='*60}")
@@ -406,6 +433,11 @@ def print_results(metrics: dict, mode: str, k: int, seed: int) -> None:
 
 
 def _print_metric(key: str, metrics: dict, seuils: dict, label: str) -> None:
+    """
+    - Affiche une metrique avec son seuil de validation et indique PASS/FAIL.
+    - Gère les cas où la metrique n'est pas calculable (ex: TA si pas de CUI anatomie).
+    - label : description textuelle de la metrique pour l'affichage.
+    """
     val = metrics.get(key)
     if val is None:
         print(f"    {key:22s}: N/A  (aucune requete eligible)")
@@ -431,6 +463,10 @@ def save_csv(
     k: int,
     seed: int,
 ) -> Path:
+    """
+    - Sauvegarde les mesures détaillées et les stats dans un fichier CSV.
+    - Inclut les metriques globales, les details par requete et par resultat.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     csv_path = output_dir / f"eval_full_{mode}_seed{seed}_{timestamp}.csv"
@@ -480,6 +516,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Evaluation complete MediScan — visual (TM+TA+SSIM+HIST) / semantic (TM+TA+TP+Precision@k)"
     )
+    """
+    - Parse les arguments de la ligne de commande pour configurer l'évaluation.
+    """
     parser.add_argument("--mode",      default="visual", choices=("visual", "semantic"))
     parser.add_argument("--k",         type=int, default=10)
     parser.add_argument("--n-queries", type=int, default=200)
@@ -490,6 +529,10 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    """
+    - Point d'entrée principal : parse les arguments, charge les ressources, sélectionne les requêtes,
+      exécute l'évaluation, calcule les métriques et affiche/sauvegarde les résultats.
+    """
     args = parse_args()
 
     categories = load_categories(Path(args.categories_path))

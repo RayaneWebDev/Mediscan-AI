@@ -1,4 +1,7 @@
-"""Shared helpers for Torch-based embedders."""
+"""
+Outils partagés pour les encodeurs basés sur Torch.
+
+"""
 
 from __future__ import annotations
 
@@ -11,7 +14,9 @@ from .base import safe_int
 
 
 def configure_torch_cpu_threads(env_var: str = "MEDISCAN_TORCH_THREADS", default: int = 1) -> None:
-    """Configure Torch thread usage for deterministic CPU-only execution."""
+    """
+    - Configurer l'utilisation des threads Torch pour une exécution déterministe sur le seul processeur.
+    """
     thread_count = safe_int(os.getenv(env_var), default=default)
     torch.set_num_threads(max(1, thread_count))
     try:
@@ -21,7 +26,9 @@ def configure_torch_cpu_threads(env_var: str = "MEDISCAN_TORCH_THREADS", default
 
 
 def normalize_embedding(vector: np.ndarray, dim: int) -> np.ndarray:
-    """Validate one embedding vector and return its L2-normalized float32 form."""
+    """
+    - Valider un vecteur d'embedding et renvoyer sa forme float32 normalisée L2.
+    """
     normalized = np.asarray(vector, dtype=np.float32).reshape(-1)
     if normalized.shape != (dim,):
         raise RuntimeError(

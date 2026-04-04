@@ -1,4 +1,5 @@
-"""Evaluate retrieval quality with typed CUI metrics (TM / TA / TP).
+"""
+Évalue la qualité de la récupération avec des métriques CUI typées (TM / TA / TP).
 
 TM — Taux Modalite   : le modele retrouve-t-il le meme type d'examen ?
 TA — Taux Anatomie   : le modele retrouve-t-il la meme region du corps ?
@@ -59,7 +60,8 @@ def split_cui_by_type(
     cuis: set[str],
     categories: dict[str, dict],
 ) -> dict[str, set[str]]:
-    """Decompose un set de CUI en sous-sets par type.
+    """
+    - Décompose un ensemble de CUI en sous-ensembles par type.
 
     Returns:
         {"modalite": {...}, "anatomie": {...}, "finding": {...}, "vue": {...}}
@@ -82,6 +84,10 @@ def split_cui_by_type(
 # ---------------------------------------------------------------------------
 
 def parse_cui(cui_raw: str) -> set[str]:
+    """
+    - Parse une chaîne brute de CUI (souvent stockée en JSON dans la DB)
+        et retourne un ensemble de CUI nettoyé.
+    """
     if not cui_raw or not cui_raw.strip():
         return set()
     try:
@@ -102,6 +108,10 @@ def pick_query_rows(
     n: int,
     seed: int,
 ) -> list[dict]:
+    """
+    - Sélectionne aléatoirement un lot d'entrées exploitables (ayant des CUI)
+      pour servir de requêtes de test.
+    """
     evaluable = [r for r in rows if parse_cui(r.get("cui", ""))]
     if not evaluable:
         raise ValueError("Aucune entree avec CUI trouvee dans ids.json")
@@ -121,11 +131,12 @@ def evaluate(
     k: int,
     categories: dict[str, dict],
 ) -> tuple[list[dict], list[dict]]:
-    """Lance la recherche et calcule les correspondances typees par requete.
+    """
+    - Lance la recherche et calcule les correspondances typees par requete.
 
     Returns:
-        query_results : une ligne par requete
-        result_details: une ligne par resultat individuel
+        - query_results : une ligne par requete
+        - result_details: une ligne par resultat individuel
     """
     query_results: list[dict] = []
     result_details: list[dict] = []
@@ -202,7 +213,9 @@ def compute_metrics(
     query_results: list[dict],
     result_details: list[dict],
 ) -> dict[str, float | None]:
-    """Calcule TM, TA, TP au niveau requete et resultats."""
+    """
+    - Calcule TM, TA, TP au niveau requete et resultats.
+    """
     total_q = len(query_results)
     total_r = len(result_details)
 
@@ -259,6 +272,10 @@ def compute_metrics(
 # ---------------------------------------------------------------------------
 
 def print_results(metrics: dict, mode: str, k: int) -> None:
+    """
+    - Affiche les résultats de manière lisible, avec indication des seuils et du statut PASS/FAIL.
+    - Affiche les métriques pertinentes selon le mode (visual vs semantic).
+    """
     seuils = SEUILS[mode]
 
     print(f"\n{'='*55}")
@@ -290,6 +307,10 @@ def _print_metric(
     seuils: dict,
     label: str,
 ) -> None:
+    """
+    - Affiche une métrique avec son seuil et statut.
+    - Gère le cas où la métrique est None (ex: TA/TP non calculable) ou où il n'y a pas de seuil défini.
+    """
     val = metrics.get(key)
     if val is None:
         print(f"    {key:20s}: N/A  (aucune requete eligible)")
@@ -314,6 +335,10 @@ def save_csv(
     mode: str,
     k: int,
 ) -> Path:
+    """
+    - Sauvegarde les mesures détaillées et les stats dans un fichier CSV.
+    - Inclut les metriques globales, les details par requete et par resultat.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     csv_path = output_dir / f"typed_quality_{mode}_{timestamp}.csv"
@@ -364,6 +389,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Evaluation typee TM/TA/TP par type de CUI"
     )
+    """
+    - Parse les arguments de la ligne de commande pour configurer l'évaluation.
+    - Permet de choisir le mode (visual vs semantic), le nombre de requêtes, 
+      la valeur de k, le seed pour la reproductibilité et le chemin de sortie.
+    """
     parser.add_argument("--mode", default="visual", choices=("visual", "semantic"))
     parser.add_argument("--k", type=int, default=10)
     parser.add_argument("--n-queries", type=int, default=100)
@@ -374,6 +404,10 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    """
+    - Point d'entrée principal : parse les arguments, charge les ressources, sélectionne les requêtes,
+      exécute l'évaluation, calcule les métriques et affiche/sauvegarde les résultats.
+    """
     args = parse_args()
 
     categories = load_categories(Path(args.categories_path))

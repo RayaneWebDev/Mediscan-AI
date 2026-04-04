@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Rebuild the stable DINOv2 and BioMedCLIP indexes in parallel."""
+"""
+Reconstruit les index stables DINOv2 et BioMedCLIP en parallèle.
+Ce script lance deux processus séparés pour optimiser l'utilisation des ressources.
+"""
 
 from __future__ import annotations
 
@@ -17,11 +20,14 @@ import faiss
 
 from mediscan.runtime import get_mode_config, stable_manifest_path_for_mode
 
+# Définition de la racine du projet
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-
 
 @dataclass(frozen=True)
 class BuildSpec:
+    """
+    Spécification de la construction d'un index stable pour un mode donné (visual ou semantic).
+    """
     mode: str
     embedder: str
     metadata: Path
@@ -31,6 +37,10 @@ class BuildSpec:
 
 
 def parse_args() -> argparse.Namespace:
+    """
+    - Gestion des arguments en ligne de commande (chemin du metadata, logs, threads).
+    - Permet de configurer le nombre de threads utilisés par chaque processus de construction.
+    """
     parser = argparse.ArgumentParser(description="Rebuild stable MEDISCAN indexes in parallel")
     parser.add_argument("--metadata", default="data/roco_train_full/metadata.csv")
     parser.add_argument("--logs-dir", default="artifacts/logs")
@@ -44,6 +54,11 @@ def parse_args() -> argparse.Namespace:
 
 
 def build_specs(metadata: Path, logs_dir: Path) -> list[BuildSpec]:
+    """
+    - Construit les spécifications de construction pour les deux modes (visual et semantic).
+    - Récupère les configurations spécifiques à chaque mode (embedder, chemins d'index et d'IDs) à partir du runtime.
+    - Prépare les chemins de log pour chaque processus.
+    """
     specs: list[BuildSpec] = []
     for mode in ("visual", "semantic"):
         config = get_mode_config(mode)
@@ -61,6 +76,10 @@ def build_specs(metadata: Path, logs_dir: Path) -> list[BuildSpec]:
 
 
 def build_command(spec: BuildSpec) -> list[str]:
+    """
+    - Construit la commande de ligne de commande pour lancer le script de construction d'index.
+    - Utilise les chemins et paramètres définis dans la BuildSpec pour chaque mode.
+    """
     return [
         sys.executable,
         "-u",
@@ -77,6 +96,9 @@ def build_command(spec: BuildSpec) -> list[str]:
 
 
 def _stream_output(mode: str, stream, log_handle) -> None:
+    """
+    - Lit la sortie d'un processus en temps réel, l'affiche dans la console avec un préfixe de mode.
+    """
     for line in stream:
         sys.stdout.write(f"[{mode}] {line}")
         sys.stdout.flush()
@@ -88,6 +110,9 @@ def launch_build(
     spec: BuildSpec,
     threads_per_process: int,
 ) -> tuple[subprocess.Popen[str], object, threading.Thread]:
+    """
+    Lance un processus de construction d'index avec un environnement isolé.
+    """
     env = os.environ.copy()
     env["OMP_NUM_THREADS"] = "1"
     env["MKL_NUM_THREADS"] = "1"
@@ -120,6 +145,9 @@ def launch_build(
 
 
 def write_manifest(spec: BuildSpec) -> Path:
+    """
+    - Génère un fichier JSON de manifeste pour confirmer la réussite et l'état de l'index.
+    """
     manifest_path = stable_manifest_path_for_mode(spec.mode)
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -146,6 +174,9 @@ def write_manifest(spec: BuildSpec) -> Path:
 
 
 def main() -> None:
+    """
+    - Point d'entrée: Coordonne le lancement et le suivi des processus de reconstruction.
+    """
     args = parse_args()
     metadata = Path(args.metadata)
     if not metadata.is_absolute():

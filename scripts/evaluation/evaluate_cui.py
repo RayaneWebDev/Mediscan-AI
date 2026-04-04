@@ -1,4 +1,7 @@
-"""Evaluate retrieval quality with CUI overlap metrics (TQ1/TQ2)."""
+"""
+Ce script évalue la qualité de la récupération en comparant les concepts médicaux (CUI) extraits 
+des requêtes et des résultats.
+"""
 
 from __future__ import annotations
 
@@ -15,11 +18,16 @@ from mediscan.search import load_resources, query
 
 configure_cpu_environment()
 
+# Seuils de validation (PASS/FAIL) définis pour les tests de performance
 TQ1_SEUILS = {1: 0.80, 2: 0.50, 3: 0.20}
 TQ2_SEUILS = {1: 0.30, 2: 0.12, 3: 0.05}
 
 
 def parse_args() -> argparse.Namespace:
+    """
+    - Gestion des arguments en ligne de commande (mode, k, nombre de requêtes).
+    - Permet de spécifier les ressources à utiliser (embedder, index, ids).
+    """
     parser = argparse.ArgumentParser(description="Evaluate TQ1/TQ2 with CUI overlap")
     parser.add_argument("--mode", default="visual", choices=("visual", "semantic"))
     parser.add_argument("--k", type=int, default=10)
@@ -34,6 +42,10 @@ def parse_args() -> argparse.Namespace:
 
 
 def parse_cui(cui_raw: str) -> set[str]:
+    """
+    - Vérifie que les chaînes CUI (souvent stockées en JSON dans la DB)
+      sont correctement transformées en ensembles (set) Python.
+    """
     if not cui_raw or not cui_raw.strip():
         return set()
     try:
@@ -46,8 +58,13 @@ def parse_cui(cui_raw: str) -> set[str]:
 
 
 def pick_query_rows(
-    rows: list[dict[str, str]], n: int, seed: int
+    rows: list[dict[str, str
+    ]], n: int, seed: int
 ) -> list[dict[str, str]]:
+    """
+    - Sélectionne aléatoirement un lot d'entrées exploitables (ayant des CUI) 
+      pour servir de requêtes de test.
+    """
     evaluable = [row for row in rows if parse_cui(row.get("cui", ""))]
     if not evaluable:
         raise ValueError("Aucune entrée avec CUI trouvée dans ids.json")
@@ -64,6 +81,10 @@ def evaluate(
     resources,
     k: int,
 ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    """
+    - Vérifie que la fonction d'évaluation délègue correctement à la fonction de recherche
+      et que les résultats sont traités pour calculer les métriques de qualité.
+    """
     query_results: list[dict[str, object]] = []
     result_details: list[dict[str, object]] = []
 
@@ -111,6 +132,11 @@ def evaluate(
 
 
 def compute_tq1(query_results: list[dict[str, object]]) -> dict[int, float]:
+    """
+    - Vérifie que les formules de calcul de précision (TQ1/TQ2) sont correctes.
+    - TQ1 mesure la part de requêtes pour lesquelles au moins un résultat partage
+        un certain nombre de CUI avec la requête.
+    """
     total = len(query_results)
     if total == 0:
         return {threshold: 0.0 for threshold in TQ1_SEUILS}
@@ -122,6 +148,10 @@ def compute_tq1(query_results: list[dict[str, object]]) -> dict[int, float]:
 
 
 def compute_tq2(result_details: list[dict[str, object]]) -> dict[int, float]:
+    """
+    - TQ2 mesure la part de résultats individuels qui partagent un certain nombre de CUI 
+      avec leur requête.
+    """
     total = len(result_details)
     if total == 0:
         return {threshold: 0.0 for threshold in TQ2_SEUILS}
@@ -133,6 +163,9 @@ def compute_tq2(result_details: list[dict[str, object]]) -> dict[int, float]:
 
 
 def print_results(tq1: dict[int, float], tq2: dict[int, float], k: int) -> None:
+    """
+    - Affiche les résultats de TQ1 et TQ2 avec indication de PASS/FAIL selon les seuils définis.
+    """
     print(f"\nTQ1 — Taux de requêtes satisfaites (Top-{k})")
     for threshold, expected in TQ1_SEUILS.items():
         value = tq1[threshold]
@@ -159,6 +192,9 @@ def save_csv(
     mode: str,
     k: int,
 ) -> Path:
+    """
+    - Sauvegarde les mesures détaillées et les stats dans un fichier CSV.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     csv_path = output_dir / f"cui_quality_{timestamp}.csv"
@@ -196,6 +232,10 @@ def save_csv(
 
 
 def main() -> None:
+    """
+    - Point d'entrée principal : parse les arguments, charge les ressources, sélectionne les requêtes,
+      exécute l'évaluation, calcule les métriques et affiche/sauvegarde les résultats.
+    """
     args = parse_args()
     if args.k <= 0:
         raise ValueError("--k doit être strictement positif")

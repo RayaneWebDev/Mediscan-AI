@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Génère une grille visuelle top-k pour une requête textuelle BioMedCLIP.
+"""
+Génère une grille visuelle top-k pour une requête textuelle BioMedCLIP.
 
 Usage :
     PYTHONPATH=src:. .venv311/bin/python scripts/visualization/demo_text_search_grid.py \
@@ -31,17 +32,24 @@ configure_cpu_environment()
 # ---------------------------------------------------------------------------
 
 def _slug(text: str, max_len: int = 40) -> str:
-    """Converts a query string to a safe filename slug."""
+    """
+    - Transforme une requête texte en nom de fichier sécurisé (slug).
+    """
     s = re.sub(r"[^a-z0-9]+", "_", text.lower().strip())
     return s[:max_len].strip("_")
 
 
 def _truncate(text: str, max_len: int) -> str:
+    """
+    - Tronque une chaîne de caractères avec des points de suspension.
+    """
     return text if len(text) <= max_len else text[: max_len - 1] + "…"
 
 
 def _make_query_card(query: str, tile_size: int) -> Image.Image:
-    """Renders the query text as a styled PIL image tile."""
+    """
+    - Génère une vignette stylisée affichant le texte de la requête.
+    """
     img = Image.new("RGB", (tile_size, tile_size), color=(30, 58, 110))
     draw = ImageDraw.Draw(img)
     font = ImageFont.load_default()
@@ -68,7 +76,9 @@ def _make_query_card(query: str, tile_size: int) -> Image.Image:
 
 
 def _load_result_tile(image_path: Path, tile_size: int) -> Image.Image:
-    """Loads a dataset image resized to tile_size × tile_size (letterboxed)."""
+    """
+    - Charge une image du dataset et la redimensionne à tile_size × tile_size (letterboxed).
+    """
     tile = Image.new("RGB", (tile_size, tile_size), color=(245, 245, 245))
     try:
         with Image.open(image_path) as im:
@@ -91,7 +101,9 @@ def render_text_grid(
     columns: int = 3,
     tile_size: int = 220,
 ) -> None:
-    """Renders query card + top-k result cards as a single JPEG grid."""
+    """
+    - Construit une grille JPEG contenant la requête et les top-k résultats.
+    """
     font = ImageFont.load_default()
 
     # Build card list: [query_card, result_1, ..., result_k]
@@ -149,7 +161,7 @@ def render_text_grid(
 
 
 # ---------------------------------------------------------------------------
-# CLI
+# Interface Ligne de Commande (CLI)
 # ---------------------------------------------------------------------------
 
 def parse_args() -> argparse.Namespace:

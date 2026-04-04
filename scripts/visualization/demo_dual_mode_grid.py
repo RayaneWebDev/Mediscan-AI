@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Generate one visual grid and one semantic grid for comparison."""
+"""
+Génère une grille visuelle et une grille sémantique pour comparer les résultats.
+Ce script illustre la différence entre "ce que l'image montre" (visuel) 
+et "ce que l'image signifie médicalement" (sémantique).
+"""
 
 from __future__ import annotations
 
@@ -18,6 +22,7 @@ from mediscan.search import MAX_K, load_resources, query
 
 configure_cpu_environment()
 
+# Mots-clés pour le scoring automatique des exemples pertinents
 SEMANTIC_KEYWORDS = (
     "subarachnoid",
     "hematoma",
@@ -50,6 +55,9 @@ VISUAL_KEYWORDS = (
 
 
 def parse_args() -> argparse.Namespace:
+    """
+    - Arguments CLI pour la génération des grilles de comparaison.
+    """
     parser = argparse.ArgumentParser(description="Generate visual vs semantic grids")
     parser.add_argument("--image", default=None)
     parser.add_argument("--visual-image", default=None)
@@ -70,6 +78,9 @@ def parse_args() -> argparse.Namespace:
 
 
 def parse_cui_count(raw_cui: str) -> int:
+    """
+    - Tente de parser le champ CUI du metadata pour estimer la richesse sémantique.
+    """
     if not raw_cui:
         return 0
     try:
@@ -80,11 +91,17 @@ def parse_cui_count(raw_cui: str) -> int:
 
 
 def collect_matches(text: str, keywords: tuple[str, ...]) -> list[str]:
+    """
+    - Collecte les mots-clés présents dans le texte pour le scoring automatique.
+    """
     lowered = text.lower()
     return [keyword for keyword in keywords if keyword in lowered]
 
 
 def score_visual_query(record: MetadataRecord) -> tuple[int, list[str]]:
+    """
+    - Évalue la pertinence d'une image pour démontrer la recherche visuelle (forme, modalité).
+    """
     caption = record.caption.lower()
     matches = collect_matches(caption, VISUAL_KEYWORDS)
     semantic_penalty = len(collect_matches(caption, SEMANTIC_KEYWORDS))
@@ -103,6 +120,9 @@ def score_visual_query(record: MetadataRecord) -> tuple[int, list[str]]:
 
 
 def score_semantic_query(record: MetadataRecord) -> tuple[int, list[str]]:
+    """
+    - Évalue la pertinence d'une image pour démontrer la recherche sémantique (pathologie).
+    """
     caption = record.caption.lower()
     matches = collect_matches(caption, SEMANTIC_KEYWORDS)
     score = len(matches) * 5
@@ -114,6 +134,10 @@ def score_semantic_query(record: MetadataRecord) -> tuple[int, list[str]]:
 
 
 def auto_choose_query(records: list[MetadataRecord], mode: str) -> tuple[MetadataRecord, str]:
+    """
+    - Choisit automatiquement une image de requête pertinente pour chaque mode (visuel/sémantique)
+      en se basant sur les légendes et les CUI associés.
+    """
     scorer = score_visual_query if mode == "visual" else score_semantic_query
     best_record = records[0]
     best_score = -10**9
@@ -132,6 +156,10 @@ def auto_choose_query(records: list[MetadataRecord], mode: str) -> tuple[Metadat
 
 
 def find_query_record(records: list[MetadataRecord], image_path: Path) -> MetadataRecord:
+    """
+    - Tente de trouver l'enregistrement du dataset correspondant à une image de requête donnée,
+      en comparant à la fois les noms de fichiers et les chemins absolus.
+    """
     query_abs = image_path.resolve()
     query_stem = image_path.stem
     for record in records:
@@ -153,6 +181,9 @@ def resolve_query_for_mode(
     manual_image: str | None,
     shared_image: str | None,
 ) -> tuple[MetadataRecord, Path, str]:
+    """
+    - Détermine l'image de requête à utiliser selon le mode (visuel ou sémantique). 
+    """
     selected_image = manual_image or shared_image
     if selected_image:
         query_image = resolve_path(selected_image)
@@ -173,6 +204,9 @@ def run_image_search(
     ids_path: Path,
     k: int,
 ) -> list[dict[str, Any]]:
+    """
+    - Exécute la recherche d'images similaires en déléguant à la pipeline de recherche et retourne les résultats.
+    """
     resources = load_resources(
         mode=mode,
         model_name=model_name,
@@ -183,10 +217,16 @@ def run_image_search(
 
 
 def truncate(text: str, max_len: int) -> str:
+    """
+    - Tronque une chaîne de caractères avec des points de suspension.
+    """
     return text if len(text) <= max_len else text[: max_len - 3] + "..."
 
 
 def load_tile_image(image_path: Path, tile_size: int) -> Image.Image:
+    """
+    - Charge une image du dataset et la redimensionne à tile_size × tile_size (letterboxed).
+    """
     tile = Image.new("RGB", (tile_size, tile_size), color=(245, 245, 245))
     try:
         with Image.open(image_path) as image:
@@ -209,6 +249,9 @@ def render_grid(
     columns: int,
     tile_size: int,
 ) -> None:
+    """
+    - Construit une grille JPEG contenant la requête et les top-k résultats.
+    """
     cards = [{"title": "QUERY", "subtitle": query_image.name, "meta": subtitle, "image_path": query_image}]
     for rank, item in enumerate(results, start=1):
         cards.append(
@@ -255,6 +298,10 @@ def render_grid(
 
 
 def main() -> None:
+    """
+    - Orchestre la génération des grilles de comparaison visuelle et sémantique.
+    - Choisit les images de requête, exécute les recherches et rend les grilles.
+    """
     args = parse_args()
     if not 0 < args.k <= MAX_K:
         raise ValueError(f"--k must be between 1 and {MAX_K}")

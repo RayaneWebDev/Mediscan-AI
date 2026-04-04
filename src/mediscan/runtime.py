@@ -1,4 +1,6 @@
-"""Shared runtime helpers for MEDISCAN scripts."""
+"""
+Outils d'exécution partagés pour les scripts MEDISCAN.
+"""
 
 from __future__ import annotations
 
@@ -13,8 +15,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 @dataclass(frozen=True)
 class ModeConfig:
-    """Stable configuration for one supported retrieval mode."""
-
+    """
+    - Configuration stable pour un mode de récupération pris en charge.
+    """
     mode: str
     embedder: str
     index_path: Path
@@ -42,7 +45,9 @@ SUPPORTED_MODES = frozenset(STABLE_MODE_CONFIGS)
 
 
 def resolve_path(raw_path: str | Path, base_dir: Path | None = None) -> Path:
-    """Resolve a path against the project root or an optional base directory."""
+    """
+    - Résoudre un chemin d'accès par rapport à la racine du projet ou à un répertoire de base facultatif.
+    """
     path = Path(raw_path)
     if path.is_absolute():
         return path
@@ -52,7 +57,7 @@ def resolve_path(raw_path: str | Path, base_dir: Path | None = None) -> Path:
 
 
 def get_mode_config(mode: str) -> ModeConfig:
-    """Return the stable artifact configuration for one retrieval mode."""
+    """Retourne la configuration stable de l'artefact pour un mode de récupération."""
     normalized = mode.strip().lower()
     config = STABLE_MODE_CONFIGS.get(normalized)
     if config is None:
@@ -61,18 +66,20 @@ def get_mode_config(mode: str) -> ModeConfig:
 
 
 def default_config_for_mode(mode: str) -> tuple[str, Path, Path]:
-    """Return the default embedder and index files for one retrieval mode."""
+    """Retourne l'embedder par défaut et les fichiers d'index pour un mode de récupération."""
     config = get_mode_config(mode)
     return config.embedder, config.index_path, config.ids_path
 
 
 def stable_manifest_path_for_mode(mode: str) -> Path:
-    """Return the stable manifest path for one retrieval mode."""
+    """Retourne le chemin du manifest stable pour un mode de récupération."""
     return get_mode_config(mode).manifest_path
 
 
 def build_embedder(name: str, model_name: str | None = None):
-    """Build one of the supported embedders."""
+    """
+    - Instancie un encodeur en fonction de son nom et d'un paramètre de modèle optionnel.
+    """
     kwargs: dict[str, object] = {}
     if model_name:
         kwargs["model_name"] = model_name
@@ -80,7 +87,9 @@ def build_embedder(name: str, model_name: str | None = None):
 
 
 def load_indexed_rows(ids_path: str | Path) -> list[dict[str, str]]:
-    """Load the metadata rows aligned with a FAISS index."""
+    """
+    - Charge les métadonnées indexées à partir d'un fichier JSON et les valide.
+    """
     path = resolve_path(ids_path)
     if not path.exists():
         raise FileNotFoundError(f"IDs file not found: {path}")
@@ -96,7 +105,9 @@ def load_indexed_rows(ids_path: str | Path) -> list[dict[str, str]]:
 
 
 def ensure_artifacts_exist(index_path: str | Path, ids_path: str | Path) -> tuple[Path, Path]:
-    """Return artifact paths after verifying both files exist."""
+    """
+    - Vérifie que les fichiers d'index et d'IDs existent et les retourne sous forme de chemins résolus.
+    """
     resolved_index = resolve_path(index_path)
     resolved_ids = resolve_path(ids_path)
     if not resolved_index.exists():
@@ -107,13 +118,17 @@ def ensure_artifacts_exist(index_path: str | Path, ids_path: str | Path) -> tupl
 
 
 def compute_search_k(k: int, ntotal: int, *, exclude_self: bool = False) -> int:
-    """Choose how many candidates FAISS should return."""
+    """
+    - Choisissez le nombre de candidats que FAISS doit retourner.
+    """
     extra = 1 if exclude_self else 0
     return min(ntotal, k + extra)
 
 
 def set_faiss_threads(faiss_module: object, count: int = 1) -> None:
-    """Set FAISS CPU threads when supported by the installed wheel."""
+    """
+    - Définit le nombre de threads CPU pour FAISS lorsque cela est supporté par la version installée.
+    """
     setter = getattr(faiss_module, "omp_set_num_threads", None)
     if callable(setter):
         setter(count)

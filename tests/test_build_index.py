@@ -1,3 +1,10 @@
+"""
+Tests unitaires pour le script de construction d'index (Indexing).
+
+Vérifie la création de l'index Faiss, l'export des métadonnées JSON 
+et la capacité du script à reprendre une indexation via des checkpoints.
+"""
+
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -9,6 +16,9 @@ from scripts import build_index
 
 
 class Record:
+    """ 
+    - Simule un enregistrement du dataset ROCO (ID image + chemin). 
+    """
     def __init__(self, image_id: str, path: str):
         self.image_id = image_id
         self.path = path
@@ -16,6 +26,9 @@ class Record:
         self.cui = "[]"
 
     def to_dict(self):
+        """ 
+        - Convertit l'objet en dictionnaire pour l'export JSON. 
+        """
         return {
             "image_id": self.image_id,
             "path": self.path,
@@ -32,6 +45,9 @@ class FakeEmbedder:
 
 
 def test_main_builds_index_and_ids(tmp_path):
+    """
+    - Vérifie que le script construit un index Faiss et un fichier JSON d'IDs à partir d'un dataset simulé.
+    """
     image_path = tmp_path / "image.png"
     Image.new("RGB", (8, 8)).save(image_path)
 
@@ -59,6 +75,9 @@ def test_main_builds_index_and_ids(tmp_path):
 
 
 def test_main_resumes_from_checkpoint(tmp_path):
+    """
+    - Vérifie que le script peut reprendre une indexation à partir d'un checkpoint.
+    """
     image_path = tmp_path / "image.png"
     Image.new("RGB", (8, 8)).save(image_path)
 

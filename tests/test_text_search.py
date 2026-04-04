@@ -1,10 +1,11 @@
-"""Tests for text-to-image search pipeline.
+"""
+Tests du pipeline de recherche texte-image.
 
-Covers:
-- BioMedCLIPEmbedder.encode_text() contract (shape, dtype, L2-norm)
-- query_text() pipeline with fake resources
-- SearchService.search_text() validation + delegation
-- POST /api/search-text endpoint (200, 400, 503)
+Ce module couvre:
+- Le contrat BioMedCLIPEmbedder.encode_text() (forme, type de données, norme L2)
+- Le pipeline query_text() avec ressources factices
+- La validation et la délégation de SearchService.search_text()
+- Le point de terminaison POST /api/search-text (200, 400, 503)
 """
 
 from __future__ import annotations
@@ -25,8 +26,9 @@ from mediscan.search import SearchResources, query_text
 # ---------------------------------------------------------------------------
 
 class FakeTextEmbedder:
-    """Minimal BioMedCLIP-like embedder with encode_text support."""
-
+    """
+    - Intégrateur minimal de type BioMedCLIP avec prise en charge de encode_text.
+    """
     name = "biomedclip"
     dim = 512
 
@@ -41,7 +43,9 @@ class FakeTextEmbedder:
 
 
 class FakeNoTextEmbedder:
-    """Embedder without encode_text (e.g. DINOv2)."""
+    """
+    - Intégrateur sans encode_text (par exemple DINOv2)
+    """
 
     name = "dinov2_base"
     dim = 768
@@ -51,6 +55,9 @@ class FakeNoTextEmbedder:
 
 
 class FakeSemanticIndex:
+    """
+    - Simule un index Faiss pour BioMedCLIP (512 dimensions).
+    """
     ntotal = 3
     d = 512
 
@@ -68,6 +75,10 @@ FAKE_ROWS = [
 
 
 def _make_text_resources() -> SearchResources:
+    """
+    - Crée des ressources de recherche factices 
+      avec un embedder de texte et un index sémantique simulés.
+    """
     return SearchResources(
         embedder=FakeTextEmbedder(),
         index=FakeSemanticIndex(),
@@ -76,12 +87,20 @@ def _make_text_resources() -> SearchResources:
 
 
 def _make_service_with_semantic() -> SearchService:
+    """
+    - Crée une instance de SearchService avec des ressources factices
+      pour les tests de recherche sémantique.
+    """
     resources = _make_text_resources()
     return SearchService(resources={"semantic": resources})
 
 
 @pytest.fixture()
 def client_text():
+    """
+    - TestClient avec un SearchService factice (avec index sémantique) injecté dans app.state
+      pour les tests d'endpoint de recherche textuelle.
+    """
     app.state.search_service = _make_service_with_semantic()
     return TestClient(app, raise_server_exceptions=False)
 
@@ -91,6 +110,10 @@ def client_text():
 # ---------------------------------------------------------------------------
 
 def test_encode_text_shape_and_dtype():
+    """
+    - Vérifie que l'encode_text() de l'embedder de texte 
+      retourne un vecteur de la bonne forme et du bon type.
+    """
     embedder = FakeTextEmbedder()
     vec = embedder.encode_text("pneumonia chest radiograph")
     assert vec.shape == (512,), f"Expected (512,), got {vec.shape}"
@@ -98,6 +121,10 @@ def test_encode_text_shape_and_dtype():
 
 
 def test_encode_text_l2_norm():
+    """
+    - Vérifie que le vecteur retourné par encode_text() est normalisé (norme L2 ≈ 1.0).
+    - Cela garantit que les scores de similarité cosinus sont corrects lors de la recherche.
+    """
     embedder = FakeTextEmbedder()
     vec = embedder.encode_text("brain MRI tumour")
     norm = float(np.linalg.norm(vec))
@@ -109,12 +136,18 @@ def test_encode_text_l2_norm():
 # ---------------------------------------------------------------------------
 
 def test_query_text_returns_k_results():
+    """
+    - Vérifie que query_text() retourne exactement k résultats.
+    """
     resources = _make_text_resources()
     results = query_text(resources=resources, text="chest X-ray", k=2)
     assert len(results) == 2
 
 
 def test_query_text_results_are_ordered_by_rank():
+    """
+    - Vérifie que les résultats de query_text() sont triés par ordre croissant.
+    """
     resources = _make_text_resources()
     results = query_text(resources=resources, text="chest X-ray", k=3)
     ranks = [r["rank"] for r in results]
@@ -122,6 +155,10 @@ def test_query_text_results_are_ordered_by_rank():
 
 
 def test_query_text_scores_descending():
+    """
+    - Vérifie que les scores de similarité dans les résultats de query_text() 
+      sont en ordre décroissant.
+    """
     resources = _make_text_resources()
     results = query_text(resources=resources, text="chest X-ray", k=3)
     scores = [r["score"] for r in results]
@@ -129,12 +166,19 @@ def test_query_text_scores_descending():
 
 
 def test_query_text_result_keys():
+    """
+    - Vérifie que chaque résultat de query_text() contient les clés attendues.
+    """
     resources = _make_text_resources()
     results = query_text(resources=resources, text="chest X-ray", k=1)
     assert set(results[0].keys()) == {"rank", "score", "image_id", "path", "caption", "cui"}
 
 
 def test_query_text_raises_if_no_encode_text():
+    """
+    - Vérifie que query_text() lève une ValueError 
+    si l'embedder de texte ne supporte pas encode_text().
+    """
     resources = SearchResources(
         embedder=FakeNoTextEmbedder(),
         index=FakeSemanticIndex(),
@@ -145,12 +189,19 @@ def test_query_text_raises_if_no_encode_text():
 
 
 def test_query_text_raises_on_empty_text():
+    """
+    - Vérifie que query_text() lève une ValueError 
+      si le texte de requête est vide ou ne contient que des espaces.
+    """
     resources = _make_text_resources()
     with pytest.raises(ValueError, match="empty"):
         query_text(resources=resources, text="   ", k=3)
 
 
 def test_query_text_raises_on_invalid_k():
+    """
+    - Vérifie que query_text() lève une ValueError si k est inférieur à 1.
+    """
     resources = _make_text_resources()
     with pytest.raises(ValueError):
         query_text(resources=resources, text="pneumonia", k=0)
@@ -161,6 +212,9 @@ def test_query_text_raises_on_invalid_k():
 # ---------------------------------------------------------------------------
 
 def test_search_service_text_returns_dict():
+    """
+    - Vérifie que SearchService.search_text() retourne un dictionnaire avec les champs attendus.
+    """
     service = _make_service_with_semantic()
     result = service.search_text(text="chest X-ray pneumonia", k=2)
     assert result["mode"] == "semantic"
@@ -170,30 +224,48 @@ def test_search_service_text_returns_dict():
 
 
 def test_search_service_text_strips_whitespace():
+    """
+    - Vérifie que SearchService.search_text() supprime les espaces autour du texte de requête.
+    """
     service = _make_service_with_semantic()
     result = service.search_text(text="  pneumonia  ", k=1)
     assert result["query_text"] == "pneumonia"
 
 
 def test_search_service_text_raises_on_empty():
+    """
+    - Vérifie que SearchService.search_text() lève une ValueError 
+      si le texte de requête est vide ou ne contient que des espaces.
+    """
     service = _make_service_with_semantic()
     with pytest.raises(ValueError, match="empty"):
         service.search_text(text="   ", k=5)
 
 
 def test_search_service_text_raises_on_long_text():
+    """
+    - Vérifie que SearchService.search_text() lève une ValueError
+        si le texte de requête dépasse une certaine longueur (par exemple, 500 caractères).
+    """
     service = _make_service_with_semantic()
     with pytest.raises(ValueError, match="too long"):
         service.search_text(text="x" * 501, k=5)
 
 
 def test_search_service_text_raises_on_invalid_k():
+    """
+    - Vérifie que SearchService.search_text() lève une ValueError si k est inférieur à 1.
+    """
     service = _make_service_with_semantic()
     with pytest.raises(ValueError):
         service.search_text(text="pneumonia", k=0)
 
 
 def test_search_service_text_propagates_unavailable():
+    """
+    - Vérifie que SearchService.search_text() propage une SearchUnavailableError 
+      si les ressources de recherche ne sont pas disponibles.
+    """
     service = SearchService(resources={})
 
     with patch.object(service, "_get_resources", side_effect=SearchUnavailableError("no index")):
@@ -206,6 +278,10 @@ def test_search_service_text_propagates_unavailable():
 # ---------------------------------------------------------------------------
 
 def test_endpoint_text_search_200(client_text):
+    """
+    - Teste une recherche textuelle réussie via le point de terminaison POST /api/search-text.
+    - Vérifie que la réponse contient les champs attendus et que les résultats ont la structure correcte.
+    """
     resp = client_text.post(
         "/api/search-text",
         json={"text": "chest X-ray pneumonia", "k": 2},
@@ -221,28 +297,45 @@ def test_endpoint_text_search_200(client_text):
 
 
 def test_endpoint_text_search_default_k(client_text):
+    """
+    - Vérifie que l'enpoint POST /api/search-text utilise une valeur par défaut pour k (par exemple, 5)
+      lorsque k n'est pas fourni dans la requête.
+    """
     resp = client_text.post("/api/search-text", json={"text": "pneumonia"})
     assert resp.status_code == 200
     assert len(resp.json()["results"]) <= 5
 
 
 def test_endpoint_text_search_400_empty_text(client_text):
+    """
+    - Vérifie que l'endpoint POST /api/search-text retourne une erreur 400 
+      si le texte de requête est vide.
+    """
     resp = client_text.post("/api/search-text", json={"text": "", "k": 3})
     assert resp.status_code == 400
 
 
 def test_endpoint_text_search_400_k_zero(client_text):
+    """- Vérifie que l'endpoint POST /api/search-text retourne une erreur 400
+        si k est inférieur à 1.
+    """
     resp = client_text.post("/api/search-text", json={"text": "pneumonia", "k": 0})
     assert resp.status_code == 400
 
 
 def test_endpoint_text_search_400_k_too_large(client_text):
+    """
+    - Vérifie que l'endpoint POST /api/search-text retourne une erreur 400
+        si k est supérieur à une certaine limite (par exemple, 100).
+    """
     resp = client_text.post("/api/search-text", json={"text": "pneumonia", "k": 999})
     assert resp.status_code == 400
 
 
 def test_endpoint_text_search_503_unavailable():
-    """503 when the semantic index is not loaded."""
+    """
+    - Vérifie que l'endpoint POST /api/search-text retourne une erreur 503.
+    """
     service = SearchService(resources={})
     with patch.object(
         service, "_get_resources", side_effect=SearchUnavailableError("no artifacts")

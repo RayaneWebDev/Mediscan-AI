@@ -1,4 +1,10 @@
-"""Factory helpers for the supported embedders."""
+"""
+Outils de type 'Factory' pour les encodeurs (embedders) pris en charge.
+
+Le module définit une fonction `get_embedder(name: str, **kwargs)` qui instancie un encodeur
+en fonction de son nom (ex: "dinov2_base", "biomedclip",
+etc.) et de ses paramètres spécifiques (ex: `model_name` pour les modèles Hugging Face).
+"""
 
 from __future__ import annotations
 
@@ -13,7 +19,9 @@ EMBEDDER_REGISTRY = {
 
 
 def get_embedder(name: str, **kwargs: object) -> Embedder:
-    """Instantiate an embedder by name."""
+    """
+    - Instancie un encodeur en fonction de son nom et de ses paramètres spécifiques.
+    """
     normalized = name.strip().lower()
     embedder_cls = EMBEDDER_REGISTRY.get(normalized)
     if embedder_cls is None:

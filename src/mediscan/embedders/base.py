@@ -1,14 +1,14 @@
 """
-Base interface for image embedders.
+Interface de base pour les encodeurs (embedders) d'images.
 
-This module defines the minimal contract that any embedder must satisfy to be
-plugged into the CBIR pipeline (index building and querying).
+Ce module définit le contrat minimal que tout encodeur doit respecter pour être
+intégré dans le pipeline CBIR (construction d'index et recherche).
 
-Why an interface?
-- It decouples feature extraction (deep model, handcrafted features, etc.)
-  from the rest of the system (FAISS indexing, search, evaluation).
-- It makes the system flexible: you can swap the neural network (ResNet50,
-  DenseNet, CLIP, etc.) without changing the indexing/query code.
+Pourquoi une interface ?
+- Elle découple l'extraction de caractéristiques (modèle profond, caractéristiques 
+  artisanales, etc.) du reste du système (indexation FAISS, recherche, évaluation).
+- Elle rend le système flexible : vous pouvez changer le réseau de neurones (ResNet50,
+  DenseNet, CLIP, etc.) sans modifier le code d'indexation ou de recherche.
 """
 
 from __future__ import annotations
@@ -20,7 +20,9 @@ from PIL import Image as PILImage
 
 
 def safe_int(value: str | None, default: int) -> int:
-    """Parse an integer from an env var string, falling back to *default*."""
+    """
+    - Extrait un entier d'une variable d'environnement, sinon renvoie *default*.
+    """
     if value is None:
         return default
     try:
@@ -31,27 +33,27 @@ def safe_int(value: str | None, default: int) -> int:
 
 class Embedder(ABC):
     """
-    Abstract base class (interface) for all embedders.
+    Classe de base abstraite (interface) pour tous les encodeurs.
 
-    An embedder converts an input image into a fixed-size numeric vector
-    ("embedding") that represents its visual content. These vectors are then:
-    - stored in a FAISS index (offline indexing),
-    - compared to a query vector at search time (online retrieval).
+    Un encodeur convertit une image d'entrée en un vecteur numérique de taille fixe
+    ("embedding") qui représente son contenu visuel. Ces vecteurs sont ensuite :
+    - stockés dans un index FAISS (indexation hors ligne),
+    - comparés à un vecteur de requête au moment de la recherche (récupération en ligne).
 
-    Attributes
+    Attributs
     ----------
     name : str
-        Stable identifier used to select an embedder (e.g. "dinov2_base").
+        Identifiant stable utilisé pour sélectionner un encodeur (ex: "dinov2_base").
     dim : int
-        Dimensionality of the output embedding vector (e.g. 2048 for ResNet50).
+        Dimension du vecteur d'embedding en sortie (ex: 2048 pour ResNet50).
 
     Notes
     -----
-    Implementations MUST return:
-    - a 1D NumPy array of shape (dim,)
-    - dtype float32
-    - L2-normalized (||v||2 ~= 1), so that cosine similarity can be computed
-      efficiently using inner product (IndexFlatIP).
+    Les implémentations DOIVENT retourner :
+    - un tableau NumPy 1D de forme (dim,)
+    - de type float32
+    - normalisé L2 (||v||2 ~= 1), afin que la similarité cosinus puisse être calculée
+      efficacement par produit scalaire (IndexFlatIP).
     """
 
     name: str
@@ -60,23 +62,23 @@ class Embedder(ABC):
     @abstractmethod
     def encode_pil(self, image: PILImage.Image) -> np.ndarray:
         """
-        Encode a PIL image into an embedding vector.
+        Encode une image PIL en un vecteur d'embedding.
 
-        Parameters
+        Paramètres
         ----------
         image : PIL.Image.Image
-            Input image (already loaded). Implementations may convert to RGB,
-            resize, normalize, etc. depending on model requirements.
+            Image d'entrée (déjà chargée). Les implémentations peuvent convertir en RGB,
+            redimensionner, normaliser, etc., selon les besoins du modèle.
 
-        Returns
+        Retours
         -------
         np.ndarray
-            A 1D L2-normalized embedding vector of shape (dim,), dtype float32.
+            Un vecteur d'embedding 1D normalisé L2 de forme (dim,), type float32.
 
-        Raises
+        Exceptions
         ------
         ValueError
-            If the image is invalid or cannot be processed.
+            Si l'image est invalide ou ne peut pas être traitée.
         """
         raise NotImplementedError
 

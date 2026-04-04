@@ -1,15 +1,16 @@
 """
-BioMedCLIP image embedder implementation (CPU-only).
+Implémentation de l'encodeur d'images BioMedCLIP (version CPU uniquement).
 
-BioMedCLIP is used for the semantic branch. Unlike general CLIP checkpoints, it
-is aligned on biomedical image-text pairs and therefore better suited to
-medical content retrieval on mixed ROCOv2 radiology data.
+BioMedCLIP est utilisé pour la branche sémantique. Contrairement aux modèles CLIP 
+génériques, il est aligné sur des paires image-texte biomédicales et est donc 
+mieux adapté à la recherche de contenu médical sur les données de radiologie ROCOv2.
 """
 
 from __future__ import annotations
 
 import open_clip
 import torch
+import numpy as np
 from PIL import Image as PILImage
 
 from .base import Embedder
@@ -17,8 +18,9 @@ from .utils import configure_torch_cpu_threads, normalize_embedding
 
 
 class BioMedCLIPEmbedder(Embedder):
-    """BioMedCLIP image encoder for semantic retrieval."""
-
+    """
+    - Encodeur d'images BioMedCLIP pour la recherche sémantique.
+    """
     name = "biomedclip"
     dim = 512
 
@@ -37,6 +39,7 @@ class BioMedCLIPEmbedder(Embedder):
         self._model.eval()
         self._tokenizer = open_clip.get_tokenizer(self._model_name)
 
+        # Récupération dynamique de la dimension de sortie du modèle
         output_dim = getattr(getattr(self._model, "visual", None), "output_dim", None)
         if output_dim is None:
             output_dim = getattr(self._model, "embed_dim", None)
@@ -44,8 +47,21 @@ class BioMedCLIPEmbedder(Embedder):
             self.dim = int(output_dim)
 
     def encode_pil(self, image: PILImage.Image) -> np.ndarray:
+        """
+        - Encode une image PIL en un vecteur d'embedding.
+        
+        Paramètres
+        ----------
+        image : PIL.Image.Image
+            L'image d'entrée à encoder.
+            
+        Retours
+        -------
+        np.ndarray
+            Vecteur d'embedding normalisé L2.
+        """
         if not isinstance(image, PILImage.Image):
-            raise TypeError("encode_pil expects a PIL.Image.Image instance")
+            raise TypeError("encode_pil attend une instance de PIL.Image.Image")
 
         rgb_image = image.convert("RGB")
         input_tensor = self._preprocess(rgb_image).unsqueeze(0).to(self._device)
@@ -56,11 +72,12 @@ class BioMedCLIPEmbedder(Embedder):
         return normalize_embedding(features.squeeze(0).cpu().numpy(), self.dim)
 
     def encode_text(self, text: str) -> np.ndarray:
-        """Encode a text query into a 512-dim L2-normalised float32 vector.
+        """
+        - Encode une requête textuelle en un vecteur float32 de 512-dim normalisé L2.
 
-        Uses BioMedCLIP's text encoder (PubMedBERT), aligned with the image
-        encoder in the same embedding space. Truncates to 77 tokens automatically.
-        Only English medical text is supported.
+        - Utilise l'encodeur de texte de BioMedCLIP (PubMedBERT), aligné avec 
+          l'encodeur d'images dans le même espace latent. Tronque automatiquement 
+          à 77 jetons (tokens). Seul le texte médical en anglais est supporté.
         """
         tokens = self._tokenizer([text]).to(self._device)
         with torch.no_grad():

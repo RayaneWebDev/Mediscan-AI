@@ -1,4 +1,6 @@
-"""Dataset helpers for ROCO metadata."""
+"""
+Outils de gestion pour les métadonnées du dataset ROCO.
+"""
 
 from __future__ import annotations
 
@@ -10,6 +12,9 @@ from typing import Iterator
 
 @dataclass(frozen=True)
 class MetadataRecord:
+    """
+    - Représente une ligne unique de métadonnées médicales.
+    """
     image_id: str
     path: str
     caption: str
@@ -25,8 +30,9 @@ class MetadataRecord:
 
 
 class RocoDataset:
-    """In-memory loader for metadata.csv with deterministic iteration order."""
-
+    """
+    - Chargeur en mémoire pour les métadonnées.csv avec un ordre d'itération déterministe.
+    """
     REQUIRED_COLUMNS = ("image_id", "path", "caption", "cui")
 
     def __init__(self, metadata_csv: str | Path = "data/roco_train_full/metadata.csv") -> None:
@@ -37,6 +43,10 @@ class RocoDataset:
         self._records = self._load_records()
 
     def _load_records(self) -> list[MetadataRecord]:
+        """
+        - Charge les métadonnées depuis le fichier CSV et les valide.
+        - Assure que les colonnes requises sont présentes et que les données sont cohérentes.
+        """
         records: list[MetadataRecord] = []
 
         with self.metadata_csv.open("r", newline="", encoding="utf-8") as csv_file:

@@ -1,4 +1,6 @@
-"""Core retrieval helpers shared by CLI scripts and the backend API."""
+"""
+Fonctions d'assistance à la récupération de base partagées par les scripts CLI et l'API backend.
+"""
 
 from __future__ import annotations
 
@@ -26,7 +28,9 @@ MAX_K = 50
 
 @dataclass
 class SearchResources:
-    """Pre-loaded resources for running multiple queries without reloading."""
+    """
+    - Ressources préchargées pour exécuter plusieurs requêtes sans rechargement.
+    """
 
     embedder: Embedder
     index: faiss.Index
@@ -41,7 +45,9 @@ def load_resources(
     index_path: str | Path | None = None,
     ids_path: str | Path | None = None,
 ) -> SearchResources:
-    """Load embedder, FAISS index, and metadata once for repeated queries."""
+    """
+    - Charge l'intégrateur, l'index FAISS et les métadonnées une seule fois pour les requêtes répétées.
+    """
     set_faiss_threads(faiss)
 
     default_embedder, default_index_path, default_ids_path = default_config_for_mode(mode)
@@ -75,7 +81,9 @@ def query(
     k: int,
     exclude_self: bool = False,
 ) -> list[dict[str, Any]]:
-    """Run one top-k retrieval query on pre-loaded resources."""
+    """
+    - Exécute une requête de récupération top-k sur les ressources préchargées.
+    """
     if not 0 < k <= MAX_K:
         raise ValueError(f"k must be between 1 and {MAX_K}")
 
@@ -131,10 +139,10 @@ def query_text(
     text: str,
     k: int,
 ) -> list[dict[str, Any]]:
-    """Run a text-to-image top-k retrieval on pre-loaded resources.
-
-    Requires an embedder that implements encode_text() (i.e. BioMedCLIPEmbedder).
-    Uses the same FAISS index as image queries — no rebuild needed.
+    """
+    - Exécute une requête de récupération top-k de texte vers image sur les ressources préchargées.
+    - Nécessite un module d'intégration implémentant la fonction "encode_text()".
+    - Utilise le même index FAISS que les requêtes d'images — aucune reconstruction n'est nécessaire.
     """
     if not 0 < k <= MAX_K:
         raise ValueError(f"k must be between 1 and {MAX_K}")
@@ -186,7 +194,9 @@ def search_image(
     ids_path: str | Path | None = None,
     exclude_self: bool = False,
 ) -> tuple[str, str, list[dict[str, Any]]]:
-    """Convenience wrapper: load resources and run one query."""
+    """
+    - Interface simplifiée : charge les ressources et exécute une seule requête.
+    """
     resources = load_resources(
         mode=mode,
         embedder=embedder,
