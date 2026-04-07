@@ -1,11 +1,11 @@
 from io import BytesIO
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
+from backend.app.image_utils import hf_image_url
 from backend.app.main import app
 from backend.app.services.search_service import SearchService, SearchUnavailableError
 from mediscan.search import SearchResources
@@ -63,7 +63,14 @@ def test_health_endpoint(client):
 @patch("backend.app.services.search_service.query")
 def test_search_returns_results_visual(mock_query, client):
     mock_query.return_value = [
-        {"rank": 1, "image_id": "img1", "score": 0.9, "path": "p.png", "caption": "c", "cui": "[]"},
+        {
+            "rank": 1,
+            "image_id": "ROCOv2_2023_train_000001",
+            "score": 0.9,
+            "path": "p.png",
+            "caption": "c",
+            "cui": "[]",
+        },
     ]
     response = client.post(
         "/api/search",
@@ -75,13 +82,21 @@ def test_search_returns_results_visual(mock_query, client):
     assert payload["mode"] == "visual"
     assert payload["embedder"] == "dinov2_base"
     assert len(payload["results"]) == 1
-    assert payload["results"][0]["image_id"] == "img1"
+    assert payload["results"][0]["image_id"] == "ROCOv2_2023_train_000001"
+    assert payload["results"][0]["path"] == hf_image_url("ROCOv2_2023_train_000001")
 
 
 @patch("backend.app.services.search_service.query")
 def test_search_returns_results_semantic(mock_query, client):
     mock_query.return_value = [
-        {"rank": 1, "image_id": "img2", "score": 0.85, "path": "p.png", "caption": "c", "cui": "[]"},
+        {
+            "rank": 1,
+            "image_id": "ROCOv2_2023_train_000002",
+            "score": 0.85,
+            "path": "p.png",
+            "caption": "c",
+            "cui": "[]",
+        },
     ]
     response = client.post(
         "/api/search",
@@ -90,6 +105,7 @@ def test_search_returns_results_semantic(mock_query, client):
     )
     assert response.status_code == 200
     assert response.json()["mode"] == "semantic"
+    assert response.json()["results"][0]["path"] == hf_image_url("ROCOv2_2023_train_000002")
 
 
 @patch("backend.app.services.search_service.query")
@@ -170,14 +186,16 @@ def test_search_rejects_corrupted_image(client):
 def test_search_returns_503_when_mode_resources_are_missing():
     fake_resources = MagicMock(spec=SearchResources)
     fake_resources.embedder = FakeEmbedder()
-    app.state.search_service = SearchService(resources={"visual": fake_resources})
-    client = TestClient(app, raise_server_exceptions=False)
+    service = SearchService(resources={"visual": fake_resources})
 
-    response = client.post(
-        "/api/search",
-        files={"image": ("q.png", make_png_bytes(), "image/png")},
-        data={"mode": "semantic", "k": "5"},
-    )
+    with patch.object(service, "_get_resources", side_effect=SearchUnavailableError("mode unavailable")):
+        app.state.search_service = service
+        client = TestClient(app, raise_server_exceptions=False)
+        response = client.post(
+            "/api/search",
+            files={"image": ("q.png", make_png_bytes(), "image/png")},
+            data={"mode": "semantic", "k": "5"},
+        )
 
     assert response.status_code == 503
     assert "unavailable" in response.json()["detail"].lower()
@@ -187,20 +205,11 @@ def test_search_returns_503_when_mode_resources_are_missing():
 # GET /api/images/{image_id}
 # ---------------------------------------------------------------------------
 
-def test_get_image_returns_file(client, tmp_path):
-    image_path = tmp_path / "test_img.png"
-    Image.new("RGB", (8, 8)).save(image_path)
-
-    with patch("backend.app.api.routes.IMAGES_DIR", tmp_path):
-        response = client.get("/api/images/test_img")
-    assert response.status_code == 200
-    assert response.headers["content-type"] == "image/png"
-
-
-def test_get_image_returns_404_for_missing(client):
-    with patch("backend.app.api.routes.IMAGES_DIR", Path("/nonexistent")):
-        response = client.get("/api/images/does_not_exist")
-    assert response.status_code == 404
+def test_get_image_redirects_to_huggingface(client):
+    image_id = "ROCOv2_2023_train_000123"
+    response = client.get(f"/api/images/{image_id}", follow_redirects=False)
+    assert response.status_code == 307
+    assert response.headers["location"] == hf_image_url(image_id)
 
 
 def test_get_image_rejects_dots_in_id(client):

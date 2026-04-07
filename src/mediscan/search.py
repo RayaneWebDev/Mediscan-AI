@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -31,6 +32,61 @@ class SearchResources:
     embedder: Embedder
     index: faiss.Index
     rows: list[dict[str, str]]
+
+
+def _validate_k(k: int) -> None:
+    if not 0 < k <= MAX_K:
+        raise ValueError(f"k must be between 1 and {MAX_K}")
+
+
+def _build_result(row: dict[str, Any], *, rank: int, score: float) -> dict[str, Any]:
+    return {
+        "rank": rank,
+        "score": float(score),
+        "image_id": str(row.get("image_id", "")),
+        "path": str(row.get("path", "")),
+        "caption": str(row.get("caption", "")),
+        "cui": str(row.get("cui", "")),
+    }
+
+
+def collect_ranked_results(
+    *,
+    rows: list[dict[str, str]],
+    scores: Iterable[float],
+    indices: Iterable[int],
+    k: int,
+    excluded_image_ids: set[str] | None = None,
+    excluded_paths: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Build top-k response rows from FAISS scores and ids."""
+    excluded_ids = excluded_image_ids or set()
+    resolved_excluded_paths = {str(Path(path).resolve()) for path in (excluded_paths or set())}
+    should_check_paths = bool(resolved_excluded_paths)
+    results: list[dict[str, Any]] = []
+
+    for raw_index, raw_score in zip(indices, scores):
+        index = int(raw_index)
+        if index < 0:
+            continue
+
+        row = rows[index]
+        image_id = str(row.get("image_id", ""))
+        relative_path = str(row.get("path", ""))
+
+        if image_id in excluded_ids:
+            continue
+
+        if should_check_paths:
+            absolute_path = str(resolve_path(relative_path).resolve()) if relative_path else ""
+            if absolute_path in resolved_excluded_paths:
+                continue
+
+        results.append(_build_result(row, rank=len(results) + 1, score=float(raw_score)))
+        if len(results) >= k:
+            break
+
+    return results
 
 
 def load_resources(
@@ -76,8 +132,7 @@ def query(
     exclude_self: bool = False,
 ) -> list[dict[str, Any]]:
     """Run one top-k retrieval query on pre-loaded resources."""
-    if not 0 < k <= MAX_K:
-        raise ValueError(f"k must be between 1 and {MAX_K}")
+    _validate_k(k)
 
     query_image = resolve_path(image)
     if not query_image.exists():
@@ -94,35 +149,16 @@ def query(
     search_k = compute_search_k(k, index.ntotal, exclude_self=exclude_self)
     scores, indices = index.search(query_vector, search_k)
 
-    query_abs = str(query_image.resolve())
-    query_stem = query_image.stem
-    results: list[dict[str, Any]] = []
-
-    for idx, score in zip(indices[0], scores[0]):
-        if idx < 0:
-            continue
-        row = rows[idx]
-        image_id = str(row.get("image_id", ""))
-        relative_path = str(row.get("path", ""))
-        absolute_path = str(resolve_path(relative_path).resolve()) if relative_path else ""
-
-        if exclude_self and (absolute_path == query_abs or image_id == query_stem):
-            continue
-
-        results.append(
-            {
-                "rank": len(results) + 1,
-                "score": float(score),
-                "image_id": image_id,
-                "path": relative_path,
-                "caption": str(row.get("caption", "")),
-                "cui": str(row.get("cui", "")),
-            }
-        )
-        if len(results) >= k:
-            break
-
-    return results
+    excluded_image_ids = {query_image.stem} if exclude_self else set()
+    excluded_paths = {str(query_image.resolve())} if exclude_self else set()
+    return collect_ranked_results(
+        rows=rows,
+        scores=scores[0],
+        indices=indices[0],
+        k=k,
+        excluded_image_ids=excluded_image_ids,
+        excluded_paths=excluded_paths,
+    )
 
 
 def query_text(
@@ -136,8 +172,7 @@ def query_text(
     Requires an embedder that implements encode_text() (i.e. BioMedCLIPEmbedder).
     Uses the same FAISS index as image queries — no rebuild needed.
     """
-    if not 0 < k <= MAX_K:
-        raise ValueError(f"k must be between 1 and {MAX_K}")
+    _validate_k(k)
     if not hasattr(resources.embedder, "encode_text"):
         raise ValueError(
             f"Embedder '{resources.embedder.name}' does not support encode_text(). "
@@ -154,25 +189,12 @@ def query_text(
     search_k = compute_search_k(k, resources.index.ntotal)
     scores, indices = resources.index.search(query_vector, search_k)
 
-    results: list[dict[str, Any]] = []
-    for idx, score in zip(indices[0], scores[0]):
-        if idx < 0:
-            continue
-        row = resources.rows[idx]
-        results.append(
-            {
-                "rank": len(results) + 1,
-                "score": float(score),
-                "image_id": str(row.get("image_id", "")),
-                "path": str(row.get("path", "")),
-                "caption": str(row.get("caption", "")),
-                "cui": str(row.get("cui", "")),
-            }
-        )
-        if len(results) >= k:
-            break
-
-    return results
+    return collect_ranked_results(
+        rows=resources.rows,
+        scores=scores[0],
+        indices=indices[0],
+        k=k,
+    )
 
 
 def search_image(
@@ -203,4 +225,12 @@ def search_image(
     return resources.embedder.name, str(resolve_path(image)), results
 
 
-__all__ = ["MAX_K", "SearchResources", "load_resources", "query", "query_text", "search_image"]
+__all__ = [
+    "MAX_K",
+    "SearchResources",
+    "collect_ranked_results",
+    "load_resources",
+    "query",
+    "query_text",
+    "search_image",
+]

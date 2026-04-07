@@ -6,15 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "eslint src",
     "preview": "vite preview"
   },
   "dependencies": {
+    "fdir": "^6.5.0",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.6.0",
+    "marked": "^18.0.0",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.2"
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

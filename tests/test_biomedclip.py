@@ -28,6 +28,9 @@ def test_biomedclip_embedding_shape():
     with patch(
         "mediscan.embedders.biomedclip.open_clip.create_model_and_transforms",
         return_value=(fake_model, None, lambda image: torch.ones((3, 2, 2), dtype=torch.float32)),
+    ), patch(
+        "mediscan.embedders.biomedclip.open_clip.get_tokenizer",
+        return_value=lambda texts: torch.ones((len(texts), 4), dtype=torch.int64),
     ):
         embedder = BioMedCLIPEmbedder(model_name="hf-hub:test")
 

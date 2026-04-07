@@ -10,6 +10,7 @@ from backend.app.services.search_service import SearchService
 
 configure_cpu_environment()
 logger = logging.getLogger(__name__)
+ALLOWED_CORS_METHODS = ["GET", "POST"]
 
 
 @asynccontextmanager
@@ -20,13 +21,20 @@ async def lifespan(application: FastAPI):
     yield
 
 
-app = FastAPI(title="MEDISCAN API", version="1.0", lifespan=lifespan)
+def configure_cors(application: FastAPI) -> None:
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=ALLOWED_CORS_METHODS,
+        allow_headers=["*"],
+    )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
 
-app.include_router(router, prefix="/api")
+def create_app() -> FastAPI:
+    application = FastAPI(title="MEDISCAN API", version="1.0", lifespan=lifespan)
+    configure_cors(application)
+    application.include_router(router, prefix="/api")
+    return application
+
+
+app = create_app()

@@ -24,20 +24,23 @@ export default function SettingsMenu() {
     <div ref={ref} className="relative z-50">
       {/* Bouton déclencheur */}
       <button
+        type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-surface/88 backdrop-blur-xl shadow-lg text-text hover:bg-bg-soft transition-all text-xs font-semibold"
+        className="settings-trigger flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold"
+        aria-haspopup="menu"
+        aria-expanded={open}
       >
-        <ThemeIcon key={theme} className="w-4 h-4 text-primary theme-icon-enter" strokeWidth={1.8} />
+        <ThemeIcon key={theme} className="settings-trigger-icon theme-icon-enter w-4 h-4" strokeWidth={1.8} />
         <span key={lang} className="uppercase lang-label-enter">{lang}</span>
         <ChevronDown
-          className={`w-3 h-3 text-muted transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`settings-trigger-chevron w-3 h-3 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           strokeWidth={2}
         />
       </button>
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 mt-2 w-44 rounded-2xl border border-border bg-surface backdrop-blur-xl shadow-xl overflow-hidden">
+        <div className="settings-menu absolute right-0 mt-2 w-44 rounded-2xl overflow-hidden">
           {/* Section Thème */}
           <div className="px-3 pt-3 pb-1">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-1.5">
@@ -47,21 +50,22 @@ export default function SettingsMenu() {
               {[
                 { id: "light", label: lang === "fr" ? "Clair" : "Light", Icon: Sun },
                 { id: "dark",  label: lang === "fr" ? "Sombre" : "Dark",  Icon: Moon },
-              ].map(({ id, label, Icon }) => (
+              ].map((option) => (
                 <button
-                  key={id}
+                  type="button"
+                  key={option.id}
                   onClick={(e) => {
                     const r = e.currentTarget.getBoundingClientRect();
-                    setTheme(id, r.left + r.width / 2, r.top + r.height / 2);
+                    setTheme(option.id, r.left + r.width / 2, r.top + r.height / 2);
                   }}
                   className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer
-                    ${theme === id
-                      ? "bg-gradient-to-r from-primary to-accent text-white shadow-sm"
-                      : "text-muted hover:text-text hover:bg-bg-soft"
+                    ${theme === option.id
+                      ? "settings-option-active"
+                      : "settings-option-inactive"
                     }`}
                 >
-                  <Icon className="w-3.5 h-3.5" strokeWidth={1.8} />
-                  {label}
+                  <option.Icon className="w-3.5 h-3.5" strokeWidth={1.8} />
+                  {option.label}
                 </button>
               ))}
             </div>
@@ -82,12 +86,13 @@ export default function SettingsMenu() {
                 { id: "fr", label: "Français" },
               ].map(({ id, label }) => (
                 <button
+                  type="button"
                   key={id}
                   onClick={() => { setLanguage(id); setOpen(false); }}
                   className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer
                     ${lang === id
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted hover:text-text hover:bg-bg-soft"
+                      ? "settings-option-active"
+                      : "settings-option-inactive"
                     }`}
                 >
                   {label}

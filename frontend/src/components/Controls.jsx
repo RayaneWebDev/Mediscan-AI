@@ -1,27 +1,49 @@
 import { useContext } from "react";
 import { LangContext } from "../context/lang-context";
 
-export default function Controls({ mode, onModeChange, k, onKChange, onSearch, disabled, showModeToggle = true }) {
+export default function Controls({
+  mode,
+  onModeChange,
+  k,
+  onKChange,
+  onSearch,
+  disabled,
+  showModeToggle = true,
+  useHomeVisualTone = false,
+  enableToneTransition = false,
+}) {
   const { t } = useContext(LangContext);
   const sliderBg = mode === "visual"
     ? "[&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:bg-primary"
     : "[&::-webkit-slider-thumb]:bg-accent [&::-moz-range-thumb]:bg-accent";
+  const useHomePrimaryTone = useHomeVisualTone && mode === "visual";
+  const useAccentTone = mode === "semantic";
+  const modeShellClass = mode === "visual"
+    ? useHomePrimaryTone
+      ? "image-search-mode-shell image-search-mode-shell-primary"
+      : "border-primary/20 bg-primary/10"
+    : useAccentTone
+      ? "image-search-mode-shell image-search-mode-shell-accent"
+      : "border-accent/20 bg-accent/10";
 
   return (
-    <div className={`rounded-2xl p-5 shadow-sm flex flex-wrap gap-5 items-end transition-all ${mode === "visual" ? "bg-primary/5 border border-primary/20" : "bg-accent/5 border border-accent/20"}`}>
+    <div className={`${enableToneTransition ? "search-tone-transition " : ""}image-search-panel rounded-2xl p-5 shadow-sm flex flex-wrap gap-5 items-end border ${mode === "visual" ? useHomePrimaryTone ? "mediscan-primary-surface" : "bg-primary/5 border-primary/20" : useAccentTone ? "mediscan-accent-surface" : "bg-accent/5 border-accent/20"}`}>
       {/* Mode toggle */}
       {showModeToggle && (
         <div className="flex-1 min-w-[220px]">
           <label className="block text-xs text-muted mb-2 font-semibold uppercase tracking-wider">
-            Analysis Mode
+            {t.search.analysisMode}
           </label>
-          <div className="flex rounded-xl overflow-hidden border border-border bg-bg">
+          <div className={`${enableToneTransition ? "search-tone-transition " : ""}flex rounded-xl overflow-hidden border ${modeShellClass}`}>
             <button
+              type="button"
               onClick={() => onModeChange("visual")}
-              className={`flex-1 py-2.5 px-4 text-sm font-medium flex items-center justify-center gap-2 transition-all cursor-pointer
+              className={`${enableToneTransition ? "search-tone-transition " : ""}flex-1 py-2.5 px-4 text-sm font-medium flex items-center justify-center gap-2 cursor-pointer
                 ${mode === "visual"
-                  ? "bg-primary text-white shadow-sm"
-                  : "text-muted hover:text-text hover:bg-border/50"
+                  ? useHomePrimaryTone
+                    ? "mediscan-primary-chip font-semibold"
+                    : "bg-primary-pale text-primary font-semibold"
+                  : "text-muted hover:text-text hover:bg-white/10"
                 }`}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -30,11 +52,12 @@ export default function Controls({ mode, onModeChange, k, onKChange, onSearch, d
               {t.search.modeVisual}
             </button>
             <button
+              type="button"
               onClick={() => onModeChange("semantic")}
-              className={`flex-1 py-2.5 px-4 text-sm font-medium flex items-center justify-center gap-2 transition-all border-l border-border cursor-pointer
+              className={`${enableToneTransition ? "search-tone-transition " : ""}flex-1 py-2.5 px-4 text-sm font-medium flex items-center justify-center gap-2 border-l border-border cursor-pointer
                 ${mode === "semantic"
-                  ? "bg-accent text-white shadow-sm"
-                  : "text-muted hover:text-text hover:bg-border/50"
+                  ? "mediscan-accent-chip font-semibold"
+                  : "text-muted hover:text-text hover:bg-white/10"
                 }`}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -51,7 +74,7 @@ export default function Controls({ mode, onModeChange, k, onKChange, onSearch, d
       <div className="flex-1 min-w-[200px]">
         <label className="block text-xs text-muted mb-2 font-semibold uppercase tracking-wider">
           {t.search.numResults}:{" "}
-          <strong className={`text-base font-bold ${mode === "visual" ? "text-primary" : "text-accent"}`}>{k}</strong>
+          <strong className={`text-base font-bold ${mode === "visual" ? useHomePrimaryTone ? "mediscan-primary-text" : "text-primary" : useAccentTone ? "mediscan-accent-text" : "text-accent"}`}>{k}</strong>
         </label>
         <input
           type="range"
@@ -59,7 +82,7 @@ export default function Controls({ mode, onModeChange, k, onKChange, onSearch, d
           max="50"
           value={k}
           onChange={(e) => onKChange(Number(e.target.value))}
-          className={`w-full h-1.5 rounded-full ${mode === "visual" ? "bg-primary/30" : "bg-accent/30"} appearance-none
+          className={`w-full h-1.5 rounded-full ${mode === "visual" ? "bg-primary/20" : "bg-accent/20"} appearance-none
             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
             [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer
             [&::-webkit-slider-thumb]:shadow-md
@@ -71,15 +94,19 @@ export default function Controls({ mode, onModeChange, k, onKChange, onSearch, d
 
       {/* Search button */}
       <button
+        type="button"
         onClick={onSearch}
         disabled={disabled}
-        className={`py-3 px-8 rounded-xl text-white font-semibold
-          flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer shadow-sm
-          hover:shadow-md hover:-translate-y-0.5
+        className={`${enableToneTransition ? "search-tone-transition " : ""}py-3 px-8 rounded-xl font-semibold
+          flex items-center gap-2 whitespace-nowrap cursor-pointer
           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none
           ${mode === "visual"
-            ? "bg-gradient-to-r from-primary to-primary-light"
-            : "bg-gradient-to-r from-accent to-accent-light"
+            ? useHomePrimaryTone
+              ? "mediscan-primary-action"
+              : "button-solid-primary"
+            : useAccentTone
+              ? "mediscan-accent-action"
+              : "button-solid-accent"
           }`}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

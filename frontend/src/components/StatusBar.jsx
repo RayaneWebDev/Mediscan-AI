@@ -1,17 +1,24 @@
-export default function StatusBar({ status, tone = "primary" }) {
+export default function StatusBar({
+  status,
+  tone = "primary",
+  useHomeVisualTone = false,
+  enableToneTransition = false,
+}) {
   if (!status) return null;
 
   const isError = status.type === "error";
   const isLoading = status.type === "loading";
 
   const isAccent = tone === "accent";
+  const useHomePrimaryTone = useHomeVisualTone && !isAccent;
 
   return (
     <div
-      className={`flex items-center gap-3 py-3 px-4 my-5 rounded-xl text-sm font-medium border
+      role={isError ? "alert" : "status"}
+      className={`${enableToneTransition ? "search-tone-transition " : ""}flex items-center gap-3 py-3 px-4 my-5 rounded-xl text-sm font-medium border
         ${isError ? "bg-red-500/10 text-red-400 border-red-500/25" : ""}
-        ${isLoading && !isAccent ? "bg-primary-pale text-primary border-primary/20" : ""}
-        ${isLoading && isAccent ? "bg-accent-pale text-accent border-accent/20" : ""}
+        ${isLoading && !isAccent ? useHomePrimaryTone ? "mediscan-primary-surface mediscan-primary-text" : "bg-primary-pale text-primary border-primary/20" : ""}
+        ${isLoading && isAccent ? "mediscan-accent-surface mediscan-accent-text" : ""}
       `}
     >
       {isLoading && (

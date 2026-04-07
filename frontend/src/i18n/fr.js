@@ -11,10 +11,11 @@ export const fr = {
 
   // Home Page
   home: {
+    heroLabel: "IMAGE - TEXT GUIDED MEDICAL RETRIEVAL",
     badge: "Analyse Médicale par IA",
     headline1: "Réduire l'incertitude.",
     headline2: "Accélérer le diagnostic.",
-    description: "Déverrouiller les archives visuelles de la médecine avec MEDISCAN AI. Rechercher par contenu, trouver des cas similaires instantanément, et élever la précision clinique.",
+    description: "Explorer des archives d'imagerie médicale par contenu visuel ou par description textuelle, retrouver des cas visuellement ou cliniquement apparentés, et soutenir l'interprétation par une recherche structurée de similarité.",
     cta1: "Scanner & Chercher",
     cta1Link: "/search",
     cta2Link: "/features",
@@ -37,33 +38,18 @@ export const fr = {
       features: [
         {
           icon: "route",
-          title: "Flux de Travail Rapide et Intuitif",
-          desc: "Ajoutez une image, choisissez un mode de recherche et explorez des cas similaires.",
-        },
-        {
-          icon: "between-horizontal-start",
-          title: "Explorer Sous Différents Angles",
-          desc: "Utilisez un mode pour trouver des images visuellement proches, et un autre pour découvrir des cas médicaux apparentés.",
+          title: "Intelligent Retrieval",
+          desc: "Recherche par similarité visuelle ou sémantique dans un workflow rapide et lisible sur données radiologiques.",
         },
         {
           icon: "brain",
-          title: "Support Multi-Modalités",
-          desc: "Permet la recherche sur différents types d’images radiologiques au sein d’un système structuré unique.",
-        },
-        {
-          icon: "user-key",
-          title: "Vos Images Restent Privées",
-          desc: "Les images de recherche ne sont pas stockées de manière permanente et sont utilisées uniquement pendant la requête.",
-        },
-        {
-          icon: "hard-drive",
-          title: "Aucun Matériel Spécialisé Requis",
-          desc: "Fonctionne sans matériel spécialisé, ce qui rend la plateforme plus accessible et plus simple à utiliser.",
+          title: "Diagnostic Support",
+          desc: "Comparez des cas pertinents, soutenez l’interprétation et renforcez la confiance diagnostique.",
         },
         {
           icon: "blocks",
-          title: "Intégration Transparente",
-          desc: "Fonctionne avec votre PACS, EMR et infrastructure hospitalière. Conception API-first.",
+          title: "Scalable Research Infrastructure",
+          desc: "Privé, léger en infrastructure, et prêt à s’intégrer au PACS, EMR et environnements de recherche.",
         },
       ],
     },
@@ -91,15 +77,23 @@ export const fr = {
     },
 
     modes: {
-      headline: "Deux Modes d'Analyse Intelligents",
-      description: "Choisissez l'approche qui correspond à votre question clinique.",
+      headline: "Deux modes de recherche complementaires",
+      description: "Une voie visuelle pour la similarite structurelle et une voie interpretative pour l'exploration de cas cliniquement pertinents.",
+      rootLabel: "Recherche MEDISCAN",
       visual: {
         title: "Analyse Visuelle",
+        items: [
+          "Recherche par similarité visuelle",
+        ],
         desc: "Trouvez les images avec des structures anatomiques et des caractéristiques visuelles similaires.",
         use: "Utiliser quand : Anatomie comparative, correspondance morphologique, similarité structurelle.",
       },
       semantic: {
         title: "Analyse Interprétative",
+        items: [
+          "Recherche par similarité sémantique",
+          "Recherche guidée par texte",
+        ],
         desc: "Découvrez les cas avec pathologie et signification clinique comparables.",
         use: "Utiliser quand : Découverte de maladie, raisonnement diagnostique, sélection basée sur les preuves.",
       },
@@ -107,6 +101,8 @@ export const fr = {
 
     useCases: {
       headline: "Conçu pour les Professionnels de Santé",
+      audience: "Radiologues, anatomopathologistes, systèmes hospitaliers et centres de recherche.",
+      inlineDescription: "Retrouvez des cas antérieurs, comparez des spécimens similaires, réduisez les examens redondants et accélérez l’identification de cohortes dans un même workflow.",
       roles: [
         {
           icon: "stethoscope",
@@ -151,6 +147,13 @@ export const fr = {
       privacy : "Confidentialité",
       terms: "Mentions légales",
       aboutus: "À propos",
+      navigationTitle: "Navigation",
+      supportTitle: "Support",
+      legalTitle: "Mentions légales",
+      connectTitle: "Liens",
+      builtWith: "Construit avec",
+      documentation: "Documentation",
+      faq: "FAQ",
     },
   },
 
@@ -164,6 +167,7 @@ export const fr = {
     step3: "3. Voir les Résultats",
     searching: "Analyse de votre image...",
     error: "Erreur de connexion au serveur.",
+    analysisMode: "Mode d'analyse",
     modeVisual: "Analyse Visuelle",
     modeSemantic: "Analyse Interprétative",
     numResults: "Résultats",
@@ -196,23 +200,21 @@ export const fr = {
       headline: "Recherche médicale",
       description: "Choisissez votre type de recherche.",
       imageCard: {
-        title: "Par l'image",
+        title: "Recherche visuelle",
         subtitle: "Analyse visuelle & sémantique",
         desc: "Importez une radiographie ou image médicale pour retrouver les cas les plus proches dans la base.",
         features: [
           "Analyse des structures visuelles",
           "Comparaison sémantique des images",
-          "Résultats classés par similarité",
         ],
         cta: "Analyser une image",
       },
       textCard: {
-        title: "Par description",
+        title: "Recherche guidée par texte",
         subtitle: "Recherche en langage naturel",
         desc: "Décrivez un cas médical en anglais et retrouvez les images correspondantes par signification médicale.",
         features: [
-          "Recherche par signification médicale",
-          "Langage naturel — en anglais",
+          "Recherche par signification médicale — en anglais",
           "Résultats sémantiquement pertinents",
         ],
         cta: "Décrire un cas",
@@ -237,6 +239,34 @@ export const fr = {
     image: {
       headline: "Recherche par image",
       back: "Retour",
+      invalidFileType: "Seuls les fichiers JPEG et PNG sont acceptés.",
+      uploadPrompt: "Glissez une image ici ou",
+      browseAction: "parcourir",
+      acceptedFormats: "JPEG ou PNG uniquement",
+      previewAlt: "Aperçu de l'image sélectionnée",
+      legendEyebrow: "À lire",
+      legendTitle: "Ce que représente chaque mode d’analyse dans MEDISCAN AI",
+      legendDescription: "Cette légende reste fixe : un mode lit la structure visible, l’autre lit la similarité médicalement pertinente.",
+      legend: {
+        visual: {
+          label: "ANALYSE VISUELLE",
+          title: "Similarité structurelle et anatomique",
+          description: "Visual Analysis compare ce qui est directement visible dans l’image : formes, contours, textures, contrastes et organisation spatiale.",
+          note: "À utiliser pour rechercher des images visuellement ou anatomiquement proches.",
+        },
+        interpretive: {
+          label: "ANALYSE INTERPRÉTATIVE",
+          title: "Similarité médicale et sémantique",
+          description: "Interpretive Analysis va au-delà de l’apparence visuelle pour se concentrer sur le sens médical, les patterns pathologiques et la similarité sémantique.",
+          note: "À utiliser pour retrouver des cas médicalement ou sémantiquement similaires.",
+        },
+      },
+      readyStep: "3. Lancer la recherche",
+      readyTitle: "Démarrer la recherche visuelle",
+      readyDescription: "Importez une image médicale, choisissez le mode d’analyse, puis lancez la recherche pour faire remonter les cas les plus proches.",
+      pendingStep: "3. Lancer l’analyse",
+      pendingTitle: "Votre image est prête",
+      pendingDescription: "Ajustez les paramètres d’analyse, puis cliquez sur Chercher pour retrouver les correspondances visuelles ou interprétatives les plus proches.",
     },
 
     text: {
@@ -250,80 +280,52 @@ export const fr = {
       error: "Une erreur est survenue.",
       step3: "Résultats",
     },
-  },
-
-  // Features Page
-  features: {
-    headline: "Fonctionnalités Puissantes",
-    description: "Tout ce qu’il faut pour l’analyse et l’exploration d’images de grade clinique.",
-    items: [
-      {
-        title: "Recherche en Moins d’une Seconde",
-        desc: "Interrogez des millions d’images en moins d’une seconde. Optimisé pour les workflows cliniques.",
-        features: ["Latence sub-milliseconde", "Indexation distribuée", "Mises à jour en temps réel"],
-      },
-      {
-        title: "Support Multi-Modalités",
-        desc: "Fonctionne sur tous les principaux types d’imagerie — TDM, IRM, radiographie, échographie, anatomopathologie.",
-        features: ["10+ modalités d’imagerie", "Recherche intermodalités", "Agnostique au format"],
-      },
-      {
-        title: "Validation Interprétative",
-        desc: "IA entraînée sur plus de 100K images médicales annotées cliniquement issues d’ensembles de données évalués par les pairs.",
-        features: ["Modèles IA biomédicaux", "Scores de confiance cliniques", "Étayé par des preuves"],
-      },
-      {
-        title: "Sécurité Entreprise",
-        desc: "Conforme HIPAA. Déploiement sur site ou dans le cloud. Vos données restent sous votre contrôle.",
-        features: ["Conformité HIPAA", "Chiffrement de bout en bout", "Journalisation d’audit"],
-      },
-      {
-        title: "Intégration PACS & EMR",
-        desc: "Intégration fluide avec l’infrastructure hospitalière existante. Sans disruption.",
-        features: ["Support DICOM", "API REST", "Flux de travail personnalisés"],
-      },
-      {
-        title: "Analyses Avancées",
-        desc: "Suivez l’utilisation, mesurez l’impact et tirez des enseignements des schémas de recherche.",
-        features: ["Analyses de recherche", "Métriques de résultats", "Tableaux de bord d’utilisation"],
-      },
-    ],
+    filters: {
+      minScore: "Score min.",
+      caption: "Légende",
+      captionPlaceholder: "Filtrer par légende...",
+      sort: "Tri",
+      sortDesc: "Score ↓",
+      sortAsc: "Score ↑",
+      compare: "Comparer",
+      compareOn: "✓ Comparaison active",
+      export: "Exporter",
+    },
+    results: {
+      visualMode: "Visuel (DINOv2)",
+      semanticMode: "Sémantique (BioMedCLIP)",
+      textMode: "Texte (BioMedCLIP)",
+      relaunchImage: "Rechercher depuis cette image",
+      resultsFoundSingular: "résultat trouvé",
+      resultsFoundPlural: "résultats trouvés",
+      selectedCount: "images sélectionnées",
+      clearSelection: "Annuler",
+      relaunchSelection: "Rechercher depuis la sélection",
+    },
   },
 
   // Contact Page
   contact: {
     headline: "Nous Contacter",
-    description: "Vous avez des questions ? Notre équipe clinique et technique est là pour vous aider.",
-    email: "Email",
-    sales: "Ventes",
-    support: "Support",
-    emailAddr: "hello@mediscan.ai",
-    salesAddr: "sales@mediscan.ai",
+    description: "Une question, un bug ou juste envie de dire bonjour ? On lit chaque message.",
+    supportLabel: "Support",
+    supportDesc: "Pour toute question technique ou retour sur MediScan.",
     supportAddr: "support@mediscan.ai",
-    responses: "Temps de Réponse",
-    resp1: "Demande générale : Dans les 24 heures",
-    resp2: "Demande de démo : Dans les 2 heures",
-    resp3: "Support technique : Réponse prioritaire",
-    formName: "Nom Complet",
+    responseLabel: "Temps de réponse",
+    responseDesc: "Nous répondons généralement sous 24h les jours ouvrés.",
+    sentTitle: "Brouillon d'email prêt",
+    sentDesc: "Votre messagerie s'est ouverte avec un message prérempli pour l'équipe MEDISCAN.",
+    sentAnother: "Préparer un autre email",
+    formName: "Nom",
     formEmail: "Email",
-    formOrg: "Hôpital / Organisation",
-    subject: {
-      formSubject: "Objet",
-      subjectPlaceholder: "Sélectionnez un sujet...",
-      subjectDemo: "Demander une démonstration",
-      subjectSupport: "Support Technique",
-      subjectPartnership: "Partenariats / Presse",
-      subjectOther: "Autre"
-    },
+    formSubject: "Objet",
+    formSubjectPlaceholder: "De quoi s'agit-il ?",
     formMessage: "Message",
-    formPlaceholder1: "Dr. Sarah Johnson",
-    formPlaceholder2: "sarah@hospital.com",
-    formPlaceholder3: "Nom du Centre Médical",
-    formPlaceholder4: "Parlez-nous de vos besoins...",
-    formSubmit: "Envoyer le Message",
-    formAccept: "J'ai lu et j'accepte la",
-    formPrivacyLink: "politique de confidentialité",
-    formPrivacy: "Nous respectons votre confidentialité. Vos informations ne seront jamais partagées.",
+    formPlaceholder1: "Votre nom",
+    formPlaceholder2: "votre@email.com",
+    formPlaceholder4: "Comment pouvons-nous vous aider ?",
+    formSubmit: "Envoyer",
+    formPrivacy: "Vos informations ne seront jamais partagées.",
   },
   about: {
     headline: "À propos de MEDISCAN AI",
@@ -331,19 +333,19 @@ export const fr = {
       "MEDISCAN AI est dédié à transformer l'analyse d'imagerie médicale grâce à l'IA de pointe et à l'expertise clinique.",
     mission: {
       title: "Notre Mission",
-      text: "Permettre aux professionnels de santé d'accéder à une recherche d'images rapide, précise et intuitive, soutenue par l'IA.",
+      text: "Rendre la recherche d'images médicales accessible et efficace — permettre aux cliniciens et chercheurs de retrouver des cas pertinents dans de grandes bases de données, à partir d'une image ou d'une description textuelle.",
     },
     vision: {
-      title: "Notre Vision",
-      text: "Être la plateforme IA de référence pour l'imagerie médicale, afin d'améliorer les résultats pour les patients dans le monde entier.",
+      title: "Notre Objectif",
+      text: "Combler le fossé entre les archives d'images médicales brutes et la connaissance clinique exploitable, grâce à un système de recherche rapide et fiable fondé sur l'IA biomédicale de pointe.",
     },
     team: {
       title: "Rencontrez l'Équipe",
       members: [
-        { name: "Dr. Sarah Johnson", role: "Directrice Médicale", photo: "/team/sarah.jpg" },
-        { name: "Alex Martinez", role: "Ingénieur IA Principal", photo: "/team/alex.jpg" },
-        { name: "Emily Wong", role: "Chef de Produit", photo: "/team/emily.jpg" },
-        { name: "Michael Lee", role: "Designer UX", photo: "/team/michael.jpg" },
+        { name: "Dr. Sarah Johnson", role: "Directrice Médicale", photo: "" },
+        { name: "Alex Martinez", role: "Ingénieur IA Principal", photo: "" },
+        { name: "Emily Wong", role: "Chef de Produit", photo: "" },
+        { name: "Michael Lee", role: "Designer UX", photo: "" },
       ],
     },
     cta: {

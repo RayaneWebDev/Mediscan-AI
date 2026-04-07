@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { flushSync } from "react-dom";
 import { ThemeContext } from "./theme-context";
+import {
+  COLOR_PALETTES,
+  DEFAULT_PALETTE_ID,
+  PALETTE_STORAGE_KEY,
+  applyPaletteVariables,
+  isPaletteId,
+} from "../theme/palettes";
 
 function getInitialTheme() {
   const stored = localStorage.getItem("theme");
@@ -10,14 +17,34 @@ function getInitialTheme() {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+function getInitialPalette() {
+  const params = new URLSearchParams(window.location.search);
+  const paletteFromUrl = params.get("palette");
+  if (isPaletteId(paletteFromUrl)) {
+    return paletteFromUrl;
+  }
+
+  const stored = localStorage.getItem(PALETTE_STORAGE_KEY);
+  if (isPaletteId(stored)) {
+    return stored;
+  }
+
+  return DEFAULT_PALETTE_ID;
+}
+
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(getInitialTheme);
+  const [palette, setPaletteState] = useState(getInitialPalette);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    document.documentElement.style.colorScheme = theme;
+    const root = document.documentElement;
+    root.dataset.theme = theme;
+    root.dataset.palette = palette;
+    root.style.colorScheme = theme;
+    applyPaletteVariables(root, theme, palette);
     localStorage.setItem("theme", theme);
-  }, [theme]);
+    localStorage.setItem(PALETTE_STORAGE_KEY, palette);
+  }, [theme, palette]);
 
   function setTheme(newTheme, clickX, clickY) {
     if (newTheme === theme) return;
@@ -61,8 +88,13 @@ export function ThemeProvider({ children }) {
     });
   }
 
+  function setPalette(newPalette) {
+    if (!isPaletteId(newPalette) || newPalette === palette) return;
+    setPaletteState(newPalette);
+  }
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, palette, setPalette, palettes: COLOR_PALETTES }}>
       {children}
     </ThemeContext.Provider>
   );

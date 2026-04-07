@@ -1,6 +1,29 @@
 import { useContext, useEffect, useState } from "react";
 import { LangContext } from "../context/lang-context";
 
+function getFeatureTone(feature, tone) {
+  const normalized = feature
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (normalized.includes("semantic image comparison")) {
+    return "search-hub-chip search-hub-chip-primary";
+  }
+
+  return tone === "primary"
+    ? "search-hub-chip search-hub-chip-primary"
+    : "search-hub-chip search-hub-chip-accent";
+}
+
+function isSemanticImageComparison(feature) {
+  return feature
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .includes("semantic image comparison");
+}
+
 function SearchChoiceCard({
   onClick,
   title,
@@ -15,58 +38,60 @@ function SearchChoiceCard({
   const toneClasses =
     tone === "primary"
       ? {
-          shell: "from-primary-pale/95 via-surface to-surface border-primary/18",
-          glow: "bg-primary/10",
-          iconShell: "bg-primary/10 text-primary group-hover:bg-primary/18",
-          chip: "bg-primary/10 text-primary",
-          cta: "text-primary",
-          accent: "from-primary/70 via-primary-light/45 to-transparent",
+          shell: "search-hub-card search-hub-card-primary",
+          iconShell: "search-hub-card-icon search-hub-card-icon-primary",
+          cta: "search-hub-cta search-hub-cta-primary",
         }
       : {
-          shell: "from-accent-pale/95 via-surface to-surface border-accent/18",
-          glow: "bg-accent/10",
-          iconShell: "bg-accent/10 text-accent group-hover:bg-accent/18",
-          chip: "bg-accent/10 text-accent",
-          cta: "text-accent",
-          accent: "from-accent/70 via-accent-light/45 to-transparent",
+          shell: "search-hub-card search-hub-card-accent",
+          iconShell: "search-hub-card-icon search-hub-card-icon-accent",
+          cta: "search-hub-cta search-hub-cta-accent",
         };
 
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`group relative overflow-hidden text-left bg-gradient-to-br ${toneClasses.shell} border rounded-[28px] p-10 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-[transform,box-shadow,border-color] duration-500 hover:-translate-y-1.5 hover:shadow-[0_28px_80px_rgba(15,23,42,0.12)]`}
+      className={`group relative text-left ${toneClasses.shell}`}
       style={{
         opacity: ready ? 1 : 0,
         transform: ready ? "translateY(0) scale(1)" : "translateY(28px) scale(0.985)",
         transition:
-          "opacity 520ms cubic-bezier(0.16, 1, 0.3, 1), transform 620ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms ease, border-color 300ms ease",
+          "opacity 520ms cubic-bezier(0.16, 1, 0.3, 1), transform 620ms cubic-bezier(0.16, 1, 0.3, 1), translate 280ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms ease, border-color 300ms ease",
         transitionDelay: `${delayMs}ms`,
-        willChange: "opacity, transform",
+        willChange: "opacity, transform, translate, border-color",
       }}
     >
-      <div className={`pointer-events-none absolute inset-0 opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-100 ${toneClasses.glow}`} />
-      <div className={`pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r ${toneClasses.accent}`} />
-
       <div className="relative z-10">
-        <div className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl transition-colors duration-300 ${toneClasses.iconShell}`}>
+        <div className={`mb-6 ${toneClasses.iconShell}`}>
           {icon}
         </div>
 
-        <h2 className="mb-3 text-2xl font-bold text-text">{title}</h2>
+        <h2 className="search-hub-card-title mb-3 text-2xl font-bold">{title}</h2>
         <p className="mb-6 text-muted leading-relaxed">{description}</p>
 
         <div className="mb-8 flex flex-wrap gap-2">
           {features.map((feature) => (
-            <span
-              key={feature}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${toneClasses.chip}`}
-            >
-              {feature}
-            </span>
+            isSemanticImageComparison(feature) ? (
+              <span key={feature} className="basis-full">
+                <span
+                    className={getFeatureTone(feature, tone)}
+                >
+                  {feature}
+                </span>
+              </span>
+            ) : (
+              <span
+                key={feature}
+                className={getFeatureTone(feature, tone)}
+              >
+                {feature}
+              </span>
+            )
           ))}
         </div>
 
-        <span className={`inline-flex items-center gap-2 text-sm font-semibold transition-all duration-300 group-hover:gap-3 ${toneClasses.cta}`}>
+        <span className={toneClasses.cta}>
           {cta}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <line x1="5" y1="12" x2="19" y2="12" />
@@ -78,7 +103,7 @@ function SearchChoiceCard({
   );
 }
 
-export default function SearchHubView({ onChooseImage, onChooseText }) {
+export default function SearchHubView({ onChooseImage, onChooseText, useSharedSurface = false }) {
   const { t } = useContext(LangContext);
   const hub = t.search.hub;
   const [ready, setReady] = useState(false);
@@ -91,14 +116,14 @@ export default function SearchHubView({ onChooseImage, onChooseText }) {
   }, []);
 
   return (
-    <div className="relative box-border h-[100dvh] overflow-hidden bg-bg px-6 py-10 md:py-16">
+    <div className={`${useSharedSurface ? "bg-transparent" : "search-hub-surface"} relative box-border h-[calc(100dvh-4rem)] overflow-hidden px-6 py-8 md:h-[calc(100dvh-5rem)] md:py-12`}>
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-[-8%] top-[10%] h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute right-[-6%] top-[20%] h-80 w-80 rounded-full bg-accent/12 blur-3xl" />
         <div className="absolute bottom-[-8%] left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/6 blur-3xl" />
       </div>
 
-      <div className="relative z-10 mx-auto flex h-full w-full max-w-[1120px] flex-col items-center justify-center">
+      <div className="relative z-10 mx-auto flex h-full w-full max-w-[1120px] flex-col items-center justify-start pt-10 md:pt-14">
         <section
           className="mb-14 w-full max-w-[760px] text-center"
           style={{
@@ -109,7 +134,7 @@ export default function SearchHubView({ onChooseImage, onChooseText }) {
           }}
         >
           <div className="mx-auto mb-5 h-px w-28 bg-gradient-to-r from-transparent via-border to-transparent" />
-          <h1 className="mb-4 text-4xl font-bold tracking-tight text-text md:text-5xl">
+          <h1 className="search-hub-card-title mb-4 text-4xl font-bold tracking-tight md:text-5xl">
             {hub.headline}
           </h1>
           <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted">

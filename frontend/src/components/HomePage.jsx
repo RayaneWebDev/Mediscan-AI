@@ -2,18 +2,18 @@ import {
   BetweenHorizontalStart,
   Blocks,
   Brain,
+  FileText,
   HardDrive,
   Hospital,
+  Image,
   Microscope,
   Route,
   Search,
   Stethoscope,
   UserKey,
-
 } from "lucide-react";
-import { useContext } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { LangContext } from "../context/lang-context";
-import { useTheme } from "../context/useTheme";
 
 const benefitIcons = {
   route: Route,
@@ -31,194 +31,694 @@ const useCaseIcons = {
   search: Search,
 };
 
-
-function BenefitCard({ icon, title, description }) {
+function VisualModeIcon({ className = "h-4 w-4" }) {
   return (
-    <div className="bg-surface border border-border rounded-2xl p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
-      <div className="w-10 h-10 rounded-xl bg-primary-pale text-primary flex items-center justify-center mb-3">
-        {icon}
-      </div>
-      <h3 className="font-bold text-text mb-2">{title}</h3>
-      <p className="text-sm text-muted leading-relaxed">{description}</p>
-    </div>
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
   );
 }
 
-function UseCaseCard({ title, description, icon }) {
+function InterpretiveModeIcon({ className = "h-4 w-4" }) {
   return (
-    <div className="bg-gradient-to-br from-primary-pale to-surface border border-primary/20 rounded-2xl p-6">
-      <div className="text-3xl mb-3">{icon}</div>
-      <h4 className="font-bold text-text mb-2">{title}</h4>
-      <p className="text-sm text-muted">{description}</p>
-    </div>
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </svg>
+  );
+}
+
+function WhyFeature({ icon, title, description }) {
+  return (
+    <article className="home-why-column">
+      <div className="home-why-icon mb-4">{icon}</div>
+      <h3 className="home-why-title mb-3">{title}</h3>
+      <p className="home-why-body">{description}</p>
+    </article>
+  );
+}
+
+function RetrievalCard({
+  nodeId,
+  tone = "neutral",
+  label,
+  icon,
+  className = "",
+}) {
+  const toneClass =
+    tone === "blue"
+      ? "home-retrieval-card-blue"
+      : tone === "accent"
+        ? "home-retrieval-card-accent"
+        : "";
+
+  const iconClass =
+    tone === "blue"
+      ? "home-retrieval-icon-blue"
+      : tone === "accent"
+        ? "home-retrieval-icon-accent"
+        : "";
+
+  const labelClass =
+    tone === "blue"
+      ? "home-retrieval-label-blue"
+      : tone === "accent"
+        ? "home-retrieval-label-accent"
+        : "";
+
+  return (
+    <article
+      className={[
+        "home-retrieval-card",
+        toneClass,
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      aria-label={label}
+      data-node-id={nodeId}
+    >
+      <div className="home-retrieval-card-shell">
+        <span className={["home-retrieval-icon", iconClass].filter(Boolean).join(" ")}>{icon}</span>
+        <p className={["home-retrieval-label", labelClass].filter(Boolean).join(" ")}>{label}</p>
+      </div>
+    </article>
   );
 }
 
 export default function HomePage({ onPageChange }) {
   const { t } = useContext(LangContext);
-  const { theme } = useTheme();
   const content = t.home;
-  const heroPreviewSrc = theme === "dark" ? "/HomePres-dark.png" : "/HomePres.jpg";
+  const rootLabel = content.modes.rootLabel;
+  const visualTitle = content.modes.visual.title;
+  const visualLeafLabel = content.modes.visual.items[0];
+  const semanticTitle = content.modes.semantic.title;
+  const semanticCaseLabel = content.modes.semantic.items[0];
+  const semanticTextLabel = content.modes.semantic.items[1];
+  const treeRef = useRef(null);
+  const [isTreeOpen, setIsTreeOpen] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+  });
+  const [treeWires, setTreeWires] = useState({
+    rootToVisual: {
+      path: "",
+      start: { x: 0, y: 0 },
+      end: { x: 0, y: 0 },
+    },
+    rootToSemantic: {
+      path: "",
+      start: { x: 0, y: 0 },
+      end: { x: 0, y: 0 },
+    },
+    visualToLeaf: {
+      path: "",
+      start: { x: 0, y: 0 },
+      end: { x: 0, y: 0 },
+    },
+    semanticToCase: {
+      path: "",
+      start: { x: 0, y: 0 },
+      end: { x: 0, y: 0 },
+    },
+    semanticToText: {
+      path: "",
+      start: { x: 0, y: 0 },
+      end: { x: 0, y: 0 },
+    },
+  });
+
+  useEffect(() => {
+    const treeNode = treeRef.current;
+    if (!treeNode) {
+      return undefined;
+    }
+
+    let frameId = 0;
+
+    const updateWires = () => {
+      const measureNodeAnchor = (nodeId, side) => {
+        const node = treeNode.querySelector(`[data-node-id="${nodeId}"]`);
+        if (!node) {
+          return null;
+        }
+
+        let current = node;
+        let x = node.offsetWidth / 2;
+        let y = side === "bottom" ? node.offsetHeight : 0;
+
+        while (current && current !== treeNode) {
+          x += current.offsetLeft;
+          y += current.offsetTop;
+          current = current.offsetParent;
+        }
+
+        return {
+          x,
+          y,
+        };
+      };
+
+      const buildCurve = (start, end, { minCurve = 34, curveFactor = 0.28, startShift = 0.1, endShift = 0.14, endCurveFactor = 0.78 } = {}) => {
+        const verticalGap = Math.max(end.y - start.y, 1);
+        const deltaX = end.x - start.x;
+        const curveDepth = Math.max(minCurve, verticalGap * curveFactor);
+        const control1 = {
+          x: start.x + deltaX * startShift,
+          y: start.y + curveDepth,
+        };
+        const control2 = {
+          x: end.x - deltaX * endShift,
+          y: end.y - curveDepth * endCurveFactor,
+        };
+
+        return [
+          `M ${start.x} ${start.y}`,
+          `C ${control1.x} ${control1.y}, ${control2.x} ${control2.y}, ${end.x} ${end.y}`,
+        ].join(" ");
+      };
+
+      const rootStart = measureNodeAnchor("root", "bottom");
+      const visualTop = measureNodeAnchor("visual-parent", "top");
+      const visualBottom = measureNodeAnchor("visual-parent", "bottom");
+      const visualLeafTop = measureNodeAnchor("visual-leaf", "top");
+      const semanticTop = measureNodeAnchor("semantic-parent", "top");
+      const semanticBottom = measureNodeAnchor("semantic-parent", "bottom");
+      const semanticLeafTop = measureNodeAnchor("semantic-leaf", "top");
+      const textLeafTop = measureNodeAnchor("text-leaf", "top");
+
+      if (
+        !rootStart ||
+        !visualTop ||
+        !visualBottom ||
+        !visualLeafTop ||
+        !semanticTop ||
+        !semanticBottom ||
+        !semanticLeafTop ||
+        !textLeafTop
+      ) {
+        setTreeWires({
+          rootToVisual: {
+            path: "",
+            start: { x: 0, y: 0 },
+            end: { x: 0, y: 0 },
+          },
+          rootToSemantic: {
+            path: "",
+            start: { x: 0, y: 0 },
+            end: { x: 0, y: 0 },
+          },
+          visualToLeaf: {
+            path: "",
+            start: { x: 0, y: 0 },
+            end: { x: 0, y: 0 },
+          },
+          semanticToCase: {
+            path: "",
+            start: { x: 0, y: 0 },
+            end: { x: 0, y: 0 },
+          },
+          semanticToText: {
+            path: "",
+            start: { x: 0, y: 0 },
+            end: { x: 0, y: 0 },
+          },
+        });
+        return;
+      }
+
+      setTreeWires({
+        rootToVisual: {
+          path: buildCurve(rootStart, visualTop),
+          start: rootStart,
+          end: visualTop,
+        },
+        rootToSemantic: {
+          path: buildCurve(rootStart, semanticTop),
+          start: rootStart,
+          end: semanticTop,
+        },
+        visualToLeaf: {
+          path: buildCurve(visualBottom, visualLeafTop, {
+            minCurve: 26,
+            curveFactor: 0.22,
+            startShift: 0,
+            endShift: 0,
+            endCurveFactor: 0.9,
+          }),
+          start: visualBottom,
+          end: visualLeafTop,
+        },
+        semanticToCase: {
+          path: buildCurve(semanticBottom, semanticLeafTop, {
+            minCurve: 26,
+            curveFactor: 0.22,
+            startShift: 0,
+            endShift: 0,
+            endCurveFactor: 0.9,
+          }),
+          start: semanticBottom,
+          end: semanticLeafTop,
+        },
+        semanticToText: {
+          path: buildCurve(semanticBottom, textLeafTop, {
+            minCurve: 26,
+            curveFactor: 0.22,
+            startShift: 0,
+            endShift: 0,
+            endCurveFactor: 0.9,
+          }),
+          start: semanticBottom,
+          end: textLeafTop,
+        },
+      });
+    };
+
+    const scheduleUpdate = () => {
+      cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(updateWires);
+    };
+
+    scheduleUpdate();
+
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined" ? new ResizeObserver(scheduleUpdate) : null;
+
+    resizeObserver?.observe(treeNode);
+    treeNode.querySelectorAll("[data-node-id]").forEach((node) => resizeObserver?.observe(node));
+    window.addEventListener("resize", scheduleUpdate);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener("resize", scheduleUpdate);
+      resizeObserver?.disconnect();
+    };
+  }, [
+    rootLabel,
+    visualTitle,
+    visualLeafLabel,
+    semanticTitle,
+    semanticCaseLabel,
+    semanticTextLabel,
+  ]);
+
+  useEffect(() => {
+    const treeNode = treeRef.current;
+    if (!treeNode || typeof window === "undefined") {
+      return undefined;
+    }
+
+    const reducedMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    const handleReducedMotionChange = () => {
+      if (reducedMotionQuery?.matches) {
+        setIsTreeOpen(true);
+      }
+    };
+
+    if (reducedMotionQuery?.matches) {
+      setIsTreeOpen(true);
+      return () => {
+        reducedMotionQuery?.removeEventListener?.("change", handleReducedMotionChange);
+      };
+    }
+
+    let observer = null;
+
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry?.isIntersecting) {
+            return;
+          }
+
+          setIsTreeOpen(true);
+          observer?.disconnect();
+        },
+        {
+          threshold: 0.32,
+          rootMargin: "0px 0px -10% 0px",
+        },
+      );
+
+      observer.observe(treeNode);
+    } else {
+      const openOnMountId = window.setTimeout(() => setIsTreeOpen(true), 160);
+
+      return () => {
+        window.clearTimeout(openOnMountId);
+        reducedMotionQuery?.removeEventListener?.("change", handleReducedMotionChange);
+      };
+    }
+
+    reducedMotionQuery?.addEventListener?.("change", handleReducedMotionChange);
+
+    return () => {
+      observer?.disconnect();
+      reducedMotionQuery?.removeEventListener?.("change", handleReducedMotionChange);
+    };
+  }, []);
 
   return (
-    <div className="bg-bg transition-colors duration-300 -mt-16 md:-mt-20">
+    <div className="-mt-16 md:-mt-20">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-primary-pale via-bg-soft to-bg min-h-[88vh] flex items-center">
-        {/* Left content */}
-        <div className="relative z-10 w-full md:w-[50%] px-8 md:px-20 py-8">
-          <div className="flex flex-col gap-6">
+      <section className="relative min-h-[calc(100vh-4rem)] overflow-hidden pt-16 md:min-h-[calc(100vh-5rem)] md:pt-20">
+        <div className="page-container relative h-full">
+          <div className="home-hero-stage">
+            <div className="home-hero-layout">
+              <div className="home-hero-copy">
+                <p className="home-hero-label -mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.22em]">
+                  {content.heroLabel}
+                </p>
+                <h1 className="home-hero-title text-[clamp(2.75rem,6vw,5.5rem)] font-extrabold tracking-[-0.05em]">
+                  MEDISCAN AI
+                </h1>
+                <p className="home-hero-description mt-6 max-w-[560px] text-[clamp(1rem,1.6vw,1.16rem)] leading-relaxed">
+                  {content.description}{" "}
+                  <span className="home-hero-description-tail">{content.useCases.inlineDescription}</span>
+                </p>
+                <div className="home-hero-actions mt-8 flex flex-wrap gap-3">
+                  <button
+                    onClick={() => onPageChange("search")}
+                    className="home-hero-button-primary rounded-xl px-8 py-3 text-sm font-semibold"
+                  >
+                    {content.cta1}
+                  </button>
+                  <button
+                    onClick={() => onPageChange("how")}
+                    className="home-hero-button-secondary rounded-xl px-8 py-3 text-sm font-semibold"
+                  >
+                    {content.cta2}
+                  </button>
+                </div>
+                <div className="home-hero-audience mt-10" aria-label={content.useCases.headline}>
+                  <p className="home-hero-audience-heading">{content.useCases.headline}</p>
+                  <div className="home-hero-audience-list">
+                    {content.useCases.roles.map((role) => {
+                      const AudienceIcon = useCaseIcons[role.icon];
 
-            <h1 className="text-3xl md:text-4xl lg:text-[2.6rem] font-extrabold text-text leading-[1.1] tracking-tight">
-              {content.headline1}<br/>
-              {content.headline2}
-            </h1>
+                      return (
+                        <div key={role.title} className="home-hero-audience-item">
+                          {AudienceIcon ? (
+                            <span className="home-hero-audience-icon">
+                              <AudienceIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
+                            </span>
+                          ) : null}
+                          <span className="home-hero-audience-name">{role.title}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
 
-            <p className="text-sm md:text-base text-muted leading-relaxed max-w-[400px]">
-              {content.description}
+              <div className="home-hero-visual" aria-hidden="true">
+                <div className="home-hero-spine-shell">
+                  <div className="home-hero-spine-glow" />
+                  <div className="home-hero-spine-veil" />
+                  <img src="/HomeSpine.png" alt="" className="home-hero-spine-image" draggable="false" />
+                </div>
+              </div>
+            </div>
+            <div className="home-hero-orb home-hero-orb-left" />
+            <div className="home-hero-orb home-hero-orb-right" />
+          </div>
+        </div>
+      </section>
+
+      <section className="page-container home-section home-modes-page">
+        <div className="home-modes-page-inner">
+          <div className="home-section-header home-section-header-center home-modes-intro">
+            <h2 className="home-section-title mb-3">{content.modes.headline}</h2>
+            <p className="home-section-description home-section-description-wide home-modes-description">
+              {content.modes.description}
             </p>
+          </div>
 
-            <div className="flex gap-3 flex-wrap pt-1">
-              <button onClick={() => onPageChange("search")} className="px-8 py-3 rounded-xl bg-primary text-white font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all text-sm cursor-pointer">
-                {content.cta1}
-              </button>
-              <button onClick={() => onPageChange("features")} className="px-8 py-3 rounded-xl border-2 border-primary/40 text-primary font-semibold hover:bg-primary-pale hover:border-primary transition-all text-sm cursor-pointer">
-                {content.cta2}
-              </button>
+          <div className="home-retrieval-anchor">
+          <div
+            ref={treeRef}
+            className="home-retrieval-branch home-retrieval-tree"
+            data-tree-state={isTreeOpen ? "open" : "closed"}
+          >
+            <svg className="home-retrieval-wire-layer" aria-hidden="true">
+              <defs>
+                <linearGradient
+                  id="home-retrieval-wire-blue"
+                  gradientUnits="userSpaceOnUse"
+                  x1={treeWires.rootToVisual.start.x}
+                  y1={treeWires.rootToVisual.start.y}
+                  x2={treeWires.rootToVisual.end.x}
+                  y2={treeWires.rootToVisual.end.y}
+                >
+                  <stop offset="0%" stopColor="var(--tree-wire-neutral)" />
+                  <stop offset="18%" stopColor="var(--tree-wire-primary-tint)" />
+                  <stop offset="56%" stopColor="var(--tree-wire-primary-mid)" />
+                  <stop offset="100%" stopColor="var(--tree-wire-primary-soft)" />
+                </linearGradient>
+
+                <linearGradient
+                  id="home-retrieval-wire-blue-branch"
+                  gradientUnits="userSpaceOnUse"
+                  x1={treeWires.visualToLeaf.start.x}
+                  y1={treeWires.visualToLeaf.start.y}
+                  x2={treeWires.visualToLeaf.end.x}
+                  y2={treeWires.visualToLeaf.end.y}
+                >
+                  <stop offset="0%" stopColor="var(--tree-wire-primary-mid)" />
+                  <stop offset="100%" stopColor="var(--tree-wire-primary-soft)" />
+                </linearGradient>
+
+                <linearGradient
+                  id="home-retrieval-wire-accent"
+                  gradientUnits="userSpaceOnUse"
+                  x1={treeWires.rootToSemantic.start.x}
+                  y1={treeWires.rootToSemantic.start.y}
+                  x2={treeWires.rootToSemantic.end.x}
+                  y2={treeWires.rootToSemantic.end.y}
+                >
+                  <stop offset="0%" stopColor="var(--tree-wire-neutral)" />
+                  <stop offset="18%" stopColor="var(--tree-wire-accent-tint)" />
+                  <stop offset="56%" stopColor="var(--tree-wire-accent-mid)" />
+                  <stop offset="100%" stopColor="var(--tree-wire-accent-soft)" />
+                </linearGradient>
+
+                <linearGradient
+                  id="home-retrieval-wire-accent-branch-case"
+                  gradientUnits="userSpaceOnUse"
+                  x1={treeWires.semanticToCase.start.x}
+                  y1={treeWires.semanticToCase.start.y}
+                  x2={treeWires.semanticToCase.end.x}
+                  y2={treeWires.semanticToCase.end.y}
+                >
+                  <stop offset="0%" stopColor="var(--tree-wire-accent-mid)" />
+                  <stop offset="100%" stopColor="var(--tree-wire-accent-soft)" />
+                </linearGradient>
+
+                <linearGradient
+                  id="home-retrieval-wire-accent-branch-text"
+                  gradientUnits="userSpaceOnUse"
+                  x1={treeWires.semanticToText.start.x}
+                  y1={treeWires.semanticToText.start.y}
+                  x2={treeWires.semanticToText.end.x}
+                  y2={treeWires.semanticToText.end.y}
+                >
+                  <stop offset="0%" stopColor="var(--tree-wire-accent-mid)" />
+                  <stop offset="100%" stopColor="var(--tree-wire-accent-soft)" />
+                </linearGradient>
+              </defs>
+
+              {treeWires.rootToVisual.path && (
+                <>
+                  <path
+                    d={treeWires.rootToVisual.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-1 home-retrieval-wire-blue-glow"
+                  />
+                  <path
+                    d={treeWires.rootToVisual.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-1 home-retrieval-wire-blue-base"
+                  />
+                  <path
+                    d={treeWires.rootToVisual.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-1 home-retrieval-wire-blue"
+                  />
+                </>
+              )}
+
+              {treeWires.rootToSemantic.path && (
+                <>
+                  <path
+                    d={treeWires.rootToSemantic.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-1 home-retrieval-wire-accent-glow"
+                  />
+                  <path
+                    d={treeWires.rootToSemantic.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-1 home-retrieval-wire-accent-base"
+                  />
+                  <path
+                    d={treeWires.rootToSemantic.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-1 home-retrieval-wire-accent"
+                  />
+                </>
+              )}
+
+              {treeWires.visualToLeaf.path && (
+                <>
+                  <path
+                    d={treeWires.visualToLeaf.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-2 home-retrieval-wire-blue-glow"
+                  />
+                  <path
+                    d={treeWires.visualToLeaf.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-2 home-retrieval-wire-blue-base"
+                  />
+                  <path
+                    d={treeWires.visualToLeaf.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-2 home-retrieval-wire-blue-branch"
+                  />
+                </>
+              )}
+
+              {treeWires.semanticToCase.path && (
+                <>
+                  <path
+                    d={treeWires.semanticToCase.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-2 home-retrieval-wire-accent-glow"
+                  />
+                  <path
+                    d={treeWires.semanticToCase.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-2 home-retrieval-wire-accent-base"
+                  />
+                  <path
+                    d={treeWires.semanticToCase.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-2 home-retrieval-wire-accent-branch"
+                    style={{ stroke: "url(#home-retrieval-wire-accent-branch-case)" }}
+                  />
+                </>
+              )}
+
+              {treeWires.semanticToText.path && (
+                <>
+                  <path
+                    d={treeWires.semanticToText.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-2 home-retrieval-wire-accent-glow"
+                  />
+                  <path
+                    d={treeWires.semanticToText.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-2 home-retrieval-wire-accent-base"
+                  />
+                  <path
+                    d={treeWires.semanticToText.path}
+                    pathLength={1}
+                    className="home-retrieval-wire home-retrieval-wire-stage-2 home-retrieval-wire-accent-branch"
+                    style={{ stroke: "url(#home-retrieval-wire-accent-branch-text)" }}
+                  />
+                </>
+              )}
+            </svg>
+
+            <div className="home-retrieval-level home-retrieval-level-1">
+              <RetrievalCard
+                nodeId="root"
+                label={rootLabel}
+                icon={<Route className="h-4 w-4" strokeWidth={1.8} />}
+                className="home-retrieval-card-root"
+              />
             </div>
 
-          </div>
-        </div>
+            <div className="home-retrieval-level home-retrieval-level-2 home-retrieval-children">
+              <div className="home-retrieval-child-column home-retrieval-branch-slot home-retrieval-branch-slot-blue">
+                <RetrievalCard
+                  nodeId="visual-parent"
+                  tone="blue"
+                  label={visualTitle}
+                  icon={<VisualModeIcon />}
+                  className="home-retrieval-card-parent home-retrieval-card-branch-left"
+                />
 
-        {/* Right - Visual */}
-        <div className="hidden md:flex absolute right-0 top-0 bottom-0 w-[54%] items-center justify-center px-6 lg:px-12">
-          <div className="pointer-events-none absolute inset-y-0 -left-20 w-56 bg-gradient-to-r from-transparent via-bg-soft/70 to-transparent lg:-left-24 lg:w-72 z-10" />
-          <div className="hero-frame relative z-0 w-full max-w-[760px]">
-            <img
-              src={heroPreviewSrc}
-              alt="MEDISCAN AI interface preview"
-              className="hero-preview w-full max-h-[72vh] object-contain object-center select-none"
-              draggable="false"
-            />
-          </div>
-        </div>
+                <div className="home-retrieval-level home-retrieval-level-3">
+                  <RetrievalCard
+                  nodeId="visual-leaf"
+                  tone="blue"
+                  label={visualLeafLabel}
+                  icon={<Image className="h-4 w-4" strokeWidth={1.8} />}
+                  className="home-retrieval-card-leaf home-retrieval-card-leaf-center"
+                />
+              </div>
+              </div>
 
-        {/* Mobile */}
-        <div className="md:hidden w-full px-6 pb-12">
-          <div className="hero-frame">
-            <img
-              src={heroPreviewSrc}
-              alt="MEDISCAN AI interface preview"
-              className="hero-preview w-full object-contain select-none"
-              draggable="false"
-            />
-          </div>
-        </div>
+              <div className="home-retrieval-child-column home-retrieval-branch-slot home-retrieval-branch-slot-accent">
+                <RetrievalCard
+                  nodeId="semantic-parent"
+                  tone="accent"
+                  label={semanticTitle}
+                  icon={<InterpretiveModeIcon />}
+                  className="home-retrieval-card-parent home-retrieval-card-branch-right"
+                />
 
-      </section>
+                <div className="home-retrieval-level home-retrieval-level-3 home-retrieval-leaf-group">
+                  <RetrievalCard
+                    nodeId="semantic-leaf"
+                    tone="accent"
+                    label={semanticCaseLabel}
+                    icon={<Search className="h-4 w-4" strokeWidth={1.8} />}
+                    className="home-retrieval-card-leaf home-retrieval-card-leaf-left"
+                  />
 
-      {/* Trust Metrics */}
-      <section className="max-w-[100%] mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { number: content.stats.value1, label: content.stats.title1 },
-          { number: content.stats.value2, label: content.stats.title2 },
-          { number: content.stats.value3, label: content.stats.title3 },
-          { number: content.stats.value4, label: content.stats.title4 },
-        ].map((stat) => (
-          <div key={stat.label} className="text-center">
-            <p className="text-3xl md:text-4xl font-bold text-primary">{stat.number}</p>
-            <p className="text-xs text-muted mt-2">{stat.label}</p>
-          </div>
-        ))}
-      </section>
-
-
-      {/* Key Benefits */}
-      <section className="max-w-[1400px] mx-auto px-22 py-25">
-                    
-          <div className="text-center mb-14">
-          
-          <h2 className="text-4xl font-bold text-text mb-3">{content.whyChoose.headline}</h2>
-          <p className="text-muted max-w-2xl mx-auto">
-            {content.whyChoose.description}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {content.whyChoose.features.map((feature, i) => {
-            const BenefitIcon = benefitIcons[feature.icon];
-
-            return (
-              <BenefitCard
-                key={i}
-                icon={BenefitIcon ? <BenefitIcon className="w-5 h-5" strokeWidth={1.8} /> : null}
-                title={feature.title}
-                description={feature.desc}
-              />
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Use Cases */}
-      <section className="max-w-[1400px] mx-auto px-6 md:px-22 pb-24">        
-
-        <h2 className="text-4xl font-bold text-text text-center mb-14">{content.useCases.headline}</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {content.useCases.roles.map((role, i) => {
-            const UseCaseIcon = useCaseIcons[role.icon];
-
-            return (
-              <UseCaseCard
-                key={i}
-                icon={UseCaseIcon ? <UseCaseIcon className="w-8 h-8 text-primary" strokeWidth={1.8} /> : null}
-                title={role.title}
-                description={role.desc}
-              />
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Two Search Modes */}
-      <section className="bg-bg-soft py-25 px-6 md:px-22 transition-colors duration-300">        <div className="max-w-[1400px] mx-auto px-6">
-          <h2 className="text-4xl font-bold text-text text-center mb-3">{content.modes.headline}</h2>
-          <p className="text-muted text-center mb-14 max-w-2xl mx-auto">
-            {content.modes.description}
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[
-              {
-                name: content.modes.visual.title,
-                desc: content.modes.visual.desc,
-                use: content.modes.visual.use,
-                color: "primary",
-              },
-              {
-                name: content.modes.semantic.title,
-                desc: content.modes.semantic.desc,
-                use: content.modes.semantic.use,
-                color: "accent",
-              },
-            ].map((mode) => {
-              const isBg = mode.color === "primary" ? "from-primary-pale to-surface border-primary/20" : "from-accent-pale to-surface border-accent/20";
-              const badge = mode.color === "primary" ? "bg-primary text-white" : "bg-accent text-white";
-              return (
-                <div key={mode.name} className={`bg-gradient-to-br ${isBg} border rounded-2xl p-8`}>
-                  <p className={`text-xs font-bold uppercase tracking-wider ${badge} inline-block px-3 py-1 rounded-full mb-4`}>
-                    {mode.name}
-                  </p>
-                  <h3 className="text-2xl font-bold text-text mb-2">{mode.name}</h3>
-                  <p className="text-sm text-muted mb-4">{mode.desc}</p>
-                  <p className="text-xs font-semibold text-muted mb-4">{mode.use}</p>
+                  <RetrievalCard
+                    nodeId="text-leaf"
+                    tone="accent"
+                    label={semanticTextLabel}
+                    icon={<FileText className="h-4 w-4" strokeWidth={1.8} />}
+                    className="home-retrieval-card-leaf home-retrieval-card-leaf-right"
+                  />
                 </div>
-              );
-            })}
+              </div>
+            </div>
+          </div>
+          </div>
+
+          <div className="home-modes-benefits">
+            <div className="home-section-header home-section-header-center home-modes-benefits-header">
+              <h3 className="home-subsection-title mb-3">{content.whyChoose.headline}</h3>
+              <p className="home-section-description home-section-description-wide">
+                {content.whyChoose.description}
+              </p>
+            </div>
+
+            <div className="home-why-grid home-why-grid-compact grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-0">
+              {content.whyChoose.features.map((feature, i) => {
+                const BenefitIcon = benefitIcons[feature.icon];
+                return (
+                  <WhyFeature
+                    key={i}
+                    icon={BenefitIcon ? <BenefitIcon className="w-5 h-5" strokeWidth={1.8} /> : null}
+                    title={feature.title}
+                    description={feature.desc}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
-
     </div>
   );
 }

@@ -11,10 +11,11 @@ export const en = {
 
   // Home Page
   home: {
+    heroLabel: "IMAGE - TEXT GUIDED MEDICAL RETRIEVAL",
     badge: "Interpretive AI Analysis",
     headline1: "Reduce Uncertainty.",
     headline2: "Accelerate Diagnosis.",
-    description: "Unlocking the visual archives of medicine with MEDISCAN AI. Search by content, find similar cases instantly, and elevate clinical precision.",
+    description: "Search medical imaging archives by image content or text description, retrieve visually or clinically related cases, and support evidence-based interpretation through structured similarity search.",
     cta1: "Scan & Search",
     cta1Link: "/search",
     cta2Link: "/features",
@@ -37,33 +38,18 @@ export const en = {
       features: [
         {
           icon: "route",
-          title: "Fast, Intuitive Workflow",
-          desc: "Add an image, select a search mode, and explore similar cases",
-        },
-        {
-          icon: "between-horizontal-start",
-          title: "Explore from Different Angles",
-          desc: "Use one search mode to find images that look similar, and another to uncover related medical cases.",
+          title: "Intelligent Retrieval",
+          desc: "Search by visual or semantic similarity through a fast, intuitive workflow across radiology data.",
         },
         {
           icon: "brain",
-          title: "Multi-Modality Support",
-          desc: "Enables retrieval across varied radiology image types within a single structured system.",
-        },
-        {
-          icon: "user-key",
-          title: "Your Images Stay Private",
-          desc: "Search images are not stored permanently and are used only during the query process.",
-        },
-        {
-          icon: "hard-drive",
-          title: "No Special Hardware Needed",
-          desc: "Runs without specialized hardware, making the platform easier to access and use.",
+          title: "Diagnostic Support",
+          desc: "Compare relevant cases, support interpretation, and strengthen diagnostic confidence with evidence-based retrieval.",
         },
         {
           icon: "blocks",
-          title: "Seamless Integration",
-          desc: "Works with your PACS, EMR, and hospital infrastructure. API-first design.",
+          title: "Scalable Research Infrastructure",
+          desc: "Private, hardware-light, and ready to integrate with PACS, EMR, and hospital research environments.",
         },
       ],
     },
@@ -91,15 +77,23 @@ export const en = {
     },
 
     modes: {
-      headline: "Two Intelligent Search Modes",
-      description: "Choose the approach that matches your clinical question.",
+      headline: "Two Complementary Retrieval Modes",
+      description: "A visual pathway for structural similarity and an interpretive pathway for clinically meaningful case discovery.",
+      rootLabel: "MEDISCAN Retrieval",
       visual: {
         title: "Visual Analysis",
+        items: [
+          "Visual Similarity Search",
+        ],
         desc: "Find images with similar anatomical structures and visual characteristics.",
         use: "Use when: Comparative anatomy, morphology matching, or structural similarity.",
       },
       semantic: {
         title: "Interpretive Analysis",
+        items: [
+          "Semantic Similarity Search",
+          "Text-Guided Search",
+        ],
         desc: "Discover cases with comparable pathology and clinical significance.",
         use: "Use when: Disease finding, diagnostic reasoning, or evidence-based case selection.",
       },
@@ -107,6 +101,8 @@ export const en = {
 
     useCases: {
       headline: "Built for Healthcare Professionals",
+      audience: "Radiologists, pathologists, hospital systems, and research centers.",
+      inlineDescription: "Retrieve precedent cases, compare similar specimens, reduce redundant imaging, and accelerate cohort discovery in a single workflow.",
       roles: [
         {
           icon: "stethoscope",
@@ -151,6 +147,13 @@ export const en = {
       privacy : "Privacy",
       terms: "Terms",
       aboutus: "About Us",
+      navigationTitle: "Navigation",
+      supportTitle: "Support",
+      legalTitle: "Legal",
+      connectTitle: "Connect",
+      builtWith: "Built with",
+      documentation: "Documentation",
+      faq: "FAQ",
     },
   },
 
@@ -164,6 +167,7 @@ export const en = {
     step3: "3. View Results",
     searching: "Analyzing your image...",
     error: "Error connecting to server.",
+    analysisMode: "Analysis Mode",
     modeVisual: "Visual Analysis",
     modeSemantic: "Interpretive Analysis",
     numResults: "Results",
@@ -196,23 +200,21 @@ export const en = {
       headline: "Medical Search",
       description: "Choose your search type.",
       imageCard: {
-        title: "By image",
+        title: "Visual Search",
         subtitle: "Visual & semantic analysis",
         desc: "Upload a radiograph or medical image to find the closest matching cases in the database.",
         features: [
           "Visual structure analysis",
           "Semantic image comparison",
-          "Results ranked by similarity",
         ],
         cta: "Analyse an image",
       },
       textCard: {
-        title: "By description",
+        title: "Text Guided Search",
         subtitle: "Natural language search",
         desc: "Describe a medical case in English and retrieve matching images by medical meaning.",
         features: [
-          "Search by medical meaning",
-          "Natural language — English",
+          "Medical meaning search — English",
           "Semantically relevant results",
         ],
         cta: "Describe a case",
@@ -237,6 +239,34 @@ export const en = {
     image: {
       headline: "Image Search",
       back: "Back",
+      invalidFileType: "Only JPEG and PNG files are accepted.",
+      uploadPrompt: "Drag an image here or",
+      browseAction: "browse",
+      acceptedFormats: "JPEG or PNG only",
+      previewAlt: "Selected image preview",
+      legendEyebrow: "Quick Note",
+      legendTitle: "What each analysis mode represents in MEDISCAN AI",
+      legendDescription: "This reference stays fixed: one mode reads visible structure, the other reads medically meaningful similarity.",
+      legend: {
+        visual: {
+          label: "VISUAL ANALYSIS",
+          title: "Structural and anatomical similarity",
+          description: "Visual Analysis compares what is directly visible in the image: shapes, contours, textures, contrast patterns, and spatial organization.",
+          note: "Use it to find visually or anatomically similar images.",
+        },
+        interpretive: {
+          label: "INTERPRETIVE ANALYSIS",
+          title: "Medical and semantic similarity",
+          description: "Interpretive Analysis goes beyond appearance and focuses on medical meaning, pathology patterns, and semantic similarity.",
+          note: "Use it to find medically or semantically similar cases.",
+        },
+      },
+      readyStep: "3. Launch Search",
+      readyTitle: "Start the retrieval",
+      readyDescription: "Upload a medical image, choose the analysis mode, then run the search to surface the closest matching cases.",
+      pendingStep: "3. Run Analysis",
+      pendingTitle: "Your image is ready",
+      pendingDescription: "Adjust the analysis settings, then click Search to retrieve the closest visual or interpretive matches.",
     },
 
     text: {
@@ -250,44 +280,28 @@ export const en = {
       error: "An error occurred.",
       step3: "Results",
     },
-  },
-
-  // Features Page
-  features: {
-    headline: "Powerful Features",
-    description: "Everything needed for clinical-grade image analysis and discovery.",
-    items: [
-      {
-        title: "Sub-Second Search",
-        desc: "Query millions of images in under 1 second. Optimized for clinical workflows.",
-        features: ["Sub-millisecond latency", "Distributed indexing", "Real-time updates"],
-      },
-      {
-        title: "Multi-Modal Support",
-        desc: "Works across all major imaging types—CT, MRI, X-Ray, Ultrasound, Pathology.",
-        features: ["10+ imaging modalities", "Cross-modality search", "Format agnostic"],
-      },
-      {
-        title: "Interpretive Validation",
-        desc: "AI trained on 100K+ clinically-annotated images from peer-reviewed datasets.",
-        features: ["Biomedical AI models", "Clinical confidence scores", "Evidence-backed"],
-      },
-      {
-        title: "Enterprise Security",
-        desc: "HIPAA compliant. On-premise or cloud. Your data remains under your control.",
-        features: ["HIPAA compliance", "End-to-end encryption", "Audit logging"],
-      },
-      {
-        title: "PACS & EMR Integration",
-        desc: "Seamless integration with existing hospital infrastructure. No disruption.",
-        features: ["DICOM support", "REST API", "Custom workflows"],
-      },
-      {
-        title: "Advanced Analytics",
-        desc: "Track usage, measure impact, and extract insights from search patterns.",
-        features: ["Search analytics", "Outcome metrics", "Usage dashboards"],
-      },
-    ],
+    filters: {
+      minScore: "Min Score",
+      caption: "Caption",
+      captionPlaceholder: "Filter by caption...",
+      sort: "Sort",
+      sortDesc: "Score ↓",
+      sortAsc: "Score ↑",
+      compare: "Compare",
+      compareOn: "✓ Compare On",
+      export: "Export",
+    },
+    results: {
+      visualMode: "Visual (DINOv2)",
+      semanticMode: "Semantic (BioMedCLIP)",
+      textMode: "Text (BioMedCLIP)",
+      relaunchImage: "Search from this image",
+      resultsFoundSingular: "result found",
+      resultsFoundPlural: "results found",
+      selectedCount: "selected images",
+      clearSelection: "Clear",
+      relaunchSelection: "Search from selection",
+    },
   },
 
   // About Page
@@ -297,19 +311,19 @@ export const en = {
       "MEDISCAN AI is dedicated to transforming medical imaging analysis with cutting-edge AI technology and clinical expertise.",
     mission: {
       title: "Our Mission",
-      text: "To empower healthcare professionals with fast, accurate, and intuitive AI-driven image search and diagnostic support.",
+      text: "Make medical image search accessible and efficient — allowing clinicians and researchers to find relevant cases from large databases using either an image or a text description.",
     },
     vision: {
-      title: "Our Vision",
-      text: "To be the leading AI platform for medical imaging, enabling better outcomes for patients worldwide.",
+      title: "Our Goal",
+      text: "Bridge the gap between raw medical image archives and actionable clinical knowledge, by providing a fast, reliable retrieval system grounded in state-of-the-art biomedical AI.",
     },
     team: {
       title: "Meet the Team",
       members: [
-        { name: "Dr. Sarah Johnson", role: "Chief Medical Officer", photo: "/team/sarah.jpg" },
-        { name: "Alex Martinez", role: "Lead AI Engineer", photo: "/team/alex.jpg" },
-        { name: "Emily Wong", role: "Product Manager", photo: "/team/emily.jpg" },
-        { name: "Michael Lee", role: "UX Designer", photo: "/team/michael.jpg" },
+        { name: "Dr. Sarah Johnson", role: "Chief Medical Officer", photo: "" },
+        { name: "Alex Martinez", role: "Lead AI Engineer", photo: "" },
+        { name: "Emily Wong", role: "Product Manager", photo: "" },
+        { name: "Michael Lee", role: "UX Designer", photo: "" },
       ],
     },
     cta: {
@@ -320,37 +334,25 @@ export const en = {
   },
   // Contact Page
   contact: {
-    headline: "Get in Touch",
-    description: "Have questions? Our clinical and technical team is here to help.",
-    email: "Email",
-    sales: "Sales",
-    support: "Support",
-    emailAddr: "hello@mediscan.ai",
-    salesAddr: "sales@mediscan.ai",
+    headline: "Contact Us",
+    description: "A question, a bug, or just want to say hello? We read every message.",
+    supportLabel: "Support",
+    supportDesc: "For any technical question or feedback about MediScan.",
     supportAddr: "support@mediscan.ai",
-    responses: "Response Times",
-    resp1: "General inquiry: Within 24 hours",
-    resp2: "Sales demo request: Within 2 hours",
-    resp3: "Technical support: Priority response",
-    formName: "Full Name",
+    responseLabel: "Response time",
+    responseDesc: "We typically respond within 24 hours on business days.",
+    sentTitle: "Email draft ready",
+    sentDesc: "Your email client opened with a prefilled message to the MEDISCAN team.",
+    sentAnother: "Prepare another email",
+    formName: "Name",
     formEmail: "Email",
-    formOrg: "Hospital / Organization",
-    subject: {
-      formSubject: "Subject",
-      subjectPlaceholder: "Select a subject...",
-      subjectDemo: "Request a demonstration",
-      subjectSupport: "Technical Support",
-      subjectPartnership: "Partnerships / Press",
-      subjectOther: "Other"
-    },
+    formSubject: "Subject",
+    formSubjectPlaceholder: "What is your message about?",
     formMessage: "Message",
-    formPlaceholder1: "Dr. Sarah Johnson",
-    formPlaceholder2: "sarah@hospital.com",
-    formPlaceholder3: "Medical Center Name",
-    formPlaceholder4: "Tell us about your needs...",
+    formPlaceholder1: "Your name",
+    formPlaceholder2: "your@email.com",
+    formPlaceholder4: "Tell us how we can help...",
     formSubmit: "Send Message",
-    formAccept: "I've read and accept",
-    formPrivacyLink: "privacy policy",
     formPrivacy: "We respect your privacy. Your information will never be shared.",
   },
 
@@ -436,7 +438,7 @@ export const en = {
         ],
       },
     },
-
+  },
 
   // FAQ
   faq: {
@@ -500,5 +502,4 @@ export const en = {
     contactTitle: "Still have questions?",
     contactBtn: "Contact our team"
   },
-},
 };

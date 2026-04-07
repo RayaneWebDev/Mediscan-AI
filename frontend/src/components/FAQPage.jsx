@@ -4,28 +4,30 @@ import { Plus, Minus, ArrowRight } from "lucide-react";
 
 export default function FAQPage({ onPageChange }) {
   const { t } = useContext(LangContext);
-  
-  // On récupère les données FAQ. Le ?. évite de faire planter le site si t n'est pas chargé
   const content = t?.faq;
-  
+
   const [activeTab, setActiveTab] = useState("general");
   const [openIndex, setOpenIndex] = useState(null);
 
-  // Sécurité anti-écran blanc : si les traductions ne sont pas encore là, on affiche un loader ou vide
   if (!content || !content.items) {
-    return <div className="min-h-screen bg-bg flex items-center justify-center text-muted">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-7 h-7 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+          <p className="text-muted text-sm">Chargement…</p>
+        </div>
+      </div>
+    );
   }
 
-  // Filtrage des questions par la catégorie sélectionnée
   const filteredItems = content.items.filter(item => item.category === activeTab);
 
   return (
-    <div className="bg-bg min-h-screen flex flex-col">
-      <section className="max-w-[850px] mx-auto px-6 py-24 flex-grow">
-        
-        {/* Header de la page */}
+    <div className="bg-transparent flex flex-col">
+      <section className="page-container py-24 flex-grow" style={{ maxWidth: '850px' }}>
+
         <div className="mb-16">
-          <h1 className="text-4xl font-bold text-text tracking-tight mb-4">
+          <h1 className="text-4xl font-bold text-title tracking-tight mb-4">
             {content.headline}
           </h1>
           <p className="text-lg text-muted/70 font-light">
@@ -33,14 +35,14 @@ export default function FAQPage({ onPageChange }) {
           </p>
         </div>
 
-        {/* Navigation des catégories (Tabs) */}
+        {/* Tabs catégories */}
         <div className="flex flex-wrap gap-8 mb-12 border-b border-border/40">
           {Object.entries(content.categories).map(([key, label]) => (
             <button
               key={key}
-              onClick={() => { 
-                setActiveTab(key); 
-                setOpenIndex(null); 
+              onClick={() => {
+                setActiveTab(key);
+                setOpenIndex(null);
               }}
               className={`pb-4 text-[15px] font-semibold transition-all relative ${
                 activeTab === key ? "text-primary" : "text-muted hover:text-text"
@@ -54,7 +56,7 @@ export default function FAQPage({ onPageChange }) {
           ))}
         </div>
 
-        {/* Liste des Questions (Accordéon) */}
+        {/* Accordéon */}
         <div className="min-h-[450px]">
           {filteredItems.map((item, index) => {
             const isOpen = openIndex === index;
@@ -65,7 +67,7 @@ export default function FAQPage({ onPageChange }) {
                   className="w-full flex items-center justify-between py-8 text-left focus:outline-none transition-all"
                 >
                   <span className={`text-[18px] font-medium transition-colors duration-300 ${
-                    isOpen ? "text-primary" : "text-text group-hover:text-primary"
+                    isOpen ? "text-primary" : "text-title group-hover:text-primary"
                   }`}>
                     {item.q}
                   </span>
@@ -77,9 +79,7 @@ export default function FAQPage({ onPageChange }) {
                     )}
                   </div>
                 </button>
-                
-                {/* Réponse animée */}
-                <div 
+                <div
                   className={`overflow-hidden transition-all duration-500 ease-in-out ${
                     isOpen ? "max-h-80 pb-8 opacity-100" : "max-h-0 opacity-0"
                   }`}
@@ -93,18 +93,17 @@ export default function FAQPage({ onPageChange }) {
           })}
         </div>
 
-        {/* CTA Contact en bas de liste */}
+        {/* CTA Contact */}
         <div className="mt-20 pt-10 border-t border-border/20 flex flex-col sm:flex-row items-center justify-between gap-6">
           <p className="text-muted text-sm">{content.contactTitle}</p>
-          <button 
-            onClick={() => onPageChange('contact')} 
+          <button
+            onClick={() => onPageChange('contact')}
             className="text-primary font-semibold hover:underline underline-offset-8 flex items-center gap-2 transition-all cursor-pointer bg-transparent border-none"
           >
             {content.contactBtn} <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </section>
-
     </div>
   );
 }

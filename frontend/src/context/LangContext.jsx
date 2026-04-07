@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { en } from "../i18n/en";
 import { fr } from "../i18n/fr";
@@ -11,6 +11,15 @@ export function LangProvider({ children }) {
 
   const t = lang === "fr" ? fr : en;
 
+  useEffect(() => {
+    document.documentElement.lang = lang === "fr" ? "fr" : "en";
+    localStorage.setItem("lang", lang);
+
+    return () => {
+      clearTimeout(timerRef.current);
+    };
+  }, [lang]);
+
   const setLanguage = (newLang) => {
     if (newLang === lang) return;
 
@@ -21,7 +30,6 @@ export function LangProvider({ children }) {
       setLangVisible(false);
       timerRef.current = setTimeout(() => {
         setLang(newLang);
-        localStorage.setItem("lang", newLang);
         setLangVisible(true);
       }, 160);
       return;
@@ -30,7 +38,6 @@ export function LangProvider({ children }) {
     const transition = document.startViewTransition(() => {
       flushSync(() => {
         setLang(newLang);
-        localStorage.setItem("lang", newLang);
       });
     });
 

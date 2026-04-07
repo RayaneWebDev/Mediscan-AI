@@ -1,101 +1,179 @@
 #!/usr/bin/env bash
-# run.sh — Lance MediScan AI (backend + frontend) en un seul script
-set -e
+# run.sh - Lance MediScan AI (backend + frontend) en un seul script.
+set -euo pipefail
 
-PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+readonly PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+readonly FRONTEND_DIR="$PROJECT_DIR/frontend"
+readonly VENV_DIR="$PROJECT_DIR/.venv311"
+readonly PYTHON_BIN="$VENV_DIR/bin/python"
+readonly BACKEND_HOST="127.0.0.1"
+readonly BACKEND_PORT="8000"
+readonly FRONTEND_PORT="5173"
+readonly BACKEND_LOG="/tmp/mediscan-backend.log"
+BACKEND_PID=""
+
 cd "$PROJECT_DIR"
 
-# ── Prérequis ───────────────────────────────────────────────────────────────
-if ! command -v python3.11 &>/dev/null; then
-    echo "❌ Python 3.11 introuvable."
-    echo "   → Mac  : brew install python@3.11  ou  https://python.org/downloads/release/python-31119/"
-    echo "   → Linux: sudo apt install python3.11"
+log_info() {
+    echo "→ $1"
+}
+
+log_success() {
+    echo "✓ $1"
+}
+
+fail() {
+    echo "❌ $1"
     exit 1
-fi
+}
 
-if ! command -v node &>/dev/null; then
-    echo "❌ Node.js introuvable."
-    echo "   → https://nodejs.org/  (version 20.19+ ou 22+ requise)"
-    exit 1
-fi
+require_command() {
+    local command_name="$1"
+    local error_message="$2"
 
-# Vite 8 exige Node >=20.19.0 ou >=22.12.0
-NODE_VERSION=$(node -e "process.stdout.write(process.version.slice(1))")
-NODE_MAJOR=$(echo "$NODE_VERSION" | cut -d. -f1)
-NODE_MINOR=$(echo "$NODE_VERSION" | cut -d. -f2)
+    if ! command -v "$command_name" >/dev/null 2>&1; then
+        fail "$error_message"
+    fi
+}
 
-OK=0
-if [ "$NODE_MAJOR" -ge 23 ]; then OK=1
-elif [ "$NODE_MAJOR" -eq 22 ] && [ "$NODE_MINOR" -ge 12 ]; then OK=1
-elif [ "$NODE_MAJOR" -eq 20 ] && [ "$NODE_MINOR" -ge 19 ]; then OK=1
-fi
+validate_node_version() {
+    local node_version node_major node_minor is_supported
 
-if [ "$OK" -eq 0 ]; then
-    echo "❌ Node.js $NODE_VERSION trop ancien. Vite 8 requiert Node >=20.19.0 ou >=22.12.0."
-    echo "   → https://nodejs.org/  (choisir 22 LTS)"
-    exit 1
-fi
+    node_version="$(node -e "process.stdout.write(process.version.slice(1))")"
+    node_major="$(echo "$node_version" | cut -d. -f1)"
+    node_minor="$(echo "$node_version" | cut -d. -f2)"
+    is_supported=0
 
-# Vérification Git LFS (avertissement seulement)
-if ! command -v git-lfs &>/dev/null && ! git lfs version &>/dev/null 2>&1; then
-    echo "⚠️  Git LFS introuvable — les index FAISS (artifacts/) pourraient être vides."
+    if [ "$node_major" -ge 23 ]; then
+        is_supported=1
+    elif [ "$node_major" -eq 22 ] && [ "$node_minor" -ge 12 ]; then
+        is_supported=1
+    elif [ "$node_major" -eq 20 ] && [ "$node_minor" -ge 19 ]; then
+        is_supported=1
+    fi
+
+    if [ "$is_supported" -eq 0 ]; then
+        fail "Node.js $node_version trop ancien. Vite 8 requiert Node >=20.19.0 ou >=22.12.0."
+    fi
+}
+
+warn_if_git_lfs_missing() {
+    if command -v git-lfs >/dev/null 2>&1 || git lfs version >/dev/null 2>&1; then
+        return
+    fi
+
+    echo "⚠️  Git LFS introuvable - les index FAISS (artifacts/) pourraient être vides."
     echo "   → Mac  : brew install git-lfs && git lfs install"
     echo "   → Linux: sudo apt install git-lfs && git lfs install"
     echo "   → Puis : git lfs pull"
-fi
+}
 
-# ── Venv Python 3.11 ────────────────────────────────────────────────────────
-if [ ! -f ".venv311/bin/activate" ]; then
-    echo "→ Création de l'environnement Python 3.11..."
-    python3.11 -m venv .venv311
-    .venv311/bin/python -m pip install -q --upgrade pip
-    .venv311/bin/python -m pip install -q -r requirements.txt
-    echo "✓ Environnement Python prêt"
-fi
-
-# ── Frontend ─────────────────────────────────────────────────────────────────
-echo "→ Installation des dépendances frontend (npm ci)..."
-cd frontend && npm ci --silent && cd ..
-echo "✓ Frontend prêt"
-
-# ── Tuer les anciens processus sur les ports ─────────────────────────────────
-lsof -ti:8000 | xargs kill -9 2>/dev/null || true
-lsof -ti:5173 | xargs kill -9 2>/dev/null || true
-
-# ── Backend ──────────────────────────────────────────────────────────────────
-echo "→ Démarrage du backend (port 8000)..."
-PYTHONPATH="$PROJECT_DIR/src:$PROJECT_DIR" \
-    .venv311/bin/python -m uvicorn backend.app.main:app \
-    --host 127.0.0.1 --port 8000 --reload \
-    > /tmp/mediscan-backend.log 2>&1 &
-BACKEND_PID=$!
-
-# Attente health check
-echo "→ En attente du backend..."
-READY=0
-for i in $(seq 1 30); do
-    if curl -sf http://127.0.0.1:8000/api/health >/dev/null 2>&1; then
-        READY=1
-        break
+ensure_python_environment() {
+    if [ -x "$PYTHON_BIN" ]; then
+        return
     fi
-    sleep 1
-done
 
-if [ "$READY" -eq 0 ]; then
-    echo "❌ Backend non démarré après 30s. Logs :"
-    cat /tmp/mediscan-backend.log
-    exit 1
-fi
-echo "✓ Backend prêt  →  http://127.0.0.1:8000"
+    log_info "Création de l'environnement Python 3.11..."
+    python3.11 -m venv "$VENV_DIR"
+    "$PYTHON_BIN" -m pip install -q --upgrade pip
+    "$PYTHON_BIN" -m pip install -q -r requirements.txt
+    log_success "Environnement Python prêt"
+}
 
-# ── Frontend dev server ───────────────────────────────────────────────────────
-echo ""
-echo "  ✅ MediScan AI est prêt !"
-echo "  Frontend : http://127.0.0.1:5173"
-echo "  Backend  : http://127.0.0.1:8000"
-echo "  (Ctrl+C pour arrêter)"
-echo ""
+install_frontend_dependencies() {
+    log_info "Installation des dépendances frontend (npm ci)..."
+    (
+        cd "$FRONTEND_DIR"
+        npm ci --silent
+    )
+    log_success "Frontend prêt"
+}
 
-trap "kill $BACKEND_PID 2>/dev/null; exit" INT TERM
+kill_port_process() {
+    local port="$1"
 
-cd frontend && npm run dev -- --host 127.0.0.1 --port 5173
+    if ! command -v lsof >/dev/null 2>&1; then
+        return
+    fi
+
+    lsof -ti:"$port" | xargs kill -9 2>/dev/null || true
+}
+
+cleanup() {
+    if [ -n "${BACKEND_PID:-}" ]; then
+        kill "$BACKEND_PID" 2>/dev/null || true
+    fi
+}
+
+start_backend() {
+    log_info "Démarrage du backend (port $BACKEND_PORT)..."
+    # Charge GROQ_KEY_API depuis .env si défini
+    if [ -f "$PROJECT_DIR/.env" ]; then
+        local groq_key
+        groq_key=$(grep -E '^GROQ_KEY_API=' "$PROJECT_DIR/.env" | cut -d= -f2- | tr -d '"'"'" || true)
+        if [ -n "$groq_key" ]; then
+            export GROQ_KEY_API="$groq_key"
+        fi
+    fi
+    PYTHONPATH="$PROJECT_DIR/src:$PROJECT_DIR" \
+        "$PYTHON_BIN" -m uvicorn backend.app.main:app \
+        --host "$BACKEND_HOST" --port "$BACKEND_PORT" --reload \
+        >"$BACKEND_LOG" 2>&1 &
+    BACKEND_PID=$!
+}
+
+wait_for_backend() {
+    local ready=0
+
+    log_info "En attente du backend..."
+    for _ in $(seq 1 30); do
+        if curl -sf "http://$BACKEND_HOST:$BACKEND_PORT/api/health" >/dev/null 2>&1; then
+            ready=1
+            break
+        fi
+        sleep 1
+    done
+
+    if [ "$ready" -eq 0 ]; then
+        echo "❌ Backend non démarré après 30s. Logs :"
+        cat "$BACKEND_LOG"
+        exit 1
+    fi
+
+    log_success "Backend prêt  →  http://$BACKEND_HOST:$BACKEND_PORT"
+}
+
+start_frontend() {
+    echo ""
+    echo "  ✅ MediScan AI est prêt !"
+    echo "  Frontend : http://$BACKEND_HOST:$FRONTEND_PORT"
+    echo "  Backend  : http://$BACKEND_HOST:$BACKEND_PORT"
+    echo "  (Ctrl+C pour arrêter)"
+    echo ""
+
+    (
+        cd "$FRONTEND_DIR"
+        npm run dev -- --host "$BACKEND_HOST" --port "$FRONTEND_PORT"
+    )
+}
+
+require_command "python3.11" "Python 3.11 introuvable.
+   → Mac  : brew install python@3.11  ou  https://python.org/downloads/release/python-31119/
+   → Linux: sudo apt install python3.11"
+require_command "node" "Node.js introuvable.
+   → https://nodejs.org/  (version 20.19+ ou 22+ requise)"
+require_command "curl" "curl introuvable."
+
+validate_node_version
+warn_if_git_lfs_missing
+ensure_python_environment
+install_frontend_dependencies
+
+kill_port_process "$BACKEND_PORT"
+kill_port_process "$FRONTEND_PORT"
+
+trap cleanup INT TERM EXIT
+
+start_backend
+wait_for_backend
+start_frontend

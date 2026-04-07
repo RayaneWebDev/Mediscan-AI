@@ -18,29 +18,23 @@ class SearchResult(BaseModel):
         return v
 
 
-class SearchResponse(BaseModel):
+class SearchResponseBase(BaseModel):
     mode: str
     embedder: str
+    results: list[SearchResult]
+
+
+class SearchResponse(SearchResponseBase):
     query_image: str
-    results: list[SearchResult]
 
 
-class TextSearchResponse(BaseModel):
-    mode: str
-    embedder: str
+class TextSearchResponse(SearchResponseBase):
     query_text: str
-    results: list[SearchResult]
 
 
-class IdSearchResponse(BaseModel):
-    mode: str
-    embedder: str
+class IdSearchResponse(SearchResponseBase):
     query_image_id: str
-    results: list[SearchResult]
 
 
-class IdsSearchResponse(BaseModel):
-    mode: str
-    embedder: str
+class IdsSearchResponse(SearchResponseBase):
     query_image_ids: list[str]
-    results: list[SearchResult]

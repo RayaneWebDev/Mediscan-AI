@@ -1,4 +1,32 @@
-const API_BASE = "http://127.0.0.1:8000/api";
+const API_BASE = (import.meta.env.VITE_API_BASE || "/api").replace(/\/$/, "");
+const JSON_HEADERS = { "Content-Type": "application/json" };
+
+function buildApiUrl(path) {
+  return `${API_BASE}${path}`;
+}
+
+async function parseJsonSafely(response) {
+  return response.json().catch(() => ({}));
+}
+
+async function requestJson(path, options = {}) {
+  const response = await fetch(buildApiUrl(path), options);
+
+  if (!response.ok) {
+    const err = await parseJsonSafely(response);
+    throw new Error(err.detail || `Erreur ${response.status}`);
+  }
+
+  return parseJsonSafely(response);
+}
+
+function postJson(path, payload) {
+  return requestJson(path, {
+    method: "POST",
+    headers: JSON_HEADERS,
+    body: JSON.stringify(payload),
+  });
+}
 
 export async function searchImage(file, mode, k) {
   const formData = new FormData();
@@ -6,64 +34,28 @@ export async function searchImage(file, mode, k) {
   formData.append("mode", mode);
   formData.append("k", k);
 
-  const response = await fetch(`${API_BASE}/search`, {
+  return requestJson("/search", {
     method: "POST",
     body: formData,
   });
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.detail || `Erreur ${response.status}`);
-  }
-
-  return response.json();
 }
 
 export function imageUrl(imageId) {
-  return `${API_BASE}/images/${encodeURIComponent(imageId)}`;
+  return buildApiUrl(`/images/${encodeURIComponent(imageId)}`);
 }
 
 export async function searchText(text, k) {
-  const response = await fetch(`${API_BASE}/search-text`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, k }),
-  });
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.detail || `Erreur ${response.status}`);
-  }
-
-  return response.json();
+  return postJson("/search-text", { text, k });
 }
 
 export async function searchById(imageId, mode, k) {
-  const response = await fetch(`${API_BASE}/search-by-id`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image_id: imageId, mode, k }),
-  });
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.detail || `Erreur ${response.status}`);
-  }
-
-  return response.json();
+  return postJson("/search-by-id", { image_id: imageId, mode, k });
 }
 
 export async function searchByIds(imageIds, mode, k) {
-  const response = await fetch(`${API_BASE}/search-by-ids`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image_ids: imageIds, mode, k }),
-  });
+  return postJson("/search-by-ids", { image_ids: imageIds, mode, k });
+}
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.detail || `Erreur ${response.status}`);
-  }
-
-  return response.json();
+export async function fetchConclusion(searchResult) {
+  return postJson("/generate-conclusion", searchResult);
 }

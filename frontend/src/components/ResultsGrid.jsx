@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { imageUrl } from "../api";
+import { LangContext } from "../context/lang-context";
 
 function ScoreBar({ score, tone }) {
   const pct = Math.round(score * 100);
   const color = tone === "accent"
-    ? (pct >= 70 ? "bg-accent" : pct >= 40 ? "bg-accent/50" : "bg-border")
-    : (pct >= 70 ? "bg-primary" : pct >= 40 ? "bg-primary/50" : "bg-border");
+    ? (pct >= 70 ? "bg-accent/70" : pct >= 40 ? "bg-accent/35" : "bg-border")
+    : (pct >= 70 ? "bg-primary/70" : pct >= 40 ? "bg-primary/35" : "bg-border");
   return (
     <div className="mt-2">
       <div className="flex justify-between items-center mb-1">
@@ -19,23 +20,25 @@ function ScoreBar({ score, tone }) {
   );
 }
 
-function ResultCard({ result, onRelaunch, selected, onToggleSelect, tone }) {
+function ResultCard({ result, onRelaunch, selected, onToggleSelect, tone, useHomeVisualTone = false, relaunchLabel }) {
   const c = tone === "accent" ? {
-    selected: "border-accent ring-2 ring-accent/30",
-    rank: "bg-accent",
-    checkbox: "bg-accent border-accent",
-    checkboxHover: "hover:border-accent",
-    relaunch: "border-accent/40 text-accent hover:bg-accent hover:text-white",
+    shell: "mediscan-accent-surface",
+    selected: "mediscan-accent-selected",
+    rank: "border mediscan-accent-chip",
+    checkbox: "border mediscan-accent-chip",
+    checkboxHover: "hover:border-accent/30",
+    relaunch: "mediscan-accent-outline-button",
   } : {
-    selected: "border-primary ring-2 ring-primary/30",
-    rank: "bg-primary",
-    checkbox: "bg-primary border-primary",
-    checkboxHover: "hover:border-primary",
-    relaunch: "border-primary/40 text-primary hover:bg-primary hover:text-white",
+    shell: useHomeVisualTone ? "mediscan-primary-surface" : "",
+    selected: useHomeVisualTone ? "mediscan-primary-selected" : "border-primary/50 ring-1 ring-primary/20",
+    rank: useHomeVisualTone ? "border mediscan-primary-chip" : "bg-primary-pale text-primary",
+    checkbox: useHomeVisualTone ? "border mediscan-primary-chip" : "bg-primary-pale border-primary/50",
+    checkboxHover: useHomeVisualTone ? "hover:border-primary/30" : "hover:border-primary/50",
+    relaunch: useHomeVisualTone ? "mediscan-primary-outline-button" : "border-primary/30 text-primary hover:bg-primary-pale",
   };
 
   return (
-    <div className={`bg-surface border rounded-2xl overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 group backdrop-blur-sm ${selected ? c.selected : "border-border"}`}>
+    <div className={`bg-surface border rounded-2xl overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 group backdrop-blur-sm ${c.shell} ${selected ? c.selected : "border-border"}`}>
       <div className="bg-bg border-b border-border relative">
         <img
           src={imageUrl(result.image_id)}
@@ -43,17 +46,18 @@ function ResultCard({ result, onRelaunch, selected, onToggleSelect, tone }) {
           loading="lazy"
           className="w-full aspect-square object-contain"
         />
-        <span className={`absolute top-2 left-2 ${c.rank} text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow`}>
+        <span className={`absolute top-2 left-2 ${c.rank} text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm`}>
           #{result.rank}
         </span>
         {onToggleSelect && (
           <button
+            type="button"
             onClick={() => onToggleSelect(result.image_id)}
             className={`absolute top-2 right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all shadow ${selected ? `${c.checkbox}` : `bg-surface border-border ${c.checkboxHover}`}`}
           >
             {selected && (
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M1.5 5L4 7.5L8.5 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             )}
           </button>
@@ -65,10 +69,11 @@ function ResultCard({ result, onRelaunch, selected, onToggleSelect, tone }) {
         <ScoreBar score={result.score} tone={tone} />
         {onRelaunch && (
           <button
+            type="button"
             onClick={() => onRelaunch(result.image_id)}
             className={`mt-3 w-full text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${c.relaunch}`}
           >
-            Rechercher depuis cette image
+            {relaunchLabel}
           </button>
         )}
       </div>
@@ -76,25 +81,36 @@ function ResultCard({ result, onRelaunch, selected, onToggleSelect, tone }) {
   );
 }
 
-export default function ResultsGrid({ data }) {
+export default function ResultsGrid({ data, useHomeVisualTone = false }) {
+  const { t } = useContext(LangContext);
+  const content = t.search.results;
   const [selectedIds, setSelectedIds] = useState([]);
 
   if (!data) return null;
 
   const isVisual = data.mode === "visual";
   const tone = isVisual ? "primary" : "accent";
+  const useHomePrimaryTone = useHomeVisualTone && isVisual;
 
-  const modeLabel = isVisual ? "Visuel (DINOv2)" : data.mode === "text" ? "Texte (BioMedCLIP)" : "Sémantique (BioMedCLIP)";
+  const modeLabel = isVisual
+    ? content.visualMode
+    : data.mode === "text"
+      ? content.textMode
+      : content.semanticMode;
   const modeColor = isVisual
-    ? "bg-primary-pale text-primary border-primary/20"
-    : "bg-accent-pale text-accent border-accent/20";
+    ? useHomePrimaryTone ? "border mediscan-primary-chip" : "bg-primary-pale text-primary border-primary/20"
+    : "border mediscan-accent-chip";
 
   const selectionBg = isVisual
-    ? "bg-primary-pale border-primary/20"
-    : "bg-accent-pale border-accent/20";
-  const selectionText = isVisual ? "text-primary" : "text-accent";
-  const selectionBtnBorder = isVisual ? "border-primary/30 text-primary hover:bg-primary/10" : "border-accent/30 text-accent hover:bg-accent/10";
-  const selectionBtnPrimary = isVisual ? "bg-primary hover:bg-primary/90" : "bg-accent hover:bg-accent/90";
+    ? useHomePrimaryTone ? "mediscan-primary-surface" : "bg-primary-pale border-primary/20"
+    : "mediscan-accent-surface";
+  const selectionText = isVisual ? useHomePrimaryTone ? "mediscan-primary-text" : "text-primary" : "mediscan-accent-text";
+  const selectionBtnBorder = isVisual
+    ? useHomePrimaryTone ? "mediscan-primary-outline-button" : "border-primary/30 text-primary hover:bg-primary/10"
+    : "mediscan-accent-outline-button";
+  const selectionBtnPrimary = isVisual
+    ? useHomePrimaryTone ? "mediscan-primary-action" : "button-solid-primary"
+    : "mediscan-accent-action";
 
   function handleToggleSelect(imageId) {
     setSelectedIds((prev) =>
@@ -112,8 +128,9 @@ export default function ResultsGrid({ data }) {
   return (
     <section className="mt-8">
       <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
-        <h2 className="text-lg font-bold text-text">
-          {data.results.length} résultat{data.results.length > 1 ? "s" : ""} trouvé{data.results.length > 1 ? "s" : ""}
+        <h2 className="text-lg font-bold text-title">
+          {data.results.length}{" "}
+          {data.results.length > 1 ? content.resultsFoundPlural : content.resultsFoundSingular}
         </h2>
         <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${modeColor}`}>
           {modeLabel}
@@ -123,20 +140,22 @@ export default function ResultsGrid({ data }) {
       {selectedIds.length >= 2 && (
         <div className={`mb-4 p-3 border rounded-xl flex items-center justify-between gap-3 ${selectionBg}`}>
           <span className={`text-sm font-medium ${selectionText}`}>
-            {selectedIds.length} images sélectionnées
+            {selectedIds.length} {content.selectedCount}
           </span>
           <div className="flex gap-2">
             <button
+              type="button"
               onClick={() => setSelectedIds([])}
               className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${selectionBtnBorder}`}
             >
-              Annuler
+              {content.clearSelection}
             </button>
             <button
+              type="button"
               onClick={handleRelaunchMultiple}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-lg text-white transition-all ${selectionBtnPrimary}`}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${selectionBtnPrimary}`}
             >
-              Rechercher depuis la sélection
+              {content.relaunchSelection}
             </button>
           </div>
         </div>
@@ -151,6 +170,8 @@ export default function ResultsGrid({ data }) {
             selected={selectedIds.includes(r.image_id)}
             onToggleSelect={handleToggleSelect}
             tone={tone}
+            useHomeVisualTone={useHomePrimaryTone}
+            relaunchLabel={content.relaunchImage}
           />
         ))}
       </div>

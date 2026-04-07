@@ -6,14 +6,14 @@ export default function HowItWorks() {
   const content = t.howItWorks;
 
   return (
-    <div className="bg-bg transition-colors duration-300">
+    <div className="bg-transparent">
       <section className="max-w-[1400px] mx-auto px-6 py-16">
-        <h1 className="text-5xl font-bold text-text text-center mb-4">{content.headline}</h1>
+        <h1 className="text-5xl font-bold text-title text-center mb-4">{content.headline}</h1>
         <p className="text-lg text-muted text-center mb-16 max-w-2xl mx-auto">{content.description}</p>
 
         {/* Two Modes */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-text mb-2 text-center">{content.modes.title}</h2>
+          <h2 className="text-2xl font-bold text-title mb-2 text-center">{content.modes.title}</h2>
           <p className="text-muted text-center mb-8 max-w-2xl mx-auto">{content.modes.description}</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -25,11 +25,11 @@ export default function HowItWorks() {
                 <div className="space-y-4">
                   {mode.steps.map((step, i) => (
                     <div key={i} className="flex gap-3">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${idx === 0 ? "bg-primary" : "bg-accent"}`}>
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${idx === 0 ? "bg-primary-pale text-primary" : "bg-accent-pale text-accent"}`}>
                         {i + 1}
                       </div>
                       <div>
-                        <p className="font-semibold text-text text-sm">{step.title}</p>
+                        <p className="font-semibold text-title text-sm">{step.title}</p>
                         <p className="text-xs text-muted">{step.desc}</p>
                       </div>
                     </div>
@@ -42,7 +42,7 @@ export default function HowItWorks() {
 
         {/* When to Use */}
         <div className="bg-bg-soft rounded-2xl p-8 transition-colors duration-300">
-          <h2 className="text-2xl font-bold text-text mb-2 text-center">{content.when.title}</h2>
+          <h2 className="text-2xl font-bold text-title mb-2 text-center">{content.when.title}</h2>
           <p className="text-muted text-center mb-8 max-w-xl mx-auto text-sm">{content.when.description}</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="text-center">

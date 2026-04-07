@@ -122,10 +122,13 @@ Le fichier `.env` n'est **jamais commité** (dans `.gitignore`). Chaque dévelop
 cp .env.example .env
 ```
 
-| Variable     | Obligatoire | Description |
-|--------------|-------------|-------------|
-| `MONGO_URI`  | Non         | URI MongoDB Atlas pour l'enrichissement des métadonnées. Si absent, la recherche fonctionne normalement sans enrichissement. |
-| `BACKEND_PORT` | Non       | Port FastAPI (défaut : 8000) |
+| Variable               | Obligatoire | Description |
+|------------------------|-------------|-------------|
+| `GROQ_KEY_API`         | **Oui**     | Clé API Groq pour la fonctionnalité "Analyse IA". Créer une clé sur [console.groq.com](https://console.groq.com) → API Keys. Sans cette clé, le bouton "Analyse IA" retournera une erreur mais le reste du site fonctionne normalement. |
+| `MONGO_URI`            | Non         | URI MongoDB Atlas pour l'enrichissement des métadonnées. Si absent, la recherche fonctionne normalement sans enrichissement. |
+| `BACKEND_PORT`         | Non         | Port FastAPI (défaut : 8000) |
+
+**Sans `GROQ_KEY_API`** : la recherche visuelle et textuelle fonctionnent normalement. Seul le bouton "Analyse IA" sera non fonctionnel.
 
 **Sans `MONGO_URI`** : le site fonctionne complètement — les résultats viennent des index FAISS locaux et les images sont chargées depuis HuggingFace. MongoDB ajoute uniquement des métadonnées supplémentaires (captions enrichies, codes CUI UMLS).
 
@@ -148,13 +151,16 @@ cp .env.example .env
 
 ## URLs
 
-| Service               | URL                                           |
-|-----------------------|-----------------------------------------------|
-| Frontend              | http://127.0.0.1:5173                         |
-| Backend health        | http://127.0.0.1:8000/api/health              |
-| Recherche par image   | `POST` http://127.0.0.1:8000/api/search       |
-| Recherche par texte   | `POST` http://127.0.0.1:8000/api/search-text  |
-| Image (redirect HF)   | `GET`  http://127.0.0.1:8000/api/images/{id}  |
+| Service               | URL                                                        |
+|-----------------------|------------------------------------------------------------|
+| Frontend              | http://127.0.0.1:5173                                      |
+| Backend health        | http://127.0.0.1:8000/api/health                           |
+| Recherche par image   | `POST` http://127.0.0.1:8000/api/search                    |
+| Recherche par texte   | `POST` http://127.0.0.1:8000/api/search-text               |
+| Recherche par ID      | `POST` http://127.0.0.1:8000/api/search-by-id              |
+| Recherche multi-IDs   | `POST` http://127.0.0.1:8000/api/search-by-ids             |
+| Analyse IA (Groq)     | `POST` http://127.0.0.1:8000/api/generate-conclusion       |
+| Image (redirect HF)   | `GET`  http://127.0.0.1:8000/api/images/{id}               |
 
 ---
 
@@ -347,6 +353,8 @@ mediscan (lib Python)
 MongoDB Atlas (optionnel) — enrichissement métadonnées
         ↓
 Images  ←  HuggingFace CDN (Mediscan-Team/mediscan-data)
+        ↓
+Groq LLM (llama-3.3-70b) — Analyse IA des résultats (nécessite GROQ_KEY_API)
 ```
 
 Trois modes de recherche :
