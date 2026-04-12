@@ -1,4 +1,4 @@
-import { BadgePercent, Info, Search, Sparkles, Tags } from "lucide-react";
+import { BadgePercent, Info, Search, Sparkles, Tags, X } from "lucide-react";
 import { useState, useContext, useEffect, useMemo, useRef } from "react";
 import { LangContext } from "../context/LangContext";
 import UploadZone from "./UploadZone";
@@ -83,11 +83,12 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
   const [quickNoteHighlighted, setQuickNoteHighlighted] = useState(false);
   const [filterNoteHighlighted, setFilterNoteHighlighted] = useState(false);
   const [filterOrderOnlyHighlighted, setFilterOrderOnlyHighlighted] = useState(false);
+  const [selectionCardOpen, setSelectionCardOpen] = useState(false);
   const queryPreviewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
   const quickNoteHighlightTimerRef = useRef(null);
   const filterNoteHighlightTimerRef = useRef(null);
-  const quickNoteScrollFrameRef = useRef(0);
-  const resultsAutoScrollFrameRef = useRef(0);
+  const quickNoteScrollTimerRef = useRef(0);
+  const resultsAutoScrollTimerRef = useRef(0);
   const resultsCardsGridRef = useRef(null);
   const pendingSearchScrollRef = useRef(false);
   const [referenceFilter, setReferenceFilter] = useState("");
@@ -96,8 +97,8 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
     return () => {
       window.clearTimeout(quickNoteHighlightTimerRef.current);
       window.clearTimeout(filterNoteHighlightTimerRef.current);
-      cancelAnimationFrame(quickNoteScrollFrameRef.current);
-      cancelAnimationFrame(resultsAutoScrollFrameRef.current);
+      window.clearTimeout(quickNoteScrollTimerRef.current);
+      window.clearTimeout(resultsAutoScrollTimerRef.current);
       if (queryPreviewUrl) {
         URL.revokeObjectURL(queryPreviewUrl);
       }
@@ -206,6 +207,10 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
   async function handleSelectionSearch() {
     if (selectedIds.length === 0 || loading) return;
     await handleRelaunchMultiple(selectedIds);
+  }
+
+  function handleSelectionRemove(imageId) {
+    setSelectedIds((currentIds) => currentIds.filter((currentId) => currentId !== imageId));
   }
 
   function handleModeChange(nextMode, { force = false } = {}) {
@@ -357,13 +362,25 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
     }
 
     return selectedIds
+      .slice(-4)
       .map((id) => rowsById.get(id) || { image_id: id, path: imageUrl(id) })
-      .slice(0, 4);
   }, [compareMode, results, visualResults, semanticResults, selectedIds]);
   const selectionPreviewOverflow = Math.max(0, selectedIds.length - selectedPreviewRows.length);
-  const selectionBarTitle = lang === "fr"
-    ? "Relance multi-selection"
-    : "Multi-selection relaunch";
+  const hasSelection = selectedIds.length > 0;
+  const selectionCountLabel = selectedIds.length === 1
+    ? resultsContent.selectedImageSingular
+    : resultsContent.selectedImagePlural;
+  const selectionSummaryLabel = hasSelection
+    ? `${selectedIds.length} ${selectionCountLabel}`
+    : resultsContent.selectionSummaryEmpty;
+  const selectionDescription = hasSelection
+    ? selectedIds.length === 1
+      ? resultsContent.selectionReadySingle
+      : resultsContent.selectionReadyPlural
+    : resultsContent.selectionHint;
+  const selectionActionLabel = selectedIds.length > 1
+    ? resultsContent.selectionSearchPlural
+    : resultsContent.selectionSearchSingle;
   const filterPanelShellClass = isAccent
     ? "image-search-mode-shell image-search-mode-shell-accent"
     : useHomeVisualTone
@@ -387,11 +404,132 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
   );
   const conclusionSearchResult = compareMode ? visualResults : results;
   const conclusionIsAccent = compareMode ? false : isAccent;
+  const selectionCardToneClass = isAccent
+    ? "text-accent"
+    : useHomeVisualTone
+      ? "mediscan-primary-text"
+      : "text-primary";
+  const selectionRelaunchNode = supportsSelectionSearch ? (
+    <div className="mt-0.5 lg:mt-1.5 mediscan-results-stage-enter search-tone-transition search-conclusion rounded-2xl border border-border bg-surface shadow-sm overflow-hidden">
+      <div className="search-conclusion-header flex items-center justify-between gap-3 px-5 py-4 border-b border-border">
+        <div className="min-w-0 flex items-center gap-2.5">
+          <div className={`search-tone-sync ${selectionCardToneClass}`}>
+            <Tags className="h-[18px] w-[18px]" strokeWidth={1.9} />
+          </div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="search-tone-sync font-semibold text-text text-sm">
+                {resultsContent.selectionPanelTitle}
+              </span>
+              <span
+                aria-live="polite"
+                className={`search-tone-sync inline-flex items-center rounded-lg border px-2 py-0.5 text-[10px] font-semibold ${isAccent ? "mediscan-accent-chip" : useHomeVisualTone ? "mediscan-primary-chip" : "border-primary/20 bg-primary-pale text-primary"}`}
+              >
+                {selectionSummaryLabel}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleSelectionInfoClick}
+            className="search-conclusion-icon p-1.5 rounded-lg border border-border text-muted hover:text-text transition-all"
+            aria-label={resultsContent.selectionHelpLabel}
+            title={resultsContent.selectionHelpLabel}
+          >
+            <Info className="h-3.5 w-3.5" strokeWidth={2} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectionCardOpen((current) => !current)}
+            className="search-conclusion-icon p-1.5 rounded-lg border border-border text-muted hover:text-text transition-all"
+            aria-label={selectionCardOpen ? resultsContent.selectionCollapse : resultsContent.selectionExpand}
+            title={selectionCardOpen ? resultsContent.selectionCollapse : resultsContent.selectionExpand}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ transform: selectionCardOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.38s cubic-bezier(0.16, 1, 0.3, 1)" }}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {selectionCardOpen && (
+        <div className="search-conclusion-body-enter px-5 py-4">
+          <p className="search-tone-sync text-sm leading-6 text-muted">
+            {selectionDescription}
+          </p>
+
+          {hasSelection && (
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
+              {selectedPreviewRows.map((row) => (
+                <button
+                  key={row.image_id}
+                  type="button"
+                  onClick={() => handleSelectionRemove(row.image_id)}
+                  className={`group inline-flex w-full min-w-0 items-center gap-2 rounded-2xl border bg-bg/80 py-1 pl-1 pr-2 text-left transition-all sm:w-auto sm:max-w-full sm:rounded-full hover:-translate-y-0.5 ${isAccent ? "border-accent/18 hover:border-accent/32" : useHomeVisualTone ? "border-primary/18 hover:border-primary/32" : "border-border hover:border-primary/24"}`}
+                  aria-label={`${resultsContent.removeSelectedImage}: ${row.image_id}`}
+                  title={`${resultsContent.removeSelectedImage}: ${row.image_id}`}
+                >
+                  <img
+                    src={row.path || imageUrl(row.image_id)}
+                    alt={row.image_id}
+                    className="h-9 w-9 rounded-full border border-bg object-cover bg-bg"
+                  />
+                  <span className={`${toneSyncClass} min-w-0 flex-1 truncate text-xs font-medium text-text sm:max-w-[12rem] sm:flex-none`}>
+                    {row.image_id}
+                  </span>
+                  <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full border text-muted transition-all ${isAccent ? "border-accent/14 group-hover:border-accent/26 group-hover:text-accent" : useHomeVisualTone ? "border-primary/14 group-hover:border-primary/26 group-hover:text-primary" : "border-border group-hover:border-primary/24 group-hover:text-primary"}`}>
+                    <X className="h-3.5 w-3.5" strokeWidth={2.1} />
+                  </span>
+                </button>
+              ))}
+              {selectionPreviewOverflow > 0 && (
+                <span className="inline-flex h-11 w-full items-center justify-center rounded-2xl border border-dashed border-border bg-bg/70 px-4 text-xs font-semibold text-muted sm:w-auto sm:rounded-full">
+                  +{selectionPreviewOverflow}
+                </span>
+              )}
+            </div>
+          )}
+
+          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setSelectedIds([])}
+              disabled={!hasSelection || loading}
+              className={`inline-flex w-full items-center justify-center rounded-xl border px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${hasSelection && !loading ? "cursor-pointer" : "cursor-not-allowed opacity-45"} ${isAccent ? "mediscan-accent-outline-button" : useHomeVisualTone ? "mediscan-primary-outline-button" : "border-border bg-bg text-muted hover:text-text hover:border-primary"}`}
+            >
+              {resultsContent.clearSelection}
+            </button>
+            <button
+              type="button"
+              onClick={handleSelectionSearch}
+              disabled={!hasSelection || loading}
+              className={`search-tone-sync search-conclusion-action inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${hasSelection && !loading ? "cursor-pointer" : "cursor-not-allowed opacity-45"} ${isAccent ? "mediscan-accent-action text-on-strong" : useHomeVisualTone ? "mediscan-primary-action text-on-strong" : "button-solid-primary"}`}
+            >
+              <Search className="h-3.5 w-3.5" strokeWidth={2.2} />
+              <span>{selectionActionLabel}</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  ) : null;
   const conclusionNode = showConclusion ? (
     <ClinicalConclusion
       searchResult={conclusionSearchResult}
       isAccent={conclusionIsAccent}
-      className="mt-6 lg:mt-8 mediscan-results-stage-enter"
+      className="mt-0.5 lg:mt-1.5 mediscan-results-stage-enter"
     />
   ) : null;
   const detailModeLabel = compareMode
@@ -411,8 +549,9 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
         { id: "mode", label: detailModeLabel },
       ];
 
-  const highlightAllFilterGuide = filterNoteHighlighted;
-  const highlightOrderGuide = filterOrderOnlyHighlighted;
+  const highlightCaptionGuide = filterNoteHighlighted;
+  const highlightScoreGuide = filterNoteHighlighted;
+  const highlightRelaunchGuide = filterOrderOnlyHighlighted;
 
   useEffect(() => {
     onChromeToneChange?.(isAccent ? "accent" : "primary");
@@ -460,10 +599,9 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
           }
 
           // Ajuste cette valeur selon le rendu souhaite: negatif = moins bas, positif = plus bas.
-          const IMAGE_SEARCH_SCROLL_OFFSET = -45;
+          const IMAGE_SEARCH_SCROLL_OFFSET = 20;
           const boundedTargetY = getResultsGridScrollTargetY(gridNode, IMAGE_SEARCH_SCROLL_OFFSET);
-
-          cancelAnimationFrame(resultsAutoScrollFrameRef.current);
+          window.clearTimeout(resultsAutoScrollTimerRef.current);
 
           if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
             window.scrollTo(0, boundedTargetY);
@@ -471,33 +609,11 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
             return;
           }
 
-          const startY = window.scrollY;
-          const distance = boundedTargetY - startY;
-          const duration = 1080;
-          const startTime = performance.now();
-          const easeInOutCubic = (value) => (
-            value < 0.5
-              ? 4 * value * value * value
-              : 1 - Math.pow(-2 * value + 2, 3) / 2
-          );
-
-          const step = (timestamp) => {
-            const elapsed = timestamp - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const easedProgress = easeInOutCubic(progress);
-
-            window.scrollTo(0, startY + (distance * easedProgress));
-
-            if (progress < 1) {
-              resultsAutoScrollFrameRef.current = requestAnimationFrame(step);
-              return;
-            }
-
-            resultsAutoScrollFrameRef.current = 0;
+          window.scrollTo({ top: boundedTargetY, behavior: "smooth" });
+          resultsAutoScrollTimerRef.current = window.setTimeout(() => {
+            resultsAutoScrollTimerRef.current = 0;
             pendingSearchScrollRef.current = false;
-          };
-
-          resultsAutoScrollFrameRef.current = requestAnimationFrame(step);
+          }, 760);
         }, 40);
       });
     });
@@ -506,6 +622,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
       cancelAnimationFrame(firstFrame);
       cancelAnimationFrame(secondFrame);
       window.clearTimeout(settleTimer);
+      window.clearTimeout(resultsAutoScrollTimerRef.current);
     };
   }, [loading, hasSearchResults, singleResultCount, visualResultCount, semanticResultCount]);
 
@@ -522,7 +639,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
   }
 
   function animateScrollTo(targetY, onComplete) {
-    cancelAnimationFrame(quickNoteScrollFrameRef.current);
+    window.clearTimeout(quickNoteScrollTimerRef.current);
 
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
       window.scrollTo(0, targetY);
@@ -530,34 +647,11 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
       return;
     }
 
-    const startY = window.scrollY;
-    const distance = targetY - startY;
-    const duration = 1450;
-    const startTime = performance.now();
-
-    const easeInOutCubic = (value) => (
-      value < 0.5
-        ? 4 * value * value * value
-        : 1 - Math.pow(-2 * value + 2, 3) / 2
-    );
-
-    const step = (timestamp) => {
-      const elapsed = timestamp - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easedProgress = easeInOutCubic(progress);
-
-      window.scrollTo(0, startY + (distance * easedProgress));
-
-      if (progress < 1) {
-        quickNoteScrollFrameRef.current = requestAnimationFrame(step);
-        return;
-      }
-
-      quickNoteScrollFrameRef.current = 0;
+    window.scrollTo({ top: targetY, behavior: "smooth" });
+    quickNoteScrollTimerRef.current = window.setTimeout(() => {
+      quickNoteScrollTimerRef.current = 0;
       onComplete?.();
-    };
-
-    quickNoteScrollFrameRef.current = requestAnimationFrame(step);
+    }, 760);
   }
 
   function scrollToInfoSection(sectionId, eyebrowId, onComplete) {
@@ -587,35 +681,29 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
     scrollToInfoSection(
       "image-search-quick-note",
       "image-search-quick-note-eyebrow",
-      undefined
+      () => restartNoteHighlight(setFilterNoteHighlighted, filterNoteHighlightTimerRef)
     );
 
     window.clearTimeout(quickNoteHighlightTimerRef.current);
     setQuickNoteHighlighted(false);
     window.clearTimeout(filterNoteHighlightTimerRef.current);
+    setFilterNoteHighlighted(false);
     setFilterOrderOnlyHighlighted(false);
-    restartNoteHighlight(setFilterNoteHighlighted, filterNoteHighlightTimerRef);
   }
 
   function handleSelectionInfoClick() {
     scrollToInfoSection(
       "image-search-quick-note",
       "image-search-quick-note-eyebrow",
-      undefined
+      () => restartNoteHighlight(setFilterOrderOnlyHighlighted, filterNoteHighlightTimerRef)
     );
 
     window.clearTimeout(quickNoteHighlightTimerRef.current);
     setQuickNoteHighlighted(false);
 
     window.clearTimeout(filterNoteHighlightTimerRef.current);
+    setFilterNoteHighlighted(false);
     setFilterOrderOnlyHighlighted(false);
-
-    requestAnimationFrame(() => {
-      setFilterOrderOnlyHighlighted(true);
-      filterNoteHighlightTimerRef.current = window.setTimeout(() => {
-        setFilterOrderOnlyHighlighted(false);
-      }, 2200);
-    });
   }
 
   function handleCaptionFilterToggle(filterId) {
@@ -1010,66 +1098,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
                   </div>
                 </div>
               </div>
-                <div className="min-w-0">
-              {supportsSelectionSearch && (
-                <div className={`mb-3 rounded-xl border px-2.5 py-2 ${isAccent ? "mediscan-accent-surface" : useHomeVisualTone ? "mediscan-primary-surface" : "bg-surface border-border"}`}>
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className={`${toneSyncClass} text-[11px] font-bold uppercase tracking-[0.12em] ${isAccent ? "mediscan-accent-text" : useHomeVisualTone ? "mediscan-primary-text" : "text-title"}`}>
-                          {selectionBarTitle}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={handleSelectionInfoClick}
-                          className={`inline-flex h-5 w-5 items-center justify-center rounded-md text-muted transition-all ${isAccent ? "hover:text-accent focus:ring-accent/25" : useHomeVisualTone ? "hover:text-primary focus:ring-primary/25" : "hover:text-text focus:ring-primary/25"} focus:outline-none focus:ring-2`}
-                          aria-label="Selection help"
-                          title="Selection help"
-                        >
-                          <Info className="h-3.5 w-3.5" strokeWidth={2} />
-                        </button>
-                      </div>
-                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                        <div className="flex items-center -space-x-2">
-                          {selectedPreviewRows.map((row) => (
-                            <img
-                              key={row.image_id}
-                              src={row.path || imageUrl(row.image_id)}
-                              alt={row.image_id}
-                              className="h-6 w-6 rounded-full border border-bg object-cover bg-bg"
-                            />
-                          ))}
-                          {selectionPreviewOverflow > 0 && (
-                            <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-border bg-bg px-1.5 text-[10px] font-semibold text-muted">
-                              +{selectionPreviewOverflow}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedIds([])}
-                      disabled={selectedIds.length === 0 || loading}
-                      className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold transition-all ${selectedIds.length > 0 && !loading ? "cursor-pointer" : "cursor-not-allowed opacity-45"} ${isAccent ? "mediscan-accent-outline-button" : useHomeVisualTone ? "mediscan-primary-outline-button" : "border-border bg-bg text-muted"}`}
-                    >
-                      {t.search.results.clearSelection}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSelectionSearch}
-                      disabled={selectedIds.length === 0 || loading}
-                      className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold transition-all ${selectedIds.length > 0 && !loading ? "cursor-pointer" : "cursor-not-allowed opacity-45"} ${isAccent ? "mediscan-accent-action text-on-strong" : useHomeVisualTone ? "mediscan-primary-action text-on-strong" : "button-solid-primary"}`}
-                    >
-                      re-search
-                    </button>
-                  </div>
-                </div>
-                </div>
-              )}
-
+              <div className="min-w-0">
               {!compareMode && results && (
                 <>
                   <ResultsGrid
@@ -1123,6 +1152,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
                   </div>
                 </>
               )}
+                  {selectionRelaunchNode}
                   {conclusionNode}
                 </div>
               </div>
@@ -1218,67 +1248,67 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
 
             <div className="mt-6 grid gap-6 md:grid-cols-3">
               <article className="flex h-full items-start gap-4">
-                <div className={`${toneSyncClass} mediscan-primary-chip flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${highlightAllFilterGuide ? "quick-note-icon-glow-primary" : ""}`}>
+                <div className={`${toneSyncClass} mediscan-primary-chip flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${highlightCaptionGuide ? "quick-note-icon-glow-primary" : ""}`}>
                   <Tags className="h-4.5 w-4.5" />
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <div className={`flex flex-wrap items-center gap-2 ${highlightAllFilterGuide ? "quick-note-heading-glow-primary" : ""}`}>
-                    <span className={`${toneSyncClass} mediscan-primary-chip inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${highlightAllFilterGuide ? "quick-note-chip-glow-primary" : ""}`}>
+                  <div className={`flex flex-wrap items-center gap-2 ${highlightCaptionGuide ? "quick-note-heading-glow-primary" : ""}`}>
+                    <span className={`${toneSyncClass} mediscan-primary-chip inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${highlightCaptionGuide ? "quick-note-chip-glow-primary" : ""}`}>
                       {filters.guide.caption.label}
                     </span>
-                    <h3 className={`${toneSyncClass} text-base font-bold text-title ${highlightAllFilterGuide ? "quick-note-title-glow-primary" : ""}`}>
+                    <h3 className={`${toneSyncClass} text-base font-bold text-title ${highlightCaptionGuide ? "quick-note-title-glow-primary" : ""}`}>
                       {filters.guide.caption.title}
                     </h3>
                   </div>
                   <p className={`${toneSyncClass} mediscan-primary-text mt-3 text-sm leading-7`}>
                     {filters.guide.caption.description}
                   </p>
-                  <p className={`${toneSyncClass} mt-auto pt-2 text-xs leading-6 text-muted`}>
+                  <p className={`${toneSyncClass} mt-auto min-h-[3rem] pt-2 text-xs leading-6 text-muted`}>
                     {filters.guide.caption.note}
                   </p>
                 </div>
               </article>
 
               <article className="flex h-full items-start gap-4">
-                <div className={`${toneSyncClass} flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/18 bg-accent-pale text-accent ${highlightAllFilterGuide ? "quick-note-icon-glow-accent" : ""}`}>
+                <div className={`${toneSyncClass} flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/18 bg-accent-pale text-accent ${highlightScoreGuide ? "quick-note-icon-glow-accent" : ""}`}>
                   <BadgePercent className="h-4.5 w-4.5" />
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <div className={`flex flex-wrap items-center gap-2 ${highlightAllFilterGuide ? "quick-note-heading-glow-accent" : ""}`}>
-                    <span className={`${toneSyncClass} mediscan-accent-chip inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${highlightAllFilterGuide ? "quick-note-chip-glow-accent" : ""}`}>
+                  <div className={`flex flex-wrap items-center gap-2 ${highlightScoreGuide ? "quick-note-heading-glow-accent" : ""}`}>
+                    <span className={`${toneSyncClass} mediscan-accent-chip inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${highlightScoreGuide ? "quick-note-chip-glow-accent" : ""}`}>
                       {filters.guide.score.label}
                     </span>
-                    <h3 className={`${toneSyncClass} text-base font-bold text-title ${highlightAllFilterGuide ? "quick-note-title-glow-accent" : ""}`}>
+                    <h3 className={`${toneSyncClass} text-base font-bold text-title ${highlightScoreGuide ? "quick-note-title-glow-accent" : ""}`}>
                       {filters.guide.score.title}
                     </h3>
                   </div>
                   <p className={`${toneSyncClass} mediscan-accent-text mt-3 text-sm leading-7`}>
                     {filters.guide.score.description}
                   </p>
-                  <p className={`${toneSyncClass} mt-auto pt-2 text-xs leading-6 text-muted`}>
+                  <p className={`${toneSyncClass} mt-auto min-h-[3rem] pt-2 text-xs leading-6 text-muted`}>
                     {filters.guide.score.note}
                   </p>
                 </div>
               </article>
 
               <article className="flex h-full items-start gap-4">
-                <div className={`${toneSyncClass} mediscan-primary-chip flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${highlightOrderGuide ? "quick-note-icon-glow-primary" : ""}`}>
+                <div className={`${toneSyncClass} mediscan-primary-chip flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${highlightRelaunchGuide ? "quick-note-icon-glow-primary" : ""}`}>
                   <Sparkles className="h-4.5 w-4.5" />
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <div className={`flex flex-wrap items-center gap-2 ${highlightOrderGuide ? "quick-note-heading-glow-primary" : ""}`}>
-                    <span className={`${toneSyncClass} mediscan-primary-chip inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${highlightOrderGuide ? "quick-note-chip-glow-primary" : ""}`}>
-                      {filters.guide.order.label}
+                  <div className={`flex flex-wrap items-center gap-2 ${highlightRelaunchGuide ? "quick-note-heading-glow-primary" : ""}`}>
+                    <span className={`${toneSyncClass} mediscan-primary-chip inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${highlightRelaunchGuide ? "quick-note-chip-glow-primary" : ""}`}>
+                      {content.image.selectionGuide.label}
                     </span>
-                    <h3 className={`${toneSyncClass} text-base font-bold text-title ${highlightOrderGuide ? "quick-note-title-glow-primary" : ""}`}>
-                      {filters.guide.order.title}
+                    <h3 className={`${toneSyncClass} text-base font-bold text-title ${highlightRelaunchGuide ? "quick-note-title-glow-primary" : ""}`}>
+                      {content.image.selectionGuide.title}
                     </h3>
                   </div>
                   <p className={`${toneSyncClass} mediscan-primary-text mt-3 text-sm leading-7`}>
-                    {filters.guide.order.description}
+                    {content.image.selectionGuide.description}
                   </p>
-                  <p className={`${toneSyncClass} mt-auto pt-2 text-xs leading-6 text-muted`}>
-                    {filters.guide.order.note}
+                  <p className={`${toneSyncClass} mt-auto min-h-[3rem] pt-2 text-xs leading-6 text-muted`}>
+                    {content.image.selectionGuide.note}
                   </p>
                 </div>
               </article>

@@ -105,7 +105,7 @@ export default function ClinicalConclusion({ searchResult, isAccent = false, cla
           )}
           <button onClick={() => setOpen(!open)} className="search-conclusion-icon p-1.5 rounded-lg border border-border text-muted hover:text-text transition-all" title={open ? content.collapse : content.expand}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-              style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
+              style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.38s cubic-bezier(0.16, 1, 0.3, 1)" }}>
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </button>
@@ -114,7 +114,7 @@ export default function ClinicalConclusion({ searchResult, isAccent = false, cla
 
       {/* Body */}
       {open && (
-        <div className="px-5 py-4">
+        <div className="search-conclusion-body-enter px-5 py-4">
           <div className={`search-tone-sync search-conclusion-note flex gap-2 items-start text-xs rounded-xl px-3 py-2.5 mb-4 border ${accentColor}`}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0">
               <circle cx="12" cy="12" r="10"/>

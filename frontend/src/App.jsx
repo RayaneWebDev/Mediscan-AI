@@ -13,12 +13,13 @@ const HowItWorks = lazy(() => import("./components/HowItWorks"));
 const FAQPage = lazy(() => import("./components/FAQPage"));
 const AboutPage = lazy(() => import("./components/AboutPage"));
 
-// Préchargement immédiat des chunks pour éviter le flash spinner au premier chargement
-import("./components/SearchPage");
-import("./components/ContactPage");
-import("./components/HowItWorks");
-import("./components/FAQPage");
-import("./components/AboutPage");
+const lazyPagePreloaders = [
+  () => import("./components/SearchPage"),
+  () => import("./components/ContactPage"),
+  () => import("./components/HowItWorks"),
+  () => import("./components/FAQPage"),
+  () => import("./components/AboutPage"),
+];
 
 const MOTION_ENTER_DURATION_MS = 620;
 const MOTION_ENTER_EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
@@ -101,6 +102,8 @@ function AppInner() {
   const [surfaceOverlayVisible, setSurfaceOverlayVisible] = useState(false);
 
   const pageTimerRef = useRef(null);
+  const preloadTimerRef = useRef(null);
+  const preloadIdleRef = useRef(null);
   const bodyLockedRef = useRef(false);
   const surfaceRevealFrameRef = useRef(0);
 
@@ -184,10 +187,23 @@ function AppInner() {
 
   useEffect(() => {
     const navIntroTimer = window.setTimeout(() => setNavVisible(true), 180);
+    const preloadChunks = () => {
+      lazyPagePreloaders.forEach((preload) => { preload(); });
+    };
+
+    if ("requestIdleCallback" in window) {
+      preloadIdleRef.current = window.requestIdleCallback(preloadChunks, { timeout: 1800 });
+    } else {
+      preloadTimerRef.current = window.setTimeout(preloadChunks, 1200);
+    }
 
     return () => {
       window.clearTimeout(navIntroTimer);
       clearTimeout(pageTimerRef.current);
+      window.clearTimeout(preloadTimerRef.current);
+      if ("cancelIdleCallback" in window && preloadIdleRef.current) {
+        window.cancelIdleCallback(preloadIdleRef.current);
+      }
       clearSurfaceRevealFrames();
       setSurfaceOverlay(null);
       setSurfaceOverlayVisible(false);

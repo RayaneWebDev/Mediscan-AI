@@ -49,8 +49,8 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
   const [filterNoteHighlighted, setFilterNoteHighlighted] = useState(false);
   const [entryAnimationsActive, setEntryAnimationsActive] = useState(true);
   const filterNoteHighlightTimerRef = useRef(null);
-  const scrollFrameRef = useRef(0);
-  const resultsAutoScrollFrameRef = useRef(0);
+  const scrollTimerRef = useRef(0);
+  const resultsAutoScrollTimerRef = useRef(0);
   const pendingSearchScrollRef = useRef(false);
   const resultsGridRef = useRef(null);
 
@@ -58,8 +58,8 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
     onChromeToneChange?.("accent");
     return () => {
       window.clearTimeout(filterNoteHighlightTimerRef.current);
-      cancelAnimationFrame(scrollFrameRef.current);
-      cancelAnimationFrame(resultsAutoScrollFrameRef.current);
+      window.clearTimeout(scrollTimerRef.current);
+      window.clearTimeout(resultsAutoScrollTimerRef.current);
     };
   }, [onChromeToneChange]);
 
@@ -87,7 +87,7 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
           // Ajuste cet offset pour modifier la position de scroll (positif = plus bas, negatif = plus haut).
           const TEXT_SEARCH_SCROLL_OFFSET = 65;
           const boundedTargetY = getResultsGridScrollTargetY(gridNode, TEXT_SEARCH_SCROLL_OFFSET);
-          cancelAnimationFrame(resultsAutoScrollFrameRef.current);
+          window.clearTimeout(resultsAutoScrollTimerRef.current);
 
           if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
             window.scrollTo(0, boundedTargetY);
@@ -95,20 +95,11 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
             return;
           }
 
-          const startY = window.scrollY;
-          const distance = boundedTargetY - startY;
-          const duration = 1080;
-          const startTime = performance.now();
-          const easeInOutCubic = (v) => v < 0.5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2;
-
-          const step = (ts) => {
-            const progress = Math.min((ts - startTime) / duration, 1);
-            window.scrollTo(0, startY + distance * easeInOutCubic(progress));
-            if (progress < 1) { resultsAutoScrollFrameRef.current = requestAnimationFrame(step); return; }
-            resultsAutoScrollFrameRef.current = 0;
+          window.scrollTo({ top: boundedTargetY, behavior: "smooth" });
+          resultsAutoScrollTimerRef.current = window.setTimeout(() => {
+            resultsAutoScrollTimerRef.current = 0;
             pendingSearchScrollRef.current = false;
-          };
-          resultsAutoScrollFrameRef.current = requestAnimationFrame(step);
+          }, 760);
         }, 40);
       });
     });
@@ -117,6 +108,7 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
       cancelAnimationFrame(firstFrame);
       cancelAnimationFrame(secondFrame);
       window.clearTimeout(settleTimer);
+      window.clearTimeout(resultsAutoScrollTimerRef.current);
     };
   }, [loading, results]);
 
@@ -176,25 +168,17 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
   }
 
   function animateScrollTo(targetY, onComplete) {
-    cancelAnimationFrame(scrollFrameRef.current);
+    window.clearTimeout(scrollTimerRef.current);
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
       window.scrollTo(0, targetY);
       onComplete?.();
       return;
     }
-    const startY = window.scrollY;
-    const distance = targetY - startY;
-    const duration = 1450;
-    const startTime = performance.now();
-    const easeInOutCubic = (v) => v < 0.5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2;
-    const step = (ts) => {
-      const progress = Math.min((ts - startTime) / duration, 1);
-      window.scrollTo(0, startY + distance * easeInOutCubic(progress));
-      if (progress < 1) { scrollFrameRef.current = requestAnimationFrame(step); return; }
-      scrollFrameRef.current = 0;
+    window.scrollTo({ top: targetY, behavior: "smooth" });
+    scrollTimerRef.current = window.setTimeout(() => {
+      scrollTimerRef.current = 0;
       onComplete?.();
-    };
-    scrollFrameRef.current = requestAnimationFrame(step);
+    }, 760);
   }
 
   function scrollToInfoSection(sectionId, eyebrowId, onComplete) {
