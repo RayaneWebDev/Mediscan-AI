@@ -96,16 +96,21 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
 
   useEffect(() => {
     return () => {
-      window.clearTimeout(quickNoteHighlightTimerRef.current);
-      window.clearTimeout(filterNoteHighlightTimerRef.current);
-      window.clearTimeout(quickNoteScrollTimerRef.current);
-      window.clearTimeout(resultsAutoScrollTimerRef.current);
-      scrollCancelRef.current?.();
       if (queryPreviewUrl) {
         URL.revokeObjectURL(queryPreviewUrl);
       }
     };
   }, [queryPreviewUrl]);
+
+  useEffect(() => {
+    return () => {
+      window.clearTimeout(quickNoteHighlightTimerRef.current);
+      window.clearTimeout(filterNoteHighlightTimerRef.current);
+      window.clearTimeout(quickNoteScrollTimerRef.current);
+      window.clearTimeout(resultsAutoScrollTimerRef.current);
+      scrollCancelRef.current?.();
+    };
+  }, []);
 
   function handleFileSelect(f) {
     if (!f.type.match(/^image\/(jpeg|png)$/)) {
@@ -821,44 +826,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
               enableToneTransition={toneTransitionReady}
             />
 
-            {/* Empty State - file selected, no results */}
-            {file && (
-              <div className={`${toneTransitionClass} image-search-panel mediscan-stage-panel-enter ${launchEntryClass} rounded-2xl p-6 md:p-7 border shadow-sm backdrop-blur-sm ${detailStagePanelHeightClass} ${isAccent || useHomeVisualTone ? (isAccent ? "mediscan-accent-surface" : "mediscan-primary-surface") : "ui-surface"} flex flex-col justify-between text-left`}>
-                <div>
-                  <StepBadge
-                    label={content.image.detailStep}
-                    isAccent={isAccent}
-                    useHomeVisualTone={useHomeVisualTone}
-                    enableToneTransition={toneTransitionReady}
-                  />
-                  <h3 className={`${toneSyncClass} mt-4 text-xl md:text-[1.35rem] font-bold ${isAccent ? "mediscan-accent-text" : useHomeVisualTone ? "mediscan-primary-text" : "text-primary"}`}>
-                    {content.image.pendingTitle}
-                  </h3>
-                  <p className={`${toneSyncClass} mt-2.5 max-w-2xl text-sm leading-6 ${isAccent ? "mediscan-accent-text" : useHomeVisualTone ? "mediscan-primary-text" : "text-muted"}`}>
-                    {content.image.pendingDescription}
-                  </p>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {detailChips.map((chip) => (
-                      <span
-                        key={chip.id}
-                        className={`${toneSyncClass} inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${
-                          isAccent
-                            ? "mediscan-accent-chip"
-                            : useHomeVisualTone
-                              ? "mediscan-primary-chip"
-                              : "border-primary/20 bg-primary-pale text-primary"
-                        }`}
-                      >
-                        {chip.label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Empty State - no file */}
-            {!file && !hasSearchResults && (
+            {!hasSearchResults && (
               <div className={`${toneTransitionClass} image-search-panel mediscan-stage-panel-enter ${launchEntryClass} rounded-2xl p-6 md:p-7 border shadow-sm ${detailStagePanelHeightClass} ${isAccent || useHomeVisualTone ? (isAccent ? "mediscan-accent-surface" : "mediscan-primary-surface") : "ui-surface"} flex flex-col justify-between text-left`}>
                 <div>
                   <StepBadge
@@ -867,19 +835,30 @@ export default function ImageSearchView({ onBack, onChromeToneChange, useSharedS
                     useHomeVisualTone={useHomeVisualTone}
                     enableToneTransition={toneTransitionReady}
                   />
-                  <div className="mt-4 flex items-start gap-3">
-                    <div className={`${toneSyncClass} flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${isAccent ? "mediscan-accent-chip" : useHomeVisualTone ? "mediscan-primary-chip" : "border-primary/20 bg-primary-pale text-primary"}`}>
-                      <Search className="w-4.5 h-4.5" strokeWidth={1.8} />
-                    </div>
-                    <div>
+                  {file ? (
+                    <div className="mt-4">
                       <h3 className={`${toneSyncClass} text-xl md:text-[1.35rem] font-bold ${isAccent ? "mediscan-accent-text" : useHomeVisualTone ? "mediscan-primary-text" : "text-primary"}`}>
-                        {content.image.readyTitle}
+                        {content.image.pendingTitle}
                       </h3>
                       <p className={`${toneSyncClass} mt-2.5 max-w-2xl text-sm leading-6 ${isAccent ? "mediscan-accent-text" : useHomeVisualTone ? "mediscan-primary-text" : "text-muted"}`}>
-                        {content.image.readyDescription}
+                        {content.image.pendingDescription}
                       </p>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="mt-4 flex items-start gap-3">
+                      <div className={`${toneSyncClass} flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${isAccent ? "mediscan-accent-chip" : useHomeVisualTone ? "mediscan-primary-chip" : "border-primary/20 bg-primary-pale text-primary"}`}>
+                        <Search className="w-4.5 h-4.5" strokeWidth={1.8} />
+                      </div>
+                      <div>
+                        <h3 className={`${toneSyncClass} text-xl md:text-[1.35rem] font-bold ${isAccent ? "mediscan-accent-text" : useHomeVisualTone ? "mediscan-primary-text" : "text-primary"}`}>
+                          {content.image.readyTitle}
+                        </h3>
+                        <p className={`${toneSyncClass} mt-2.5 max-w-2xl text-sm leading-6 ${isAccent ? "mediscan-accent-text" : useHomeVisualTone ? "mediscan-primary-text" : "text-muted"}`}>
+                          {content.image.readyDescription}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   <div className="mt-5 flex flex-wrap gap-2">
                     {detailChips.map((chip) => (
                       <span

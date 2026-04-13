@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import { LangContext } from "../context/LangContext";
 
 export default function UploadZone({
@@ -14,6 +14,7 @@ export default function UploadZone({
   const content = t.search.image;
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef(null);
+  const inputId = useId();
   const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
   const toneSyncClass = enableToneTransition ? "search-tone-sync" : "";
   const uploadFrameClass = "w-full min-h-[15.5rem] sm:min-h-[17rem] lg:min-h-[20rem]";
@@ -39,6 +40,14 @@ export default function UploadZone({
     : "bg-primary-pale text-primary";
 
   function handleOpenFilePicker() {
+    try {
+      if (typeof inputRef.current?.showPicker === "function") {
+        inputRef.current.showPicker();
+        return;
+      }
+    } catch {
+      // showPicker() non supporté ou exception → fallback
+    }
     inputRef.current?.click();
   }
 
@@ -50,19 +59,58 @@ export default function UploadZone({
   }
 
   function handleChange(e) {
-    if (e.target.files[0]) onFileSelect(e.target.files[0]);
+    const nextFile = e.target.files[0];
+    e.target.value = "";
+    if (nextFile) {
+      onFileSelect(nextFile);
+    }
   }
 
-  if (file) {
-    return (
-      <div className={`mt-4 flex w-full ${fillHeight ? "min-h-0 flex-1 items-stretch" : "items-stretch"}`}>
+  return (
+    <div className={`w-full ${file ? `mt-4 flex ${fillHeight ? "min-h-0 flex-1 items-stretch" : "items-stretch"}` : ""}`}>
+      <label
+        htmlFor={inputId}
+        tabIndex={0}
+        aria-label={content.uploadPrompt}
+        translate="no"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleOpenFilePicker();
+          }
+        }}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+        className={`${file ? "hidden " : "flex "}${enableToneTransition ? "search-tone-transition " : ""}notranslate search-upload-dropzone ${uploadFrameClass} mt-3 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center
+          ${fillHeight ? "flex-1" : ""}
+          ${dropZoneColorClass}`}
+      >
+        <div className={`${enableToneTransition ? "search-tone-transition " : ""}w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center ${iconColorClass}`}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+        </div>
+        <p className={`${toneSyncClass} text-sm text-text font-medium`} translate="no">
+          <span>{content.uploadPrompt} </span>
+          <span className={`${toneSyncClass} font-semibold underline underline-offset-2 ${isAccent ? "mediscan-accent-text" : useHomeVisualTone ? "mediscan-primary-text" : "text-primary"}`}>
+            {content.browseAction}
+          </span>
+        </p>
+        <p className={`${toneSyncClass} text-muted text-[11px] mt-1`} translate="no">{content.acceptedFormats}</p>
+      </label>
+      <div className={`${file ? `flex w-full ${fillHeight ? "min-h-0 flex-1 items-stretch" : "items-stretch"}` : "hidden"}`}>
         <div className={`${enableToneTransition ? "search-tone-transition " : ""}search-upload-preview mediscan-upload-preview-enter relative flex ${uploadFrameClass} flex-col overflow-hidden rounded-2xl border shadow-md ${isAccent ? "mediscan-accent-surface" : useHomeVisualTone ? "mediscan-primary-surface" : "bg-surface border-primary/40"}`}>
           <div className="relative flex min-h-0 flex-1 items-center justify-center px-4 py-5 sm:px-5">
-            <img
-              src={previewUrl}
-              alt={content.previewAlt}
-              className="block h-full max-h-[232px] w-full object-contain mediscan-upload-preview-image sm:max-h-[248px] lg:max-h-[268px]"
-            />
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt={content.previewAlt}
+                className="block h-full max-h-[232px] w-full object-contain mediscan-upload-preview-image sm:max-h-[248px] lg:max-h-[268px]"
+              />
+            ) : null}
           </div>
           <button
             type="button"
@@ -86,47 +134,12 @@ export default function UploadZone({
                   : "bg-surface border-border"
             }`}
           >
-            <p className={`${toneSyncClass} text-xs text-muted truncate font-mono`}>{file.name}</p>
+            <p className={`${toneSyncClass} text-xs text-muted truncate font-mono`} translate="no">{file?.name || ""}</p>
           </div>
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label={content.uploadPrompt}
-      onClick={handleOpenFilePicker}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          handleOpenFilePicker();
-        }
-      }}
-      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-      onDragLeave={() => setDragOver(false)}
-      onDrop={handleDrop}
-      className={`${enableToneTransition ? "search-tone-transition " : ""}search-upload-dropzone ${uploadFrameClass} mt-3 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center
-        ${fillHeight ? "flex-1" : ""}
-        ${dropZoneColorClass}`}
-    >
-      <div className={`${enableToneTransition ? "search-tone-transition " : ""}w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center ${iconColorClass}`}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
-        </svg>
-      </div>
-      <p className={`${toneSyncClass} text-sm text-text font-medium`}>
-        {content.uploadPrompt}{" "}
-        <span className={`${toneSyncClass} font-semibold underline underline-offset-2 ${isAccent ? "mediscan-accent-text" : useHomeVisualTone ? "mediscan-primary-text" : "text-primary"}`}>
-          {content.browseAction}
-        </span>
-      </p>
-      <p className={`${toneSyncClass} text-muted text-[11px] mt-1`}>{content.acceptedFormats}</p>
       <input
+        id={inputId}
         ref={inputRef}
         type="file"
         accept="image/jpeg,image/png"

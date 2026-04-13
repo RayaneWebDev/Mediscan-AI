@@ -5,6 +5,18 @@ import { fr } from "../i18n/fr";
 
 export const LangContext = createContext();
 
+function canUseAnimatedViewTransitions() {
+  if (typeof document === "undefined" || typeof window === "undefined") {
+    return false;
+  }
+
+  const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const userAgent = window.navigator.userAgent;
+  const isSafari = /Safari/i.test(userAgent) && !/Chrome|Chromium|Android/i.test(userAgent);
+
+  return !prefersReduced && !isSafari && typeof document.startViewTransition === "function";
+}
+
 export function LangProvider({ children }) {
   const [lang, setLang] = useState(() => localStorage.getItem("lang") || "en");
   const [langVisible, setLangVisible] = useState(true);
@@ -24,9 +36,7 @@ export function LangProvider({ children }) {
   const setLanguage = (newLang) => {
     if (newLang === lang) return;
 
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (!document.startViewTransition || prefersReduced) {
+    if (!canUseAnimatedViewTransitions()) {
       clearTimeout(timerRef.current);
       setLangVisible(false);
       timerRef.current = setTimeout(() => {

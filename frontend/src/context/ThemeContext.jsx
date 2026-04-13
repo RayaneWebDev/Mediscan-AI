@@ -10,6 +10,16 @@ import {
 
 export const ThemeContext = createContext();
 
+function canUseAnimatedViewTransitions() {
+  if (typeof document === "undefined" || typeof window === "undefined") {
+    return false;
+  }
+
+  const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  return !prefersReduced && typeof document.startViewTransition === "function";
+}
+
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (!context) {
@@ -58,9 +68,7 @@ export function ThemeProvider({ children }) {
   function setTheme(newTheme, clickX, clickY) {
     if (newTheme === theme) return;
 
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (!document.startViewTransition || prefersReduced) {
+    if (!canUseAnimatedViewTransitions()) {
       setThemeState(newTheme);
       return;
     }

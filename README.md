@@ -305,23 +305,74 @@ make run-frontend
 
 ## LLM / Synthèse IA
 
-La partie LLM repose sur Groq.
+La synthèse IA est générée par **Groq** (inférence ultra-rapide, gratuite en tier Free).
+Le modèle par défaut est `llama-3.3-70b-versatile`.
 
-Pour qu’elle fonctionne :
+Après chaque recherche, MediScan envoie les descriptions des résultats les plus proches à Groq et reçoit une synthèse clinique prudente en français (3 paragraphes : observations communes, limites, rappel non-clinique).
 
-1. créer une clé API sur `https://console.groq.com`
-2. renseigner `GROQ_KEY_API` dans `.env`
-3. relancer `run.sh` ou `run.bat`
+### Étape 1 — Créer un compte Groq et obtenir une clé API
+
+1. Aller sur `https://console.groq.com`
+2. Créer un compte (GitHub, Google ou email)
+3. Dans le menu latéral : **API Keys → Create API Key**
+4. Donner un nom à la clé (ex. `mediscan-local`)
+5. **Copier la clé** (elle ne sera plus affichée après fermeture)
+
+> Le tier gratuit de Groq est suffisant pour utiliser la synthèse en local.
+> Aucune carte bancaire n’est requise.
+
+### Étape 2 — Configurer la clé dans `.env`
+
+```bash
+cp .env.example .env   # si pas encore fait
+```
+
+Puis éditer `.env` et renseigner :
+
+```env
+GROQ_KEY_API=gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+MEDISCAN_GROQ_MODEL=llama-3.3-70b-versatile
+MEDISCAN_MAX_CONCLUSION_RESULTS=6
+```
+
+Le modèle `llama-3.3-70b-versatile` est recommandé.
+Alternatives disponibles sur Groq : `mixtral-8x7b-32768`, `gemma2-9b-it`.
+
+### Étape 3 — Lancer le projet
+
+```bash
+./run.sh   # Mac / Linux
+run.bat    # Windows
+```
+
+### Étape 4 — Vérifier que la synthèse fonctionne
+
+1. Ouvrir `http://127.0.0.1:5173`
+2. Aller dans **Image Search**
+3. Uploader une image → lancer la recherche
+4. En bas des résultats : le bloc **Synthèse IA** doit s’afficher en quelques secondes
+
+Si le bloc affiche une erreur `"La fonctionnalité d’analyse IA n’est pas configurée"` :
+→ vérifier que `GROQ_KEY_API` est bien renseigné dans `.env` (pas vide, pas avec guillemets)
+
+Si le bloc affiche `"Service temporairement indisponible"` :
+→ le quota Groq est peut-être atteint, ou la clé est invalide
+
+Tester directement l’endpoint :
+
+```bash
+curl -s http://127.0.0.1:8000/api/health | python3 -m json.tool
+```
+
+Sans clé Groq :
+
+- le site démarre normalement
+- la recherche par image et par texte fonctionne
+- la Synthèse IA affiche un message d’erreur explicite (comportement attendu)
 
 Endpoint concerné :
 
 - `POST http://127.0.0.1:8000/api/generate-conclusion`
-
-Sans clé Groq :
-
-- le site démarre
-- la recherche par image et par texte fonctionne
-- la Synthèse / Analyse IA ne fonctionne pas
 
 ---
 

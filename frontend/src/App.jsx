@@ -235,7 +235,8 @@ function AppInner() {
 
   return (
     <div
-      className="relative isolate min-h-screen text-text"
+      translate="no"
+      className="notranslate relative isolate min-h-screen text-text"
       style={{
         transition: `color ${MOTION_ENTER_DURATION_MS}ms ${MOTION_ENTER_EASE}`,
       }}
