@@ -8,7 +8,7 @@ env/
 proofs/
 
 # Local/private resources (never version)
-data
+/data
 weights/
 .env
 
