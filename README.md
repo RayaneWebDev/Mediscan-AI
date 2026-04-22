@@ -3,249 +3,261 @@
 <div align="center">
   <img src="frontend/public/Logo-2.svg" alt="MediScan AI logo" width="112" />
 
-  <h2>From pixels to meaning, then from meaning to clinically relevant evidence.</h2>
-
-  <p>
-    <strong>A product-grade multimodal retrieval platform for medical imaging.</strong>
-  </p>
-
-  <p>
-    <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11" />
-    <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=111827" alt="React 19" />
-    <img src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white" alt="Vite 8" />
-    <img src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
-    <img src="https://img.shields.io/badge/FAISS-CPU-F28C28" alt="FAISS" />
-    <img src="https://img.shields.io/badge/DINOv2-visual%20retrieval-2563EB" alt="DINOv2" />
-    <img src="https://img.shields.io/badge/BioMedCLIP-semantic%20retrieval-0EA5E9" alt="BioMedCLIP" />
-    <img src="https://img.shields.io/badge/Groq-LLM%20synthesis-7C3AED" alt="Groq" />
-    <img src="https://img.shields.io/badge/Git%20LFS-required-9CA3AF?logo=git" alt="Git LFS" />
-  </p>
+  <h2>Multimodal medical retrieval designed as a real product.</h2>
 
   <p>
     <strong>Non-clinical academic prototype.</strong><br />
-    Built to showcase end-to-end AI product engineering, not just isolated model demos.
+    Built to demonstrate end-to-end AI product engineering across retrieval, interface design, backend architecture, and evaluation.
   </p>
 </div>
 
-<p align="center">
-  <img src="frontend/public/Dark_visual_2.png" alt="MediScan result grid in dark mode" width="100%" />
-</p>
+---
+
+## Overview
+
+MediScan AI is a multimodal retrieval platform for medical imaging.
+
+It is designed around a simple idea: a user should be able to move naturally between images, language, and retrieved evidence inside one coherent product experience.
+
+The repository brings together:
+
+- image-to-image retrieval
+- semantic retrieval
+- text-to-image search
+- relaunch from one result or multiple selected results
+- AI-assisted synthesis from retrieved cases
+- a polished frontend built as a product layer rather than a minimal dashboard
+
+This project is not only a model integration exercise. It is a complete system that combines product thinking, retrieval engineering, backend design, interface execution, and evaluation rigor.
 
 ---
 
-## A Product-Led Retrieval Experience
+## Product Positioning
 
-MediScan AI is a multimodal search product for medical imaging. It allows a user to:
+MediScan AI sits at the intersection of three concerns:
 
-- start from an uploaded image
-- start from a clinical text query
-- relaunch from one result or several selected results
-- compare retrieved cases visually
-- generate an AI-assisted synthesis from ranked evidence
-- navigate the full workflow inside a polished, bilingual, theme-consistent interface
+1. medical image retrieval  
+It helps surface relevant cases from a large indexed dataset through visual or semantic similarity.
 
-The goal is simple: make medical retrieval feel like a serious product, with strong UX, strong technical foundations, and a presentation layer that looks ready for GitHub, demo day, or portfolio review.
+2. AI product design  
+It wraps technically complex retrieval logic inside a structured and usable interface.
 
----
+3. engineering credibility  
+It includes a backend API, artifact management, evaluation scripts, metrics, and a repository structure that reflects real system design choices.
 
-## Product Preview
-
-<table>
-  <tr>
-    <td align="center" width="33%">
-      <img src="frontend/public/Dark_visual_1.png" alt="Visual retrieval interface" width="100%" /><br />
-      <strong>Visual Retrieval</strong><br />
-      Start from an image and retrieve structurally similar exams.
-    </td>
-    <td align="center" width="33%">
-      <img src="frontend/public/Dark_Interp_1.png" alt="Semantic retrieval interface" width="100%" /><br />
-      <strong>Semantic Retrieval</strong><br />
-      Retrieve cases through medically aligned meaning, not only visual resemblance.
-    </td>
-    <td align="center" width="33%">
-      <img src="frontend/public/Dark_texte_1.png" alt="Text search interface" width="100%" /><br />
-      <strong>Text Search</strong><br />
-      Move from clinical wording to relevant image evidence.
-    </td>
-  </tr>
-</table>
+The result is a project that reads as a serious AI product prototype rather than a disconnected collection of notebooks or scripts.
 
 ---
 
-## Interface Gallery
+## The Three Search Modes
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="frontend/public/Dark_visual_3.png" alt="Visual search detail flow" width="100%" /><br />
-      <strong>Detail and comparison flows</strong><br />
-      Retrieved cases can be opened, compared, and relaunch-used inside the same dark product surface.
-    </td>
-    <td align="center" width="50%">
-      <img src="frontend/public/Dark_interp_2.png" alt="Interpretive workspace" width="100%" /><br />
-      <strong>Interpretive workspace</strong><br />
-      The semantic mode is not just another search box, it is a distinct interpretive workflow.
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="50%">
-      <img src="frontend/public/Dark_texte_2.png" alt="Text search results" width="100%" /><br />
-      <strong>Text-first exploration</strong><br />
-      A clinical query can directly become a ranked visual evidence trail.
-    </td>
-    <td align="center" width="50%">
-      <img src="frontend/public/llm_d.png" alt="AI synthesis panel" width="100%" /><br />
-      <strong>Retrieval plus synthesis</strong><br />
-      The platform connects search and AI synthesis instead of treating them as separate demos.
-    </td>
-  </tr>
-</table>
+```mermaid
+flowchart LR
+    U["User intent"] --> Q1["Has a reference image"]
+    U --> Q2["Needs medically aligned retrieval"]
+    U --> Q3["Only has text"]
 
----
+    Q1 --> V["Visual Mode"]
+    Q2 --> S["Semantic Mode"]
+    Q3 --> T["Text Search Mode"]
 
-# Technical Breakdown
+    V --> V1["Image-to-image similarity"]
+    S --> S1["Image interpreted through semantic space"]
+    T --> T1["Text-to-image retrieval"]
+```
 
-The first half of this README shows the product surface.  
-The second half explains the retrieval architecture, the engineering choices, and why the system is built the way it is.
+### 1. Visual Mode
+
+Visual mode starts from an image query.
+
+Its job is to retrieve cases that are visually close in terms of structure, morphology, composition, and acquisition style. This is the mode to use when the image itself is the strongest signal and the user wants nearest neighbors in visual space.
+
+Typical use cases:
+
+- searching for structurally similar exams
+- exploring look-alike cases from a reference scan
+- relaunching from one retrieved result to refine a visual neighborhood
+
+### 2. Semantic Mode
+
+Semantic mode is designed for medically aligned retrieval rather than pure visual resemblance.
+
+Instead of asking only “what looks similar?”, it asks “what is semantically relevant in a medical sense?”. This mode is especially useful when anatomy, clinical meaning, and image-language alignment matter more than raw pixel similarity.
+
+Typical use cases:
+
+- finding cases that are conceptually related
+- exploring medically relevant neighbors from an image
+- moving from interpretation to retrieval, not only from appearance to retrieval
+
+### 3. Text Search Mode
+
+Text search starts from language instead of a reference image.
+
+The user can write a clinical query in free text and retrieve matching image cases through the semantic index. This makes the system useful even when no query image is available.
+
+Typical use cases:
+
+- searching from a clinical description
+- moving from wording to visual evidence
+- exploring case families from a text-first workflow
 
 ---
 
 ## Why There Are Two Retrieval Architectures
 
-MediScan AI does not try to force every search workflow through one universal embedding strategy.  
-It uses two complementary retrieval architectures because they solve different problems.
+MediScan AI does not force every workflow into one single embedding strategy.
 
-### DINOv2: when the image itself is the strongest signal
+That decision is deliberate.
 
-DINOv2 is used for the **visual retrieval** path.
-
-What it is good at:
-
-- morphology
-- texture
-- composition
-- acquisition style
-- visual structure and layout similarity
-
-What that means in practice:
-
-- if the user already has a reference scan or image
-- if the goal is to find exams that look visually close
-- if structural similarity matters more than language or report semantics
-
-This is the right architecture when the query begins with pixels and the user wants nearest neighbors in visual space.
-
-### BioMedCLIP: when meaning matters more than pure appearance
-
-BioMedCLIP is used for the **semantic retrieval** and **text-to-image retrieval** paths.
-
-What it is good at:
-
-- image-language alignment
-- anatomy-aware and medically aligned retrieval
-- moving between text and image in the same embedding space
-- finding conceptually relevant cases even when pixel similarity is weaker
-
-What that means in practice:
-
-- the user can start from a clinical text query
-- an image can be interpreted through a more semantic lens
-- retrieval is driven by medical meaning, not just local visual resemblance
-
-This is the right architecture when the query begins with language, or when the user wants medically relevant similarity rather than only pixel-level similarity.
-
-### Why both matter together
-
-Using both DINOv2 and BioMedCLIP gives the product two different retrieval brains:
-
-- one optimized for **what looks similar**
-- one optimized for **what means something similar**
-
-That is a strong technical decision because it reflects how real users think: sometimes they search from appearance, sometimes from interpretation, sometimes from text alone.
-
----
-
-## Architecture Overview
-
-<p align="center">
-  <img src="docs/assets/archi_logicielle-2.png" alt="Detailed MediScan architecture diagram" width="100%" />
-</p>
+Different retrieval problems require different representational strengths, so the product uses two complementary model families:
 
 ```mermaid
 flowchart TB
-    classDef hero fill:#eef5f7,stroke:#b8cbd0,color:#173941,stroke-width:1.2px;
-    classDef visual fill:#add2d9,stroke:#244a54,color:#173b43,stroke-width:1.6px;
-    classDef semantic fill:#cce1e5,stroke:#1d4047,color:#173941,stroke-width:1.6px;
-    classDef support fill:#f4f8fa,stroke:#c5d5da,color:#22424a,stroke-width:1.1px;
-    classDef ai fill:#dcecf0,stroke:#6f8f98,color:#173941,stroke-width:1.2px;
+    A["Medical retrieval query"] --> B["What is the strongest signal?"]
+    B --> C["Appearance and structure"]
+    B --> D["Clinical meaning and language alignment"]
 
-    UI["React 19 + Vite Product UI"]:::hero --> API["FastAPI API Layer"]:::hero
-    API --> VALID["Validation + Input Normalization"]:::support
-    VALID --> SERVICE["SearchService"]:::hero
-    SERVICE --> REGISTRY["SearchResourceRegistry<br/>lazy-loaded + thread-safe"]:::support
+    C --> E["DINOv2"]
+    D --> F["BioMedCLIP"]
 
-    REGISTRY --> VINDEX["Visual Mode<br/>DINOv2 + FAISS index"]:::visual
-    REGISTRY --> SINDEX["Semantic Mode<br/>BioMedCLIP + FAISS index"]:::semantic
-
-    TEXT["Text Query"]:::semantic --> SINDEX
-    IMAGE["Image Query"]:::visual --> VINDEX
-    IMAGE --> SINDEX
-
-    VINDEX --> RESULTS["Ranked Results + IDs"]:::support
-    SINDEX --> RESULTS
-
-    RESULTS --> ENRICH["Optional MongoDB Enrichment"]:::support
-    ENRICH --> UX["Result Grid · Compare · Relaunch · Export"]:::hero
-    UX --> LLM["Groq Clinical Synthesis"]:::ai
-    LLM --> UX
+    E --> G["Visual nearest neighbors"]
+    F --> H["Semantic retrieval"]
+    F --> I["Text-to-image retrieval"]
 ```
 
-### What this architecture is for
+### DINOv2
 
-- **React + Vite** handles the product layer and interaction model
-- **FastAPI** exposes a clean retrieval-focused API surface
-- **SearchService** centralizes runtime logic
-- **SearchResourceRegistry** avoids reloading heavy FAISS/model resources on every request
-- **DINOv2** powers morphology-first retrieval
-- **BioMedCLIP** powers semantic and text-to-image retrieval
-- **Groq** adds synthesis on top of retrieval results rather than replacing the retrieval core
+DINOv2 is used for the visual retrieval path.
 
-The point of this architecture is not just performance. It is separation of concerns: retrieval, orchestration, UI, and AI assistance each have a clear place in the system.
+It is well suited for:
+
+- morphology
+- texture
+- spatial composition
+- structural similarity
+- visual neighborhood search
+
+In practice, DINOv2 is the right choice when the user begins with an image and wants retrieval driven by appearance and structure.
+
+### BioMedCLIP
+
+BioMedCLIP is used for semantic retrieval and text-to-image search.
+
+It is well suited for:
+
+- image-language alignment
+- medically meaningful similarity
+- semantic matching across modalities
+- text-driven retrieval
+
+In practice, BioMedCLIP is the right choice when the user begins with language, or when retrieval should reflect medical meaning rather than only visual likeness.
+
+### Why This Matters
+
+Using both DINOv2 and BioMedCLIP gives the platform two different retrieval logics:
+
+- one optimized for what looks similar
+- one optimized for what means something similar
+
+That is a much stronger product and engineering choice than pretending one embedding space solves every kind of search equally well.
 
 ---
 
-## Core Engineering Highlights
+## Architecture Summary
 
-### Backend
+```mermaid
+flowchart TB
+    UI["Presentation layer<br/>React 19 + Vite"] --> API["Application layer<br/>FastAPI"]
+    API --> CORE["Retrieval core<br/>SearchService + registry"]
+    CORE --> VISUAL["Visual pipeline<br/>DINOv2 + FAISS"]
+    CORE --> SEMANTIC["Semantic pipeline<br/>BioMedCLIP + FAISS"]
+    VISUAL --> ART["Artifacts and evaluation<br/>indexes, manifests, proofs"]
+    SEMANTIC --> ART
+```
 
-- FastAPI application with explicit routes for image search, text search, relaunch from IDs, multi-image relaunch, AI conclusion, and contact
-- lazy startup design so heavy retrieval resources are loaded on demand
-- thread-safe shared registry for embedders and FAISS indexes
-- structured validation for upload size, image bytes, content type, text queries, mode normalization, and selected IDs
-- optional enrichment pipeline for metadata
+At a high level, the system is organized in four layers:
 
-### Retrieval
+### 1. Presentation layer
 
-- stable artifact configuration per mode
-- separate indexes for visual and semantic search
-- text-to-image retrieval path through BioMedCLIP
-- image-to-image visual retrieval path through DINOv2
-- centroid-based relaunch from multiple selected results
+A React 19 + Vite frontend provides the product interface.
 
-### Frontend
+It handles:
 
-- React 19 interface with polished multi-page product presentation
-- distinct visual, interpretive, and text search journeys
-- result cards, detail modal, compare modal, summary panel, and exports
-- bilingual French/English UX
-- light and dark theming across the retrieval experience
-- showcase-oriented home page with demo storytelling and screenshots
+- home and showcase surface
+- image search and text search workspaces
+- result browsing
+- detail and comparison modals
+- relaunch workflows
+- AI summary presentation
+- bilingual user experience
 
-### Product quality
+### 2. Application and API layer
 
-- one-command project startup via `run.sh` and `run.bat`
-- Git LFS handling for large FAISS artifacts
-- repository structured to support demo, evaluation, and development workflows
+A FastAPI backend exposes the retrieval and synthesis capabilities through a clean API surface.
+
+This layer handles:
+
+- request validation
+- routing
+- service orchestration
+- response shaping
+- image redirection
+- optional contact delivery
+
+### 3. Retrieval core
+
+The retrieval core is implemented around a `SearchService` and a thread-safe resource registry.
+
+This layer handles:
+
+- mode selection
+- lazy loading of heavy resources
+- FAISS search execution
+- text-to-image retrieval
+- relaunch from one or multiple image IDs
+- centroid-based embedding relaunch
+
+### 4. Artifact and evaluation layer
+
+The project includes stable FAISS artifacts, manifests, indexed metadata, and reproducible evaluation scripts.
+
+This is important because the repository is not only concerned with runtime behavior. It also documents how retrieval quality is measured and how artifacts are managed over time.
+
+---
+
+## Technical Highlights
+
+### Backend Engineering
+
+- FastAPI application with a retrieval-focused API
+- lazy initialization of heavy search resources
+- thread-safe caching of embedders and FAISS indexes
+- structured validation for uploads, text input, modes, and selected image IDs
+- optional metadata enrichment pipeline
+
+### Retrieval Engineering
+
+- separate visual and semantic indexes
+- explicit stable artifact configuration by mode
+- image-to-image retrieval through DINOv2
+- text-to-image and semantic retrieval through BioMedCLIP
+- relaunch from multiple selected results via centroid embedding
+
+### Frontend Engineering
+
+- React 19 product interface, not a thin admin shell
+- multiple search journeys inside one coherent UX
+- result detail flow, compare flow, export flow, and AI summary flow
+- theme-aware product surface
+- bilingual French / English experience
+
+### Engineering Discipline
+
+- one-command startup via `run.sh` and `run.bat`
+- Git LFS support for large FAISS artifacts
+- test and evaluation separation from runtime logic
+- repository structure suited for demo, iteration, and review
 
 ---
 
@@ -272,11 +284,11 @@ The repository includes a dedicated evaluation layer documented in [`docs/evalua
 
 ### Why these results matter
 
-- the semantic pipeline wins on the main retrieval relevance metric
-- the project includes measurable evidence, not only qualitative screenshots
-- evaluation is reproducible and already structured for future tuning work
+- the semantic pipeline outperforms the visual pipeline on the main relevance metric
+- the repository includes measurable evidence, not only qualitative claims
+- the system already has a serious basis for future fine-tuning and benchmarking work
 
-For full details, see [`docs/evaluation.md`](docs/evaluation.md) and the proof files in [`proofs/`](proofs).
+For more detail, see [`docs/evaluation.md`](docs/evaluation.md) and the supporting files in [`proofs/`](proofs).
 
 ---
 
@@ -284,7 +296,7 @@ For full details, see [`docs/evaluation.md`](docs/evaluation.md) and the proof f
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /api/health` | API health check |
+| `GET /api/health` | health check |
 | `POST /api/search` | image upload retrieval |
 | `POST /api/search-text` | text-to-image retrieval |
 | `POST /api/search-by-id` | relaunch from one indexed image |
@@ -292,6 +304,26 @@ For full details, see [`docs/evaluation.md`](docs/evaluation.md) and the proof f
 | `POST /api/generate-conclusion` | AI synthesis generation |
 | `POST /api/contact` | contact form delivery |
 | `GET /api/images/{image_id}` | redirect to public image asset |
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as React UI
+    participant API as FastAPI
+    participant Service as SearchService
+    participant Registry as Resource Registry
+    participant Index as FAISS + Embedder
+
+    User->>UI: submit image or text query
+    UI->>API: call search endpoint
+    API->>Service: validate and route request
+    Service->>Registry: load mode resources if needed
+    Registry->>Index: get visual or semantic pipeline
+    Index-->>Service: ranked results
+    Service-->>API: normalized response
+    API-->>UI: results payload
+    UI-->>User: browse, compare, relaunch, summarize
+```
 
 ---
 
@@ -319,7 +351,7 @@ git lfs pull
 cp .env.example .env
 ```
 
-If you want AI synthesis enabled:
+To enable AI synthesis:
 
 ```env
 GROQ_KEY_API=your_groq_api_key_here
@@ -382,85 +414,34 @@ pytest
 ```text
 .
 ├── backend/           FastAPI app, API routes, services, validation
-├── frontend/          React product interface and demo assets
+├── frontend/          React product interface
 ├── src/mediscan/      retrieval runtime, embedders, indexing logic
 ├── artifacts/         FAISS indexes, ids, manifests
 ├── scripts/           evaluation and benchmark scripts
 ├── tests/             Python test suite
-├── proofs/            result evidence and benchmark outputs
-├── docs/              evaluation and supporting documentation
-├── run.sh             one-command startup for macOS / Linux
-├── run.bat            one-command startup for Windows
-└── README.md          GitHub-facing product overview
+├── proofs/            benchmark evidence
+├── docs/              supporting documentation
+├── run.sh             startup script for macOS / Linux
+├── run.bat            startup script for Windows
+└── README.md          product-facing overview
 ```
 
 ---
 
-## The 3 Retrieval Modes
+## Why This Repository Works Well on GitHub
 
-### 1. Visual Mode
+This repository presents a strong technical profile because it shows more than isolated implementation skills.
 
-<p align="center">
-  <img src="frontend/public/Dark_visual_3.png" alt="Visual mode large screenshot" width="100%" />
-</p>
+It shows the ability to:
 
-**What it is**
+- design a product around AI retrieval
+- choose different model architectures for different search problems
+- build a usable interface around technically dense workflows
+- structure backend and retrieval logic cleanly
+- support claims with evaluation and benchmarks
+- present the whole system clearly for review, demo, or portfolio use
 
-Visual mode searches by appearance. It is the right choice when the user already has a medical image and wants cases that are visually close in morphology, structure, composition, or acquisition pattern.
-
-**What it is useful for**
-
-- look-alike case retrieval
-- structural comparison
-- quick nearest-neighbor exploration from a scan
-- similarity driven by the image itself
-
-### 2. Semantic Mode
-
-<p align="center">
-  <img src="frontend/public/Dark_interp_3.png" alt="Semantic mode large screenshot" width="100%" />
-</p>
-
-**What it is**
-
-Semantic mode searches through a medically aligned embedding space. It is less about raw visual closeness and more about finding conceptually relevant cases through anatomy, pathology, and shared clinical meaning.
-
-**What it is useful for**
-
-- medically relevant neighbor retrieval
-- interpretation-oriented exploration
-- retrieval when meaning matters more than pure pixel similarity
-- bridging image understanding with language-aware similarity
-
-### 3. Text Search Mode
-
-<p align="center">
-  <img src="frontend/public/Dark_texte_3.png" alt="Text search large screenshot" width="100%" />
-</p>
-
-**What it is**
-
-Text search mode starts from clinical language instead of an image. The user can describe a case, an anatomy, or a pathological context and retrieve related images directly from the semantic index.
-
-**What it is useful for**
-
-- retrieval without a reference image
-- exploration from radiology-like wording
-- moving from report language to image evidence
-- text-first medical discovery workflows
-
----
-
-## Why This Repo Works Well on GitHub
-
-This repository is a strong GitHub showcase because it proves several things at once:
-
-- you can build a real AI product end-to-end
-- you understand when to use different retrieval architectures
-- you can turn backend complexity into a polished user-facing experience
-- you can present technical work with product clarity and visual quality
-
-For a recruiter, reviewer, collaborator, or professor, this reads as a serious AI product engineering project rather than a minimal academic proof of concept.
+For a recruiter, professor, collaborator, or technical reviewer, this reads as a serious AI product engineering project rather than a minimal proof of concept.
 
 ---
 
