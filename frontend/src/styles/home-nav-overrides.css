@@ -374,7 +374,7 @@
 }
 
 [data-theme="dark"] .nav-tab-active {
-  color: #ffffff !important;
+  color: var(--nav-night-solid-bg, #081119) !important;
 }
 
 [data-theme="dark"] .nav-active-indicator {
@@ -400,7 +400,7 @@
 }
 
 [data-theme="dark"] .nav-tab-active {
-  color: #ffffff !important;
+  color: var(--nav-night-solid-bg, #081119) !important;
 }
 
 [data-theme="dark"] .nav-tab-inactive:hover {
@@ -410,8 +410,8 @@
 }
 
 [data-theme="dark"] .nav-tab-active:hover {
-  color: #ffffff !important;
-  background: var(--nav-night-solid-hover-bg);
+  color: var(--nav-night-solid-bg, #081119) !important;
+  background: transparent;
   transform: translateY(-1px);
 }
 
@@ -461,5 +461,4 @@
   color: rgba(241, 245, 249, 0.94);
   background: var(--nav-night-solid-hover-bg);
 }
-
 

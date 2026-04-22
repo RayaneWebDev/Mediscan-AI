@@ -75,7 +75,7 @@ export default function Navigation({
       const activeTab = tabRefs.current[currentPage];
       
       if (!shell || !activeTab) {
-        setActiveBoxStyle((prev) => ({ ...prev, opacity: 0 }));
+        setActiveBoxStyle({ width: 0, x: 0, opacity: 0 });
         return;
       }
 
@@ -140,9 +140,10 @@ export default function Navigation({
               <div 
                 aria-hidden="true" 
                 className="nav-active-indicator" 
-                style={{ 
+              style={{ 
                   position: 'absolute',
                   left: 0, 
+                  opacity: activeBoxStyle.opacity,
                   width: `${activeBoxStyle.width}px`, 
                   transform: `translateX(${activeBoxStyle.x}px)`, 
                 }} 

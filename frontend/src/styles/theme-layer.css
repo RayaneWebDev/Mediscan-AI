@@ -790,8 +790,8 @@
 }
 
 [data-theme="dark"] .nav-active-indicator {
-  background: rgba(216, 230, 238, 0.14);
-  box-shadow: 0 5px 14px rgba(1, 8, 14, 0.2);
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(1, 8, 14, 0.22);
 }
 
 [data-theme="dark"] .nav-tab-inactive,
