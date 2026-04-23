@@ -1,6 +1,7 @@
 {
   "mode": "semantic",
   "embedder": "biomedclip",
+  "model_name": "hf-hub:Ozantsk/biomedclip-rocov2-finetuned",
   "dataset_metadata": "data/roco_train_full/metadata.csv",
   "index_path": "artifacts/index_semantic.faiss",
   "ids_path": "artifacts/ids_semantic.json",
@@ -8,5 +9,5 @@
   "ntotal": 59962,
   "dim": 512,
   "status": "validated",
-  "note": "Rebuilt on the full dataset and verified against embeddings produced by the current BioMedCLIP model."
+  "note": "Rebuilt on the full dataset and verified against embeddings produced by the fine-tuned ROCOv2 BioMedCLIP model."
 }

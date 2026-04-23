@@ -221,7 +221,7 @@ export const fr = {
       title1: "Résultats Instantanés",
       desc1: "< 1 seconde de temps de recherche",
       title2: "Interprétativement Pertinent",
-      desc2: "IA entraînée sur des ensembles de données médicales",
+      desc2: "BioMedCLIP fine-tuné sur ROCOv2 radiology",
       title3: "Complètement Gratuit",
       desc3: "Aucune inscription, aucune limite",
     },

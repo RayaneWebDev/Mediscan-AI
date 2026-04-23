@@ -23,6 +23,7 @@ class ModeConfig:
     index_path: Path
     ids_path: Path
     manifest_path: Path
+    model_name: str | None = None
 
 
 STABLE_MODE_CONFIGS = {
@@ -32,6 +33,7 @@ STABLE_MODE_CONFIGS = {
         index_path=PROJECT_ROOT / "artifacts" / "index.faiss",
         ids_path=PROJECT_ROOT / "artifacts" / "ids.json",
         manifest_path=PROJECT_ROOT / "artifacts" / "manifests" / "visual_stable.json",
+        model_name=None,
     ),
     "semantic": ModeConfig(
         mode="semantic",
@@ -39,6 +41,7 @@ STABLE_MODE_CONFIGS = {
         index_path=PROJECT_ROOT / "artifacts" / "index_semantic.faiss",
         ids_path=PROJECT_ROOT / "artifacts" / "ids_semantic.json",
         manifest_path=PROJECT_ROOT / "artifacts" / "manifests" / "semantic_stable.json",
+        model_name="hf-hub:Ozantsk/biomedclip-rocov2-finetuned",
     ),
 }
 SUPPORTED_MODES = frozenset(STABLE_MODE_CONFIGS)
@@ -84,6 +87,11 @@ def build_embedder(name: str, model_name: str | None = None):
     if model_name:
         kwargs["model_name"] = model_name
     return get_embedder(name, **kwargs)
+
+
+def default_model_name_for_mode(mode: str) -> str | None:
+    """Retourne le model_name par defaut d'un mode si celui-ci en impose un."""
+    return get_mode_config(mode).model_name
 
 
 def load_indexed_rows(ids_path: str | Path) -> list[dict[str, str]]:
@@ -142,6 +150,7 @@ __all__ = [
     "build_embedder",
     "compute_search_k",
     "default_config_for_mode",
+    "default_model_name_for_mode",
     "ensure_artifacts_exist",
     "get_mode_config",
     "load_indexed_rows",

@@ -13,6 +13,7 @@ import {
   ResultsGridCards,
   ResultsGridHeader,
   ResultsGridToolbar,
+  similarityScoreToPercent,
 } from "./ResultsGridParts";
 
 /** Durée en ms de la transition de fermeture de la modale détail. */
@@ -138,7 +139,7 @@ function getResultImageSrc(result) {
 function ResultDetailsModal({ result, originRect, tone, modeLabel, content, onClose }) {
   const imageSrc = getResultImageSrc(result);
   const cuiValue = formatCuiValue(result.cui);
-  const scorePercent = `${Math.round(result.score * 100)}%`;
+  const scorePercent = `${similarityScoreToPercent(result.score)}%`;
   const modalRef = useRef(null);
   const closeTimerRef = useRef(null);
   const scrollYRef = useRef(0);
@@ -328,7 +329,7 @@ function ResultDetailsModal({ result, originRect, tone, modeLabel, content, onCl
 function ResultCompareModal({ result, comparisonSource, originRect, tone, content, onClose }) {
   const imageSrc = getResultImageSrc(result);
   const cuiValue = formatCuiValue(result.cui);
-  const scorePercent = `${Math.round(result.score * 100)}%`;
+  const scorePercent = `${similarityScoreToPercent(result.score)}%`;
   const modalRef = useRef(null);
   const closeTimerRef = useRef(null);
   const scrollYRef = useRef(0);

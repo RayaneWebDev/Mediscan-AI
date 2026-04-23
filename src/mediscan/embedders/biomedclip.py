@@ -1,9 +1,9 @@
 """
 Implémentation de l'encodeur d'images BioMedCLIP (version CPU uniquement).
 
-BioMedCLIP est utilisé pour la branche sémantique. Contrairement aux modèles CLIP 
-génériques, il est aligné sur des paires image-texte biomédicales et est donc 
-mieux adapté à la recherche de contenu médical sur les données de radiologie ROCOv2.
+La branche sémantique utilise par défaut la version fine-tunée sur ROCOv2
+hébergée sur Hugging Face, afin d'aligner la recherche texte-image avec les
+artefacts sémantiques embarqués dans le projet.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ class BioMedCLIPEmbedder(Embedder):
 
     def __init__(
         self,
-        model_name: str = "hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224",
+        model_name: str = "hf-hub:Ozantsk/biomedclip-rocov2-finetuned",
     ) -> None:
         configure_torch_cpu_threads()
         self._device = torch.device("cpu")

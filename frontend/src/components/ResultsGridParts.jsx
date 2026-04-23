@@ -2,6 +2,11 @@ import { useRef, useState } from "react";
 import { ArrowDownToLine, ArrowLeftRight, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { imageUrl } from "../api";
 
+export function similarityScoreToPercent(score) {
+  const boundedScore = Number.isFinite(score) ? Math.min(1, Math.max(-1, score)) : 0;
+  return Math.round(((boundedScore + 1) / 2) * 100);
+}
+
 function DetailItem({ label, value, mono = false, className = "" }) {
   if (!value) return null;
 
@@ -38,7 +43,7 @@ function getCardClasses(tone, useHomeVisualTone) {
 }
 
 function ScoreBar({ score, tone }) {
-  const pct = Math.round(score * 100);
+  const pct = similarityScoreToPercent(score);
   const color = tone === "accent"
     ? (pct >= 70 ? "bg-accent/70" : pct >= 40 ? "bg-accent/35" : "bg-border")
     : null;

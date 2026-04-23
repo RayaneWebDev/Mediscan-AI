@@ -20,6 +20,7 @@ from mediscan.runtime import (
     build_embedder,
     compute_search_k,
     default_config_for_mode,
+    default_model_name_for_mode,
     ensure_artifacts_exist,
     load_indexed_rows,
     resolve_path,
@@ -110,6 +111,7 @@ def load_resources(
     embedder_name = embedder or default_embedder
     resolved_index = index_path if index_path is not None else default_index_path
     resolved_ids = ids_path if ids_path is not None else default_ids_path
+    resolved_model_name = model_name if model_name is not None else default_model_name_for_mode(mode)
     index_path_obj, ids_path_obj = ensure_artifacts_exist(resolved_index, resolved_ids)
 
     rows = load_indexed_rows(ids_path_obj)
@@ -123,7 +125,7 @@ def load_resources(
 
     image_embedder: Embedder | None = None
     if load_embedder:
-        image_embedder = build_embedder(embedder_name, model_name=model_name)
+        image_embedder = build_embedder(embedder_name, model_name=resolved_model_name)
         if image_embedder.dim != faiss_index.d:
             raise RuntimeError(
                 f"Index dimension ({faiss_index.d}) does not match embedder ({image_embedder.dim})"

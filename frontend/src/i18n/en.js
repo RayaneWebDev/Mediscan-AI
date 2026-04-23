@@ -221,7 +221,7 @@ export const en = {
       title1: "Instant Results",
       desc1: "< 1 second search time",
       title2: "Interpretively Relevant",
-      desc2: "AI-trained on medical datasets",
+      desc2: "BioMedCLIP fine-tuned on ROCOv2 radiology",
       title3: "Completely Free",
       desc3: "No signup, no limits",
     },

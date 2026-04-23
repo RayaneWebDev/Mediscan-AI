@@ -30,6 +30,11 @@ def test_default_config_for_mode():
     assert ids_path.name == "ids_semantic.json"
 
 
+def test_default_model_name_for_mode():
+    assert runtime.default_model_name_for_mode("visual") is None
+    assert runtime.default_model_name_for_mode("semantic") == "hf-hub:Ozantsk/biomedclip-rocov2-finetuned"
+
+
 def test_get_mode_config_and_manifest_path():
     """
     - Vérifie que les configurations spécifiques au mode sont correctes 
