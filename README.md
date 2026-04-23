@@ -380,6 +380,23 @@ run.bat
 
 ---
 
+## Root Files Worth Knowing
+
+To keep the repository root readable, only a small set of top-level config files is kept on purpose:
+
+| File | Why it stays |
+|---|---|
+| `.gitattributes` | enables Git LFS for large FAISS artifacts in `artifacts/` |
+| `.env.example` | backend environment template for local setup |
+| `frontend/.env.example` | frontend environment template for local setup |
+| `requirements.txt` | backend and retrieval Python dependencies |
+| `pyproject.toml` | lightweight Python project metadata and pytest configuration |
+| `run.sh` / `run.bat` | one-command startup scripts for local development |
+
+Everything else that was only tied to a personal toolchain shortcut has been removed to keep the GitHub landing view cleaner.
+
+---
+
 ## Developer Commands
 
 ### Frontend

@@ -1,9 +1,0 @@
-numpy>=1.26,<3.0
-pillow>=10.0,<12.0
-torch>=2.2,<3.0
-torchvision>=0.17,<1.0
-faiss-cpu>=1.8,<2.0
-transformers>=4.40,<5.0
-open_clip_torch>=2.24,<3.0
-python-dotenv>=1.0.0
-tqdm>=4.66,<5.0
