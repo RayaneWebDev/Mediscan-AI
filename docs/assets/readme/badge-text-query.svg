@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="34" viewBox="0 0 300 34" role="img" aria-label="Text Query text query">
+  <rect width="300" height="34" rx="0" fill="#ffffff" stroke="#d9e4f1" />
+  <rect width="170" height="34" fill="#cce1e5" />
+  <text x="85" y="21.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#1d4047">TEXT QUERY</text>
+  <text x="235" y="21.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#2f3338">TEXT QUERY</text>
+</svg>

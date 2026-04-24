@@ -16,8 +16,6 @@ export function SearchFilterPanelHeader({
   infoLabel,
   onInfoClick,
   infoButtonClassName = "",
-  activeFilterCount = 0,
-  activeCountClassName = "",
   hint,
   hintClassName = "",
   onReset,
@@ -41,11 +39,6 @@ export function SearchFilterPanelHeader({
           >
             <span aria-hidden="true" className="text-sm font-medium leading-none">i</span>
           </button>
-          {activeFilterCount > 0 && (
-            <span className={activeCountClassName}>
-              {activeFilterCount}
-            </span>
-          )}
         </div>
         <p className={hintClassName}>{hint}</p>
       </div>

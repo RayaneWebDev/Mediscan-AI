@@ -34,9 +34,8 @@ export default function Footer({ onPageChange }) {
               type="button"
               onClick={() => onPageChange("home")}
               className="flex items-center group"
-              aria-label="MediScan AI"
             >
-              <span className="brand-logo-mask brand-logo-mask-footer group-hover:opacity-70" aria-hidden="true" />
+              <img src="/Logo-2.svg" alt="MediScan" className="h-8 w-auto group-hover:opacity-70 transition-opacity duration-200" />
             </button>
           </div>
 

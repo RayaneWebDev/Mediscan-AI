@@ -790,7 +790,6 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
   ].filter(Boolean).join(" ");
   const filterPanelTitleClassName = `${toneSyncClass} text-sm font-bold uppercase tracking-[0.18em] text-title`;
   const filterPanelInfoButtonClassName = `${toneTransitionClass} info-trigger ${isAccent ? "info-trigger-accent" : "info-trigger-primary"} inline-flex h-5.5 w-5.5 items-center justify-center ${(filterNoteHighlighted || filterOrderOnlyHighlighted) ? isAccent ? "info-trigger-glow-accent" : "info-trigger-glow-primary" : ""} focus:outline-none focus:ring-2 ${isAccent ? "focus:ring-accent/25" : "focus:ring-primary/25"}`;
-  const filterPanelActiveCountClassName = `${toneSyncClass} inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold ${isAccent ? "mediscan-accent-chip" : useHomeVisualTone ? "mediscan-primary-chip" : "border-primary/20 bg-primary-pale text-primary"}`;
   const filterPanelHintClassName = `${toneSyncClass} mt-1 text-xs leading-5 text-muted`;
   const filterPanelResetButtonClassName = `search-toolbar-button rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-all ${activeFilterCount > 0 ? "cursor-pointer" : "cursor-not-allowed opacity-45"} ${isAccent ? "mediscan-accent-outline-button" : useHomeVisualTone ? "mediscan-primary-outline-button" : "border-border bg-bg text-muted hover:text-text hover:border-primary"}`;
   const filterLabelClassName = `${toneSyncClass} text-[10px] text-muted font-semibold uppercase tracking-wider`;
@@ -972,8 +971,6 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
                     infoLabel={filters.infoLabel}
                     onInfoClick={handleFilterInfoClick}
                     infoButtonClassName={filterPanelInfoButtonClassName}
-                    activeFilterCount={activeFilterCount}
-                    activeCountClassName={filterPanelActiveCountClassName}
                     hint={filters.refineHint}
                     hintClassName={filterPanelHintClassName}
                     onReset={resetFilters}
@@ -1027,7 +1024,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
                       onChange={setMinScore}
                       sliderClassName={filterScoreSliderClassName}
                       scoreClassName={filterScoreValueClassName}
-                      scoreStyle={useHomeVisualTone && !isAccent ? { color: "#acd2d9", WebkitTextFillColor: "#acd2d9" } : undefined}
+                      scoreStyle={useHomeVisualTone && !isAccent ? { color: "#173b43", WebkitTextFillColor: "#173b43" } : undefined}
                       scaleClassName={filterScoreScaleClassName}
                     />
 

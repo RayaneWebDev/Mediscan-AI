@@ -347,7 +347,6 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
       ];
   const filterPanelTitleClassName = "text-sm font-bold uppercase tracking-[0.18em] text-title";
   const filterPanelInfoButtonClassName = `info-trigger info-trigger-accent inline-flex h-5.5 w-5.5 items-center justify-center ${filterNoteHighlighted ? "info-trigger-glow-accent" : ""} focus:outline-none focus:ring-2 focus:ring-accent/25`;
-  const filterPanelActiveCountClassName = "image-search-step-badge-accent mediscan-accent-chip inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold";
   const filterPanelHintClassName = "mt-1 text-xs leading-5 text-muted";
   const filterPanelResetButtonClassName = `search-toolbar-button rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-all ${activeFilterCount > 0 ? "cursor-pointer mediscan-accent-outline-button" : "cursor-not-allowed opacity-45 border-border bg-bg text-muted"}`;
   const filterLabelClassName = "text-[10px] text-muted font-semibold uppercase tracking-wider";
@@ -585,8 +584,6 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
                       infoLabel={filters.infoLabel}
                       onInfoClick={handleFilterInfoClick}
                       infoButtonClassName={filterPanelInfoButtonClassName}
-                      activeFilterCount={activeFilterCount}
-                      activeCountClassName={filterPanelActiveCountClassName}
                       hint={filters.refineHint}
                       hintClassName={filterPanelHintClassName}
                       onReset={resetFilters}

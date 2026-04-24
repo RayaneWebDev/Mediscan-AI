@@ -849,6 +849,32 @@
   box-shadow: none !important;
 }
 
+:root:not([data-theme="dark"]) .search-workspace-image.search-workspace-primary .search-results-pagination-button-primary {
+  background-color: color-mix(in srgb, #acd2d9 54%, white 46%) !important;
+  background: color-mix(in srgb, #acd2d9 54%, white 46%) !important;
+  border: none !important;
+  border-color: transparent !important;
+  color: #173b43 !important;
+  box-shadow: none !important;
+}
+
+:root:not([data-theme="dark"]) .search-workspace-image.search-workspace-primary .search-results-pagination-button-primary:hover {
+  background-color: color-mix(in srgb, #acd2d9 62%, white 38%) !important;
+  background: color-mix(in srgb, #acd2d9 62%, white 38%) !important;
+  border-color: color-mix(in srgb, #acd2d9 80%, white 20%) !important;
+  color: #173b43 !important;
+}
+
+:root:not([data-theme="dark"]) .search-workspace-image.search-workspace-primary .search-results-pagination-button-active-primary,
+:root:not([data-theme="dark"]) .search-workspace-image.search-workspace-primary .search-results-pagination-button-active-primary:hover {
+  background-color: color-mix(in srgb, #acd2d9 78%, #173b43 22%) !important;
+  background: color-mix(in srgb, #acd2d9 78%, #173b43 22%) !important;
+  border-color: color-mix(in srgb, #acd2d9 74%, #173b43 26%) !important;
+  color: #173b43 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
 :root:not([data-theme="dark"]) .search-workspace-primary .search-ai-summary-panel {
   background-color: color-mix(in srgb, #acd2d9 66%, white 34%) !important;
   background: color-mix(in srgb, #acd2d9 66%, white 34%) !important;
@@ -975,14 +1001,15 @@
 }
 
 :root:not([data-theme="dark"]) .search-workspace-primary .image-search-filter-stage-panel .search-slider-track-primary {
-  --search-slider-track-color: color-mix(in srgb, #acd2d9 68%, white 32%) !important;
-  --search-slider-thumb-color: #acd2d9 !important;
-  accent-color: #acd2d9 !important;
-  background-color: color-mix(in srgb, #acd2d9 68%, white 32%) !important;
+  --search-slider-track-color: color-mix(in srgb, #173b43 34%, white 66%) !important;
+  --search-slider-thumb-color: #173b43 !important;
+  accent-color: #173b43 !important;
+  background-color: color-mix(in srgb, #173b43 34%, white 66%) !important;
 }
 
 :root:not([data-theme="dark"]) .search-workspace-primary .image-search-filter-stage-panel span.search-filter-score-value-primary {
-  color: #acd2d9 !important;
+  color: #173b43 !important;
+  -webkit-text-fill-color: #173b43 !important;
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;

@@ -3,7 +3,7 @@ Service de génération de synthèse clinique IA via le LLM Groq.
 
 Ce module fournit une analyse prudente et non diagnostique des résultats
 de recherche d'images médicales. Il utilise le modèle Groq (Llama) pour
-produire un résumé en français à partir des descriptions textuelles des
+produire un résumé en anglais à partir des descriptions textuelles des
 images les plus similaires trouvées par le pipeline CBIR.
 
 Important : cette synthèse est un outil exploratoire non clinique et
@@ -50,7 +50,7 @@ def _prepare_ranked_captions(search_result: dict) -> tuple[str, int]:
             continue
 
         similarity_pct = round(float(result.get("score", 0)) * 100, 1)
-        ranked_captions.append(f"- Similarite {similarity_pct}% : {caption}")
+        ranked_captions.append(f"- Similarity {similarity_pct}%: {caption}")
 
     if not ranked_captions:
         raise ValueError("Impossible de generer une synthese sans descriptions exploitables.")
@@ -79,26 +79,29 @@ def _build_messages(search_result: dict) -> list[dict[str, str]]:
         {
             "role": "system",
             "content": (
-                "Tu aides un prototype universitaire non clinique de recherche d'images medicales. "
-                "Tu rediges une synthese prudente et concise en francais a partir de descriptions similaires. "
-                "Tu ne poses jamais de diagnostic, tu ne proposes jamais de traitement, "
-                "et tu rappelles toujours que la sortie ne remplace pas l'avis d'un professionnel de sante. "
-                "Tu ne mentionnes pas CBIR, FAISS, embeddings ou l'infrastructure technique. "
-                "Pas de tableau. Pas de HTML. Pas de listes interminables."
+                "You support a non-clinical university prototype for medical image retrieval. "
+                "Write the summary in English. Use a careful, clinically oriented style based only on "
+                "the provided descriptions of similar images. Do not make a diagnosis, do not recommend "
+                "treatment, and do not imply certainty beyond the retrieved evidence. "
+                "Do not mention CBIR, FAISS, embeddings, vector indexes, or technical infrastructure. "
+                "No tables, no HTML, and no long bullet lists."
             ),
         },
         {
             "role": "user",
             "content": (
-                f"Mode de recherche : {mode}\n"
-                f"Nombre de descriptions retenues : {caption_count}\n\n"
-                "Descriptions d'images similaires, triees par similarite decroissante :\n"
+                f"Search mode: {mode}\n"
+                f"Number of retained descriptions: {caption_count}\n\n"
+                "Descriptions of similar images, sorted by decreasing similarity:\n"
                 f"{ranked_captions}\n\n"
-                "Redige une synthese en 3 courts paragraphes :\n"
-                "1. Observations communes retrouvees dans les descriptions les plus proches.\n"
-                "2. Points de prudence et limites : variabilite des resultats, manque de contexte clinique, ambiguite possible.\n"
-                "3. Rappel explicite qu'il s'agit d'un resume exploratoire non clinique et non d'un diagnostic.\n"
-                "Style sobre, comprehensible et factuel."
+                "Write a structured summary in English with 3 paragraphs:\n"
+                "1. A longer clinical interpretation paragraph: describe the recurring imaging findings, "
+                "shared anatomical or modality patterns, and medically relevant similarities visible in the descriptions. "
+                "Stay factual and use cautious language such as 'may suggest', 'is consistent with', or 'appears related to'.\n"
+                "2. A shorter limitations paragraph: mention uncertainty, missing clinical context, and possible variability "
+                "between retrieved images.\n"
+                "3. A very short disclaimer in one sentence: state that this is exploratory and not a diagnosis.\n"
+                "Keep the first paragraph noticeably longer than the limitations and disclaimer paragraphs."
             ),
         },
     ]
@@ -109,8 +112,8 @@ def generate_clinical_conclusion(search_result: dict) -> str:
     Génère une synthèse clinique prudente à partir des résultats de recherche.
 
     Appelle l'API Groq avec un prompt non diagnostique construit à partir des
-    descriptions des images similaires trouvées. Retourne un texte en français
-    structuré en 3 paragraphes (observations, limites, rappel non clinique).
+    descriptions des images similaires trouvées. Retourne un texte en anglais
+    structuré en 3 paragraphes (interprétation clinique, limites, rappel non clinique).
 
     Args:
         search_result: Le dictionnaire de résultats bruts du pipeline de recherche,
@@ -118,7 +121,7 @@ def generate_clinical_conclusion(search_result: dict) -> str:
                        associées (caption, score, etc.).
 
     Returns:
-        La synthèse textuelle générée par le LLM, en français.
+        La synthèse textuelle générée par le LLM, en anglais.
 
     Raises:
         ClinicalConclusionError: Si GROQ_API_KEY n'est pas configuré,
