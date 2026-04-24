@@ -23,8 +23,6 @@
   </p>
 </div>
 
-![MediScan AI product flow](docs/assets/readme/product-flow.gif)
-
 ## Why This Project Stands Out
 
 MediScan AI is not a notebook wrapped in a UI. It is an end-to-end retrieval system with separate model choices for separate user intents, a product-grade frontend, a FastAPI backend, stable FAISS artifacts, and saved evaluation proofs.
@@ -44,13 +42,9 @@ It demonstrates:
 
 Image query -> visual neighbors -> browsable results.
 
-![Visual search demo](docs/assets/readme/visual-search.gif)
-
 ### Text-To-Image Search
 
 Clinical text query -> semantic embedding -> ranked medical images.
-
-![Text search demo](docs/assets/readme/text-search.gif)
 
 ## Core Features
 
@@ -285,7 +279,6 @@ The strict evaluator expects the modality, organ, and modality+organ CSV files u
 |-- scripts/evaluation/   Retrieval evaluation scripts
 |-- scripts/visualization Demo grid generation utilities
 |-- tests/                Python test suite
-|-- docs/assets/readme/   README GIF assets
 |-- run.sh                macOS / Linux one-command launcher
 `-- run.bat               Windows one-command launcher
 ```

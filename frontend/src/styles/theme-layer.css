@@ -63,6 +63,8 @@
   --theme-footer-muted: var(--color-footer-muted);
   --theme-danger: var(--color-danger);
   --theme-on-strong: var(--color-on-strong);
+  --home-scan-button-fill: var(--color-title);
+  --home-scan-button-text: var(--color-on-strong);
 
   --semantic-accent: var(--color-accent);
   --semantic-accent-light: var(--color-accent);
@@ -145,6 +147,8 @@
 [data-theme="dark"] {
   --fx-shadow-sm: 0 12px 28px rgba(1, 8, 14, 0.34);
   --fx-shadow-md: 0 20px 44px rgba(1, 8, 14, 0.42);
+  --home-scan-button-fill: #f8f9fc;
+  --home-scan-button-text: rgba(15, 23, 42, 0.92);
   --color-medical-green: #7ccfe3;
   --color-medical-green-ink: #bdebf3;
   --color-medical-green-soft: #102f3a;
@@ -877,9 +881,9 @@
 
 .home-hero-button-scan {
   border-radius: 999px;
-  border-color: var(--color-title);
-  background: var(--color-title);
-  color: var(--color-on-strong);
+  border-color: var(--home-scan-button-fill);
+  background: var(--home-scan-button-fill);
+  color: var(--home-scan-button-text);
   box-shadow: var(--fx-shadow-sm);
 }
 
@@ -901,24 +905,24 @@
 }
 
 .home-hero-button-scan:hover {
-  border-color: var(--color-title);
-  background: var(--color-title);
-  color: var(--color-on-strong);
+  border-color: var(--home-scan-button-fill);
+  background: var(--home-scan-button-fill);
+  color: var(--home-scan-button-text);
   filter: brightness(1.06);
   box-shadow: var(--fx-shadow-md);
 }
 
 [data-theme="dark"] .home-hero-button-scan {
-  background: linear-gradient(135deg, rgba(102, 110, 120, 0.34) 0%, rgba(126, 134, 144, 0.26) 100%);
-  border-color: rgba(168, 176, 186, 0.18);
-  color: rgba(219, 224, 230, 0.9);
+  background: var(--home-scan-button-fill);
+  border-color: var(--home-scan-button-fill);
+  color: var(--home-scan-button-text);
   box-shadow: 0 5px 14px rgba(2, 6, 23, 0.22);
 }
 
 [data-theme="dark"] .home-hero-button-scan:hover {
-  background: linear-gradient(135deg, rgba(112, 120, 130, 0.4) 0%, rgba(136, 144, 154, 0.32) 100%);
-  border-color: rgba(180, 188, 198, 0.22);
-  color: rgba(228, 233, 239, 0.94);
+  background: var(--home-scan-button-fill);
+  border-color: var(--home-scan-button-fill);
+  color: var(--home-scan-button-text);
   box-shadow: 0 8px 18px rgba(2, 6, 23, 0.24);
 }
 

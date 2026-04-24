@@ -1,4 +1,33 @@
 /* Bloc navigation extrait de app.css: nav shell, onglets et menu settings. */
+.brand-logo-mask {
+  display: block;
+  flex: 0 0 auto;
+  background-color: var(--home-scan-button-fill, var(--color-title));
+  mask: url("/Logo-2.svg") center / contain no-repeat;
+  -webkit-mask: url("/Logo-2.svg") center / contain no-repeat;
+  transition:
+    background-color 180ms ease,
+    opacity 200ms ease;
+}
+
+.brand-logo-mask-nav {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.brand-logo-mask-footer {
+  width: 3.25rem;
+  height: 3.25rem;
+  background-color: #ffffff;
+}
+
+@media (min-width: 768px) {
+  .brand-logo-mask-nav {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
 .nav-shell {
   position: relative;
   backdrop-filter: blur(var(--nav-glass-blur)) saturate(128%);

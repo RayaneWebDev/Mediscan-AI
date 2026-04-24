@@ -131,8 +131,8 @@ export default function Navigation({
           <div className="flex h-16 items-center justify-between md:grid md:h-20 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-4 lg:px-8">
             
             {/* Logo */}
-            <button type="button" onClick={() => handlePageChange("home")} className="z-[1300] outline-none">
-              <img src="/Logo-2.svg" alt="LOGO" className="h-8 md:h-10 w-auto object-contain" />
+            <button type="button" onClick={() => handlePageChange("home")} className="z-[1300] outline-none" aria-label="MediScan AI">
+              <span className="brand-logo-mask brand-logo-mask-nav" aria-hidden="true" />
             </button>
 
             {/* Onglets desktop avec indicateur animé */}

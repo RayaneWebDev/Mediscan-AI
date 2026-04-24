@@ -33,9 +33,9 @@
 }
 
 [data-theme="dark"] .home-hero-button-primary.home-hero-button-scan {
-  background: #f8f9fc;
+  background: var(--home-scan-button-fill);
   border: 0;
-  color: rgba(15, 23, 42, 0.92);
+  color: var(--home-scan-button-text);
   box-shadow: none;
 }
 
@@ -44,9 +44,9 @@
 }
 
 [data-theme="dark"] .home-hero-button-primary.home-hero-button-scan:hover {
-  background: #f8f9fc;
+  background: var(--home-scan-button-fill);
   border: 0;
-  color: #0f172a;
+  color: var(--home-scan-button-text);
   box-shadow: none;
 }
 
@@ -461,4 +461,3 @@
   color: rgba(241, 245, 249, 0.94);
   background: var(--nav-night-solid-hover-bg);
 }
-
