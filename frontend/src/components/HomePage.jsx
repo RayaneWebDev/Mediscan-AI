@@ -1,3 +1,8 @@
+/** 
+ * @fileoverview Page d'accueil de l'application MediScan CBIR.
+ * @module components/HomePage
+ */
+
 import {
   Brain,
   BookOpen,
@@ -13,10 +18,7 @@ import { InterpretiveModeIcon } from "./icons";
 import FeaturesShowcase from "./FeaturesShowcase";
 import DemosShowcase from "./DemosShowcase";
 
-// ─── Hub Section Config ──────────────────────────────────────────────────────
-// Modifie ces objets pour personnaliser le hub sans toucher au JSX.
-
-/** Bibliothèque d'icônes utilisées dans le hub. Ajouter/remplacer ici. */
+/** Bibliothèque d'icônes utilisées dans le hub */
 const HUB_ICONS = {
   image: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -70,9 +72,8 @@ const HUB_ICONS = {
 };
 
 /**
- * Icônes médicales autour de l'anneau pointillé.
+ * Icônes médicales autour de l'anneau pointillé du hub.
  * Chaque entrée : { style (position CSS), d (chemin SVG) }
- * Ajouter/supprimer des entrées pour changer les icônes.
  */
 const HUB_ORGANS = [
   { style: { top: "-14px", left: "50%", transform: "translateX(-50%)" },    d: "M12 2C8 2 4 6 4 10c0 5 8 12 8 12s8-7 8-12c0-4-4-8-8-8z" },
@@ -83,10 +84,10 @@ const HUB_ORGANS = [
 
 /**
  * Cartes du hub.
- * position → "tl" | "tr" | "bl" | "br"  (grid-area CSS)
- * tone     → "visual" | "semantic"        (couleur icône/bordure)
- * icon     → clé dans HUB_ICONS
- * cardIndex → index dans content.hub.cards[]
+ * position : "tl" | "tr" | "bl" | "br" (grid-area CSS)
+ * tone : "visual" | "semantic" (couleur icône/bordure)
+ * icon : clé dans HUB_ICONS
+ * cardIndex : index dans content.hub.cards[]
  */
 const HUB_CARDS = [
   { position: "tl", tone: "semantic", icon: "interpretive", cardIndex: 4 }, // 315° haut-gauche
@@ -95,14 +96,12 @@ const HUB_CARDS = [
 ];
 
 const HUB_INTRO_ANIMATION = {
-  // Set to false to instantly recover the current static version of the hub.
   enabled: true,
 };
 
 const HUB_INTRO_TOTAL_MS = 2400;
 
-// ─────────────────────────────────────────────────────────────────────────────
-
+/** Map des icônes lucide utilisées dans les cartes de cas d'usage */
 const useCaseIcons = {
   stethoscope: Stethoscope,
   microscope: Microscope,
@@ -112,6 +111,15 @@ const useCaseIcons = {
   book: BookOpen,
 };
 
+/**
+ * Page d'accueil de MediScan CBIR.
+ * Affiche le hero, le hub animé, la section démos et la section fonctionnalités.
+ *
+ * @component
+ * @param {object} props
+ * @param {function(string): void} props.onPageChange - Callback de navigation vers une page
+ * @returns {JSX.Element}
+ */
 export default function HomePage({
   onPageChange,
 }) {
@@ -127,6 +135,7 @@ export default function HomePage({
   const hubLayoutRef = useRef(null);
   const hubDonutRef = useRef(null);
   const hubCardRefs = useRef({});
+  /** @type {[string, function]} État d'animation du hub : "idle"|"playing"|"done"|"disabled" */
   const [hubIntroState, setHubIntroState] = useState(() => {
     if (!HUB_INTRO_ANIMATION.enabled) {
       return "disabled";
@@ -138,9 +147,12 @@ export default function HomePage({
 
     return "idle";
   });
+  /** @type {[{width: number, height: number}, function]} Dimensions du viewBox SVG des lignes du hub */
   const [hubViewBox, setHubViewBox] = useState({ width: 1060, height: 640 });
+  /** @type {[Array<{x1: number, y1: number, x2: number, y2: number, tone: string}>, function]} Lignes pointillées entre le donut et les cartes */
   const [hubLines, setHubLines] = useState([]);
 
+  // Déclenche l'animation du hub quand la section entre dans le viewport
   useEffect(() => {
     if (!HUB_INTRO_ANIMATION.enabled || hubIntroState !== "idle" || typeof window === "undefined") {
       return undefined;
@@ -184,6 +196,7 @@ export default function HomePage({
     };
   }, [hubIntroState]);
 
+  // Passe à "done" après la durée totale de l'animation
   useEffect(() => {
     if (hubIntroState !== "playing" || typeof window === "undefined") {
       return undefined;
@@ -198,6 +211,7 @@ export default function HomePage({
     };
   }, [hubIntroState]);
 
+  // Calcule et met à jour les lignes SVG entre le donut et les cartes
   useEffect(() => {
     if (typeof window === "undefined") {
       return undefined;
@@ -331,7 +345,7 @@ export default function HomePage({
   return (
     <div className="home-page-content -mt-16 md:-mt-20">
       {/* Hero */}
-      <section className="relative min-h-[calc(100vh-4rem)] overflow-hidden pt-16 md:min-h-[calc(100vh-5rem)] md:pt-20">
+      <section className="relative md:min-h-[calc(100vh-5rem)] overflow-hidden pt-15 md:pt-20">
         <div className="page-container relative h-full">
           <div className="home-hero-stage">
             <div className="home-hero-layout">
@@ -339,7 +353,7 @@ export default function HomePage({
                 <h1 className="home-hero-title text-[clamp(2.75rem,6vw,5.5rem)] font-extrabold tracking-[-0.05em]">
                   MEDISCAN AI
                 </h1>
-                <p className="home-hero-description mt-6 max-w-[560px] text-[clamp(1rem,1.6vw,1.16rem)] leading-relaxed">
+                <p className="home-hero-description mt-2 max-w-[560px] w-full text-[clamp(1rem,1.6vw,1.16rem)] leading-relaxed">
                   {content.description}
                 </p>
                 <div className="home-hero-actions mt-8 w-full" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
@@ -408,9 +422,9 @@ export default function HomePage({
       </section>
 
 
-      {/* ── Hub-and-Spoke Section ───────────────────────────────────── */}
+      {/* ── Hub-and-Spoke Section ── */}
       <section ref={hubSectionRef} className="page-container home-section home-hub-section">
-        <div className="home-section-header home-section-header-center mb-10 px-3 md:px-0">
+        <div className="home-section-header home-section-header-center mb-4 md:mb-10 px-3 md:px-0">
           <h2 className="home-section-title home-hub-title mb-3">{hubHeadline}</h2>
           <p className="home-section-description home-section-description-wide">{hubDescription}</p>
         </div>
@@ -419,7 +433,7 @@ export default function HomePage({
           ref={hubLayoutRef}
           data-hub-intro={hubIntroState}
         >
-          {/* Lignes pointillées dynamiques — point donut -> point carte */}
+          {/* Lignes pointillées dynamiques — donut -> cartes */}
           <svg
             className="home-hub-lines"
             aria-hidden="true"
@@ -504,8 +518,6 @@ export default function HomePage({
               <Brain className="home-hub-core-icon" strokeWidth={1.9} />
             </div>
 
-            {/* Label */}
-              {/* Removed center hub label */}
           </div>
 
         </div>

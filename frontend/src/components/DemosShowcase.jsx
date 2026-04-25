@@ -1,8 +1,17 @@
+/** 
+ * @fileoverview Section de démonstrations visuelles du projet MediScan CBIR.
+ * @module components/DemosShowcase
+ */
+
 import { useContext, useEffect, useState } from "react";
 import { LangContext } from "../context/LangContextValue";
 import { useTheme } from "../context/useTheme";
 import FeatureCarousel from "./FeatureCarousel";
 
+/**
+ * Sets d'images de démo par mode (light/dark).
+ * Chaque entrée correspond à une carte de démo dans content.demoCards.
+ */
 const DEMO_IMAGE_SETS = [
   {
     light: ["/Day_visual_1.png", "/Day_visual_2.png", "/Day_visual_3.png"],
@@ -18,10 +27,22 @@ const DEMO_IMAGE_SETS = [
   },
 ];
 
+
+/**
+ * Section de démonstrations avec carousel d'images par mode.
+ * Peut être utilisée en mode standalone (page dédiée) ou embarquée dans la HomePage.
+ *
+ * @component
+ * @param {object} props
+ * @param {boolean} [props.embedded=false] - Mode embarqué dans la HomePage
+ * @param {function(string): void} [props.onNavigate] - Callback de navigation vers une page
+ * @returns {JSX.Element}
+ */
 export default function DemosShowcase({ embedded = false, onNavigate }) {
   const { t } = useContext(LangContext);
   const { theme } = useTheme();
   const content = t.demos;
+  /** @type {[boolean, function]} Déclenche les animations d'entrée après le premier frame */
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -29,6 +50,7 @@ export default function DemosShowcase({ embedded = false, onNavigate }) {
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  /** Cartes de démo enrichies avec les images selon le thème actif */
   const demoCards = (content?.demoCards ?? [])
     .slice(0, DEMO_IMAGE_SETS.length)
     .map((card, index) => ({
@@ -40,7 +62,7 @@ export default function DemosShowcase({ embedded = false, onNavigate }) {
     }));
 
   const header = (
-    <div className="mb-8 md:mb-10 mt-6 md:mt-8">
+    <div className="mb-8 md:mb-10 mt-6 md:mt-8 px-2 md:px-0">
       <h1 className="text-4xl md:text-5xl font-bold text-title tracking-tight mb-3 leading-tight">
         {content?.demoEyebrow}
       </h1>

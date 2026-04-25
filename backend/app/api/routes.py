@@ -70,13 +70,7 @@ def _sanitize_image_id_or_400(image_id: str) -> str:
 
 
 def _as_http_exception(exc: Exception) -> HTTPException:
-    """
-    Convertit une exception métier en HTTPException FastAPI avec le bon code HTTP.
-    - ValueError → 400 Bad Request
-    - SearchUnavailableError → 503 Service Unavailable
-    - ClinicalConclusionError → 503 Service Unavailable
-    - Autres → 500 Internal Server Error
-    """
+    """Convertit une exception métier en HTTPException avec le bon code HTTP."""
     if isinstance(exc, ValueError):
         return HTTPException(status_code=400, detail=str(exc))
     if isinstance(exc, SearchUnavailableError):

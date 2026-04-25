@@ -1,4 +1,4 @@
-/**
+/** 
  * @fileoverview Composant de génération de conclusion clinique IA (Groq + Llama) à partir des résultats CBIR.
  * @module components/ClinicalConclusion
  */
@@ -60,8 +60,6 @@ function renderConclusionBlocks(conclusion) {
  * @param {string} [props.className="mt-6"] - Classes CSS supplémentaires pour le conteneur.
  * @returns {JSX.Element}
  *
- * @example
- * <ClinicalConclusion searchResult={results} isAccent={true} className="mt-6" />
  */
 export default function ClinicalConclusion({ searchResult, isAccent = false, className = "mt-6" }) {
   
@@ -76,10 +74,7 @@ export default function ClinicalConclusion({ searchResult, isAccent = false, cla
   /** @type {[boolean, function]} État d'ouverture/fermeture */
   const [open, setOpen] = useState(false);
 
-  /**
-   * Les 5 meilleurs résultats utilisés comme contexte pour la génération IA.
-   * @type {Array<{rank: number, score: number}>}
-  */
+  /** Les 5 premiers résultats utilisés comme contexte pour la génération IA */
   const topResults = useMemo(() => searchResult?.results?.slice(0, 5) || [], [searchResult]);
   
   const accentColor = isAccent ? "text-accent border-accent/30 bg-accent/5" : "search-conclusion-note-primary";
@@ -88,7 +83,6 @@ export default function ClinicalConclusion({ searchResult, isAccent = false, cla
   
   /**
    * Clé unique représentant l'état du résumé pour forcer le rendu de l'animation.
-   * @type {string}
   */
   const summaryStateKey = loading
     ? "loading"
@@ -99,8 +93,7 @@ export default function ClinicalConclusion({ searchResult, isAccent = false, cla
         : "idle";
 
   /**
-   * Lance la génération de la conclusion clinique via l'API (entrée dans le fichier .env).
-   * Ouvre et réinitialise les états et appelle "fetchConclusion".
+  * Lance la génération de la conclusion via l'API et gère les états loading/erreur.
   */
   async function handleGenerate() {
     if (!canGenerate) {

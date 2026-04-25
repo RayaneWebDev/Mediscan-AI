@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Provider de thème (clair/sombre) et de palette de couleurs.
+ * @module context/ThemeContext
+ */
+
 import { useEffect, useState } from "react";
 import { flushSync } from "react-dom";
 import {
@@ -9,6 +14,7 @@ import {
 } from "../theme/palettes";
 import { ThemeContext } from "./ThemeContextValue";
 
+// Vérifie si View Transitions API est disponible et que l'utilisateur accepte les animations
 function canUseAnimatedViewTransitions() {
   if (typeof document === "undefined" || typeof window === "undefined") {
     return false;
@@ -19,6 +25,7 @@ function canUseAnimatedViewTransitions() {
   return !prefersReduced && typeof document.startViewTransition === "function";
 }
 
+// Lit le thème initial depuis localStorage ou la préférence système
 function getInitialTheme() {
   const stored = localStorage.getItem("theme");
   if (stored === "light" || stored === "dark") {
@@ -27,6 +34,7 @@ function getInitialTheme() {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+// Lit la palette initiale depuis l'URL ou localStorage
 function getInitialPalette() {
   const params = new URLSearchParams(window.location.search);
   const paletteFromUrl = params.get("palette");

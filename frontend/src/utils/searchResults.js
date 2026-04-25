@@ -1,3 +1,14 @@
+/**
+ * @fileoverview Utilitaires de filtrage, export et suggestions pour les résultats CBIR.
+ * @module utils/searchResults
+ */
+
+
+/**
+ * Extrait le tableau de résultats depuis un payload brut ou un tableau direct.
+ * @param {object|Array|null} payload
+ * @returns {Array}
+ */
 function getResultRows(payload) {
   if (!payload) {
     return [];
@@ -33,6 +44,11 @@ export const CURATED_CAPTION_FILTERS = [
   { id: "nodule", label: "Nodule", terms: ["nodule", "nodules"] },
 ];
 
+/**
+ * Normalise une valeur texte : supprime accents, casse et espaces superflus.
+ * @param {*} value
+ * @returns {string}
+ */
 function normalizeFilterValue(value) {
   return String(value ?? "")
     .normalize("NFKD")
@@ -42,10 +58,21 @@ function normalizeFilterValue(value) {
     .trim();
 }
 
+/**
+ * Échappe les caractères spéciaux pour usage dans une RegExp.
+ * @param {string} value
+ * @returns {string}
+ */
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/**
+ * Vérifie si un terme apparaît dans une source avec correspondance sur mot entier.
+ * @param {string} source
+ * @param {string} term
+ * @returns {boolean}
+ */
 function matchesNormalizedTerm(source, term) {
   const normalizedSource = normalizeFilterValue(source);
   const normalizedTerm = normalizeFilterValue(term);
@@ -61,6 +88,12 @@ function matchesNormalizedTerm(source, term) {
   return boundaryPattern.test(normalizedSource);
 }
 
+/**
+ * Retourne true si la caption contient au moins un terme du groupe.
+ * @param {string} caption
+ * @param {string[]} termGroup
+ * @returns {boolean}
+ */
 function matchesCaptionTermGroup(caption, termGroup) {
   if (!Array.isArray(termGroup) || !termGroup.length) {
     return true;
@@ -69,6 +102,11 @@ function matchesCaptionTermGroup(caption, termGroup) {
   return termGroup.some((term) => matchesNormalizedTerm(caption, term));
 }
 
+/**
+ * Retourne la valeur CUI d'un résultat normalisée en chaîne unique.
+ * @param {object} result
+ * @returns {string}
+ */
 function getNormalizedResultCui(result) {
   if (!result) {
     return "";
@@ -81,6 +119,12 @@ function getNormalizedResultCui(result) {
   return normalizeFilterValue(result.cui);
 }
 
+/**
+ * Retourne l'ensemble des CUI d'un résultat en majuscules.
+ * Gère les formats string, tableau et JSON sérialisé.
+ * @param {object} result
+ * @returns {Set<string>}
+ */
 export function getResultCuiSet(result) {
   if (!result?.cui) return new Set();
   const cui = result.cui;
@@ -99,6 +143,12 @@ export function getResultCuiSet(result) {
   return raw ? new Set([raw]) : new Set();
 }
 
+/**
+ * Retourne les filtres de caption pertinents triés par fréquence dans les résultats.
+ * @param {object[]} rows
+ * @param {number} [limit=8]
+ * @returns {Array<{id, label, terms, count}>}
+ */
 export function getSuggestedCaptionFilters(rows, limit = 8) {
   if (!Array.isArray(rows) || rows.length === 0) {
     return [];
@@ -117,6 +167,11 @@ export function getSuggestedCaptionFilters(rows, limit = 8) {
     .slice(0, limit);
 }
 
+/**
+ * Télécharge un Blob comme fichier via un lien temporaire.
+ * @param {Blob} blob
+ * @param {string} filename
+ */
 function downloadBlob(blob, filename) {
   const link = document.createElement("a");
   const objectUrl = URL.createObjectURL(blob);
@@ -126,6 +181,11 @@ function downloadBlob(blob, filename) {
   window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
 }
 
+/**
+ * Charge une image depuis une URL et la retourne en base64 (pour export PDF).
+ * @param {string} url
+ * @returns {Promise<string>}
+ */
 async function loadImageAsBase64(url) {
   const response = await fetch(url);
   const blob = await response.blob();
@@ -137,6 +197,24 @@ async function loadImageAsBase64(url) {
   });
 }
 
+/**
+ * Filtre et trie un payload de résultats selon les options fournies.
+ * Retourne null si le payload est invalide.
+ *
+ * @param {object|null} payload
+ * @param {object} [options={}]
+ * @param {number} [options.minScore=0]
+ * @param {string} [options.captionFilter=""]
+ * @param {"asc"|"desc"} [options.sortOrder="desc"]
+ * @param {string} [options.cuiFilter=""]
+ * @param {"all"|"with"|"without"} [options.cuiPresence="all"]
+ * @param {string} [options.cuiModalite=""]
+ * @param {string} [options.cuiAnatomie=""]
+ * @param {string} [options.cuiFinding=""]
+ * @param {string} [options.referenceFilter=""]
+ * @param {string[][]} [options.captionTermGroups=[]]
+ * @returns {object|null}
+ */
 export function filterResultsPayload(
   payload,
   {

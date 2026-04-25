@@ -1,3 +1,8 @@
+/** 
+ * @fileoverview Vue de recherche CBIR par image avec upload, filtres, résultats et sélection.
+ * @module components/ImageSearchView
+ */
+
 import { BadgePercent, Search, Sparkles, Tags, X } from "lucide-react";
 import { useState, useContext, useEffect, useMemo, useRef } from "react";
 import { LangContext } from "../context/LangContextValue";
@@ -36,10 +41,18 @@ import {
 import { VisualModeIcon, InterpretiveModeIcon } from "./icons";
 import { CUI_TYPES } from "../data/cuiCategories";
 
+/**
+ * Exécute et vide la ref de cleanup si elle est définie.
+ * @param {{ current: function|null }} cleanupRef
+ */
 function runCleanupRef(cleanupRef) {
   cleanupRef.current?.();
 }
 
+/**
+ * Badge d'étape numérotée avec ton adaptatif (primary, accent ou home).
+ * @param {{ label: string, isAccent: boolean, useHomeVisualTone: boolean, enableToneTransition?: boolean }} props
+ */
 function StepBadge({ label, isAccent, useHomeVisualTone, enableToneTransition = false }) {
   const toneClass = isAccent
     ? "mediscan-accent-chip image-search-step-badge-accent"
@@ -53,6 +66,13 @@ function StepBadge({ label, isAccent, useHomeVisualTone, enableToneTransition = 
   );
 }
 
+/**
+ * Retourne les classes CSS d'un bouton de filtre toggle selon son état et le ton actif.
+ * @param {boolean} isActive
+ * @param {boolean} isAccent
+ * @param {boolean} useHomeVisualTone
+ * @returns {string}
+ */
 function getFilterToggleStateClasses(isActive, isAccent, useHomeVisualTone) {
   if (isActive) {
     if (isAccent) {
@@ -71,6 +91,17 @@ function getFilterToggleStateClasses(isActive, isAccent, useHomeVisualTone) {
     : "text-muted hover:bg-primary/8 hover:text-primary";
 }
 
+/**
+ * Vue de recherche CBIR par image.
+ * Gère l'upload, le choix de mode, la recherche, les filtres,
+ * la sélection de résultats et le scroll automatique.
+ *
+ * @component
+ * @param {object} props
+ * @param {function(): void} props.onBack - Retour vers le hub de recherche
+ * @param {function(string): void} props.onChromeToneChange - Callback de changement de ton du chrome
+ * @returns {JSX.Element}
+ */
 export default function ImageSearchView({ onBack, onChromeToneChange }) {
   const { t, lang } = useContext(LangContext);
   const content = t.search;
@@ -149,6 +180,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     setStatus(null);
   }
 
+  /** Attache les callbacks de relance aux données de résultats */
   function attachCallbacks(data) {
     return { ...data, onRelaunch: handleRelaunch, onRelaunchMultiple: handleRelaunchMultiple };
   }
@@ -160,6 +192,11 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     setSelectedIds([]);
   }
 
+  /**
+  * Exécute une action de recherche avec délai minimum et gestion d'erreur.
+  * @param {function(): Promise<void>} action
+  * @param {{ clearExistingResults?: boolean }} [options={}]
+  */
   async function runSearch(action, { clearExistingResults = true } = {}) {
     setLoading(true);
     setStatus(null);
@@ -182,6 +219,9 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     }
   }
 
+  /**
+  * Lance la recherche avec le fichier courant (mode simple ou comparaison).
+  */
   async function handleSearch() {
     if (!file) return;
 
@@ -201,6 +241,10 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     });
   }
 
+  /**
+  * Relance la recherche depuis un résultat existant par son image_id.
+  * @param {string} imageId
+  */
   async function handleRelaunch(imageId) {
     await runSearch(async () => {
       if (compareMode) {
@@ -219,6 +263,10 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     }, { clearExistingResults: false });
   }
 
+  /**
+  * Relance la recherche depuis une sélection multiple d'image_ids.
+  * @param {string[]} imageIds
+  */
   async function handleRelaunchMultiple(imageIds) {
     await runSearch(async () => {
       if (compareMode) {
@@ -246,6 +294,14 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     setSelectedIds((currentIds) => currentIds.filter((currentId) => currentId !== imageId));
   }
 
+  /**
+  * Tente de changer le mode de recherche.
+  * Retourne "confirm" si des résultats existent et que force est faux.
+  * 
+  * @param {"visual"|"semantic"} nextMode
+  * @param {{ force?: boolean }} [options={}]
+  * @returns {"noop"|"blocked"|"confirm"|"changed"}
+  */ 
   function handleModeChange(nextMode, { force = false } = {}) {
     if (nextMode === mode) return "noop";
     if (loading) return "blocked";

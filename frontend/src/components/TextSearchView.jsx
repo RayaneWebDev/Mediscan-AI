@@ -1,3 +1,8 @@
+/** 
+ * @fileoverview Vue de recherche par texte (mode sémantique/interprétif).
+ * @module components/TextSearchView
+ */
+
 import { BadgePercent, Info, Search, Sparkles, Tags } from "lucide-react";
 import { useState, useContext, useEffect, useMemo, useRef, useCallback } from "react";
 import { LangContext } from "../context/LangContextValue";
@@ -40,11 +45,27 @@ const TEXT_SEARCH_SCROLL_MAX_RETRIES = 4;
 const TEXT_SEARCH_SCROLL_RETRY_DELAY_MS = 160;
 const TEXT_SEARCH_SCROLL_TOLERANCE = 6;
 
+/**
+ * Retourne les classes CSS actives/inactives d'un bouton de filtre toggle.
+ * @param {boolean} isActive
+ * @returns {string}
+ */
 function getFilterToggleStateClasses(isActive) {
   if (isActive) return "mediscan-accent-chip font-semibold shadow-sm";
   return "text-muted hover:bg-accent/8 hover:text-accent";
 }
 
+/**
+ * Vue de recherche CBIR par description textuelle.
+ * Gère la saisie de requête, le déclenchement de la recherche,
+ * les filtres de résultats et le scroll automatique vers les résultats.
+ *
+ * @component
+ * @param {object} props
+ * @param {function(): void} props.onBack - Retour vers le hub de recherche
+ * @param {function(string): void} props.onChromeToneChange - Callback de changement de ton du chrome
+ * @returns {JSX.Element}
+ */
 export default function TextSearchView({ onBack, onChromeToneChange }) {
   const { t, lang } = useContext(LangContext);
   const content = t.search.text;
@@ -83,6 +104,7 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
   const hasSearchResults = Boolean(results);
   const resultCount = results?.results?.length ?? 0;
 
+  /** Annule le scroll automatique en cours vers les résultats. */
   const cancelSearchAutoScroll = useCallback(() => {
     window.clearTimeout(scrollRetryTimerRef.current);
     scrollRetryTimerRef.current = 0;
@@ -90,6 +112,11 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
     scrollCancelRef.current = null;
   }, []);
 
+  /**
+ * Tente un scroll automatique vers la zone de résultats après une recherche.
+ * Se relance jusqu'à TEXT_SEARCH_SCROLL_MAX_RETRIES fois si la cible n'est pas atteinte.
+ * @param {number} [attempt=0] - Numéro de la tentative courante
+ */
   const runSearchAutoScrollAttempt = useCallback((attempt = 0) => {
     const targetNode = resultsStageRef.current || resultsAnchorRef.current;
     if (!targetNode || typeof window === "undefined") {
@@ -189,6 +216,10 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
     };
   }, [cancelSearchAutoScroll, hasSearchResults, loading, resultCount, runSearchAutoScrollAttempt]);
 
+  /**
+  * Déclenche une recherche sémantique avec la requête courante.
+  * Applique un délai minimum pour éviter un flash de l'interface.
+  */
   async function handleSearch() {
     const trimmed = query.trim();
     if (!trimmed) return;
@@ -216,6 +247,9 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
     }
   }
 
+  /**
+  * Réinitialise tous les filtres à leur valeur par défaut.
+  */
   function resetFilters() {
     setMinScore(0);
     setSearchText("");
@@ -228,18 +262,30 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
     setActiveCaptionFilterIds([]);
   }
 
+  /**
+  * Exporte les résultats filtrés (ou bruts) en JSON.
+  */
   function exportJSON() {
     exportResultsAsJson(filteredResults ?? results, "results_text.json");
   }
 
+  /**
+  * Exporte les résultats filtrés (ou bruts) en CSV.
+  */
   function exportCSV() {
     exportResultsAsCsv(filteredResults ?? results, "results_text.csv");
   }
 
+  /**
+  * Exporte les résultats filtrés (ou bruts) en PDF.
+  */
   async function exportPDF() {
     await exportResultsAsPdf(filteredResults ?? results, "results_text.pdf");
   }
 
+  /**
+  * Scrolle vers la section guide des filtres et déclenche son highlight.
+  */
   function handleFilterInfoClick() {
     scrollToInfoSection({
       sectionId: "text-search-filters-note",
@@ -254,6 +300,9 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
     setFilterNoteHighlighted(false);
   }
 
+  /**
+  * Scrolle vers la section guide du mode interprétif et déclenche son highlight.
+  */
   function handleModeInfoClick() {
     scrollToInfoSection({
       sectionId: "text-search-quick-note",
@@ -262,7 +311,11 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
       onComplete: () => restartNoteHighlight(setQuickNoteHighlighted, quickNoteHighlightTimerRef),
     });
   }
-
+  
+  /**
+  * Active ou désactive un filtre de caption par son identifiant.
+  * @param {string} filterId
+  */
   function handleCaptionFilterToggle(filterId) {
     setActiveCaptionFilterIds((ids) =>
       ids.includes(filterId) ? ids.filter((id) => id !== filterId) : [...ids, filterId],

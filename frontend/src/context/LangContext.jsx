@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Provider de langue avec transitions animées au changement.
+ * @module context/LangContext
+ */
+
 import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { en } from "../i18n/en";

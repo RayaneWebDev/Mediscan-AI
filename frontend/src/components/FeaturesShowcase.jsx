@@ -1,10 +1,25 @@
+/** 
+ * @fileoverview Section de présentation des fonctionnalités via carousel.
+ * @module components/FeaturesShowcase
+ */
+
 import { useContext, useEffect, useState } from "react";
 import { LangContext } from "../context/LangContextValue";
 import FeatureCarousel from "./FeatureCarousel";
 
+/**
+ * Section présentant les fonctionnalités du projet via un carousel de cartes.
+ * Peut être utilisée en mode standalone ou embarquée dans la HomePage.
+ *
+ * @component
+ * @param {object} props
+ * @param {boolean} [props.embedded=false] - Mode embarqué dans la HomePage
+ * @returns {JSX.Element}
+ */
 export default function FeaturesShowcase({ embedded = false }) {
   const { t } = useContext(LangContext);
   const content = t.features;
+  /** @type {[boolean, function]} Déclenche les animations d'entrée après le premier frame */
   const [ready, setReady] = useState(false);
 
   useEffect(() => {

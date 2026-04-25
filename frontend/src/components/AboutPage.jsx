@@ -1,5 +1,5 @@
-/**
- * @fileoverview Page À propos présentant le projet MediScan CBIR, l'équipe et l'architecture.
+/** 
+ * @fileoverview Page à propos du projet MediScan CBIR, présente l'équipe et le projet.
  * @module components/AboutPage
  */
 
@@ -8,7 +8,7 @@ import { LangContext } from "../context/LangContextValue";
 import { useTheme } from "../context/useTheme";
 
 /**
- * Icône SVG du logo GitHub.
+ * Icône GitHub en SVG.
  * @component
  * @param {object} props
  * @param {string} [props.className=""]
@@ -28,9 +28,9 @@ function GitHubMark({ className = "" }) {
 }
 
 /**
- * Génère les initiales d'un nom complet (2 premières lettres de chaque mot).
- * @param {string} name - Nom complet.
- * @returns {string} Initiales en majuscules.
+ * Retourne les initiales d'un nom complet (2 lettres max).
+ * @param {string} name - Nom complet
+ * @returns {string} Initiales en majuscules
  */
 function initials(name) {
   return name
@@ -47,10 +47,10 @@ function initials(name) {
  *
  * @component
  * @param {object} props
- * @param {object} props.member - Données du membre.
- * @param {string} props.member.name - Nom du membre.
- * @param {string} [props.member.photo] - URL de la photo.
- * @param {"visual"|"semantic"} [props.member.color] - Couleur du fallback d'initiales.
+ * @param {object} props.member - Données du membre
+ * @param {string} props.member.name - Nom du membre
+ * @param {string} [props.member.photo] - URL de la photo
+ * @param {"visual"|"semantic"} [props.member.color] - Couleur du fallback
  * @returns {JSX.Element}
  */
 function TeamAvatar({ member }) {
@@ -82,7 +82,7 @@ function TeamAvatar({ member }) {
 }
 
 /**
- * Label de section en majuscules espacées (style "eyebrow").
+ * Label de section style "eyebrow" en majuscules.
  * @component
  * @param {object} props
  * @param {React.ReactNode} props.children
@@ -98,15 +98,8 @@ function SectionLabel({ children }) {
 
 /**
  * Page À propos du projet MediScan CBIR.
- * 
- * - **Hero** : titre et description du projet.
- * - **Mission / Vision** : deux cartes avec images.
- * - **Architecture** : cartes présentant les outils techniques.
- * - **Pipeline** : liste ordonnée des étapes du pipeline CBIR.
- * - **Stack** : tags des technologies utilisées.
- * - **Équipe** : grille des membres avec avatar et lien GitHub.
- * - **Disclaimer** : mention légale sur l'usage médical.
- * 
+ * Affiche le hero, les cartes mission/vision, l'équipe et le disclaimer.
+ *
  * @component
  * @returns {JSX.Element}
  */
@@ -114,22 +107,22 @@ export default function AboutPage() {
   
   const { t } = useContext(LangContext);
   const content = t.about;
-  /** Déclenche les animations d'entrée après le premier frame */
+
+  /** @type {[boolean, function]} Passe à true après le premier frame pour déclencher les animations */
   const [ready, setReady] = useState(false);
-  /** Thème actif du site "light" ou "dark" */
+  /** Thème actif du site */
   const { theme } = useTheme();
 
-    /**
-   * Retourne la classe CSS d'animation d'entrée selon la direction et le statut "ready".
-   * @param {"up"|"left"|"right"} [dir="up"] - Direction d'entrée.
-   * @param {number} [delay=0] - Délai non utilisé.
-   * @returns {string}
-   */
   useEffect(() => {
     const frame = requestAnimationFrame(() => setReady(true));
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  /**
+   * Classe CSS d'animation selon la direction et l'état ready.
+   * @param {"up"|"left"|"right"} [dir="up"] - Direction d'entrée
+   * @returns {string}
+  */
   const anim = (dir = "up") =>
     `${
       ready

@@ -1,5 +1,5 @@
-/**
- * @fileoverview Page FAQ avec accordéon filtrable par catégorie.
+/** 
+ * @fileoverview Page FAQ du projet MediScan CBIR avec accordéon filtrable par catégorie.
  * @module components/FAQPage
  */
 
@@ -18,8 +18,6 @@ import Spinner from "./Spinner";
  * @param {function(string): void} props.onPageChange - Callback de navigation vers une autre page
  * @returns {JSX.Element}
  *
- * @example
- * <FAQPage onPageChange={(page) => setCurrentPage(page)} />
  */
 export default function FAQPage({ onPageChange }) {
   const { t } = useContext(LangContext);

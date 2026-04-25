@@ -10,11 +10,10 @@ import LanguageSelector from "./LanguageSelector";
 
 
 /**
- * Barre de navigation avec les fonctionnalités suivantes :
- * - **Desktop** : onglets centrés avec indicateur animé de l'onglet actif.
- * - **Mobile** : menu plein écran.
- * - **Scroll** : la navbar se masque lors du scroll vers le bas et réapparaît vers le haut.
- * - **Transparence** : fond transparent au sommet, opaque après défilement.
+ * Barre de navigation principale.
+ * Gère les onglets desktop avec indicateur animé, le menu mobile plein écran,
+ * le masquage au scroll et la transparence au sommet de page.
+ *
  *
  * @component
  * @param {object} props
@@ -24,12 +23,6 @@ import LanguageSelector from "./LanguageSelector";
  * @param {"default"|"primary"|"accent"} [props.tone="default"] - Thème visuel de la navbar.
  * @returns {JSX.Element}
  *
- * @example
- * <Navigation
- *   currentPage="search"
- *   onPageChange={(page) => setCurrentPage(page)}
- *   tone="primary"
- * />
  */
 export default function Navigation({
   currentPage,

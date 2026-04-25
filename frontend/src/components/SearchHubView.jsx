@@ -1,4 +1,4 @@
-/**
+/** 
  * @fileoverview Écran de recherche permettant de choisir le mode de recherche CBIR.
  * @module components/SearchHubView
  */
@@ -14,6 +14,11 @@ const HUB_INTRO_ANIMATION = {
 
 const HUB_INTRO_TOTAL_MS = 2400;
 
+/**
+ * État initial de l'animation d'intro du hub.
+ * Tient compte de prefers-reduced-motion et de la disponibilité d'IntersectionObserver.
+ * @returns {"idle"|"playing"|"done"|"disabled"}
+ */
 function getInitialHubIntroState() {
   if (!HUB_INTRO_ANIMATION.enabled) {
     return "disabled";
@@ -97,8 +102,8 @@ function SearchChoiceDonut({
 /**
  * Vue d'accueil du hub de recherche CBIR.
  * Présente deux choix de recherche sous forme de donuts interactifs :
- * - La **recherche par image** (mode visuel/sémantique via upload).
- * - La **recherche par texte** (mode sémantique via caption).
+ * - La recherche par image (mode visuel/sémantique via upload).
+ * - La recherche par texte (mode sémantique via caption).
  *
  * Une animation d'entrée est déclenchée au montage du composant.
  *
@@ -108,11 +113,6 @@ function SearchChoiceDonut({
  * @param {function(): void} props.onChooseText - Callback pour naviguer vers la recherche par texte.
  * @returns {JSX.Element}
  *
- * @example
- * <SearchHubView
- *   onChooseImage={() => setView("image")}
- *   onChooseText={() => setView("text")}
- * />
  */
 export default function SearchHubView({ onChooseImage, onChooseText }) {
   

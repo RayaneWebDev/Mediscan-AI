@@ -10,7 +10,7 @@ import { useTheme } from "../context/useTheme";
 
 /**
  * Composant permettant à l'utilisateur de :
- * - Basculer entre le thème clair et sombre.
+ * - Basculer entre le thème.
  * - Choisir la langue de l'interface entre le français et l'anglais.
  * 
  * Langues supportées :
@@ -20,9 +20,6 @@ import { useTheme } from "../context/useTheme";
  * @component
  * @returns {JSX.Element}
  *
- * @example
- * // Intégré dans la Navigation
- * <LanguageSelector />
  */
 export default function LanguageSelector() {
   const { lang, setLanguage } = useContext(LangContext);

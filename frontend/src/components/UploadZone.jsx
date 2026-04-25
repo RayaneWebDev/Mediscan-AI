@@ -1,4 +1,4 @@
-/**
+/** 
  * @fileoverview Zone de dépôt et de sélection d'image pour la recherche CBIR par image.
  * @module components/UploadZone
  */
@@ -7,27 +7,19 @@ import { useContext, useEffect, useId, useMemo, useRef, useState, useCallback } 
 import { LangContext } from "../context/LangContextValue";
 
 /**
- * Zone interactive permettant à l'utilisateur de sélectionner ou glisser-déposer
- * une image (JPEG ou PNG). Affiche une prévisualisation une fois le fichier sélectionné.
+ * Zone interactive pour sélectionner ou glisser-déposer une image (JPEG ou PNG).
+ * Affiche une prévisualisation une fois le fichier sélectionné.
  *
  * @component
  * @param {object} props
- * @param {File|null} props.file - Fichier image actuellement sélectionné (null = état vide).
- * @param {function(File): void} props.onFileSelect - Callback appelé quand un fichier est choisi.
- * @param {function(): void} props.onRemove - Callback appelé quand l'utilisateur supprime l'image.
- * @param {boolean} [props.isAccent=false] - Utilise la palette accent (recherche sémantique).
- * @param {boolean} [props.useHomeVisualTone=false] - Utilise le thème visuel de la home page.
- * @param {boolean} [props.fillHeight=false] - Étend la zone pour remplir la hauteur disponible.
- * @param {boolean} [props.enableToneTransition=false] - Active les transitions CSS de changement de ton.
+ * @param {File|null} props.file - Fichier image sélectionné, null si aucun
+ * @param {function(File): void} props.onFileSelect - Appelé quand un fichier est choisi
+ * @param {function(): void} props.onRemove - Appelé quand l'utilisateur supprime l'image
+ * @param {boolean} [props.isAccent=false] - Palette accent (recherche sémantique)
+ * @param {boolean} [props.useHomeVisualTone=false] - Thème visuel de la home page
+ * @param {boolean} [props.fillHeight=false] - Étend la zone pour remplir la hauteur disponible
+ * @param {boolean} [props.enableToneTransition=false] - Active les transitions de changement de ton
  * @returns {JSX.Element}
- *
- * @example
- * <UploadZone
- *   file={selectedFile}
- *   onFileSelect={(f) => setSelectedFile(f)}
- *   onRemove={() => setSelectedFile(null)}
- *   isAccent={false}
- * />
  */
 export default function UploadZone({
   file,
@@ -69,8 +61,8 @@ export default function UploadZone({
     : "bg-primary-pale text-primary";
 
   /**
-   * Gestion du "Coller" via le clavier (Ctrl+V)
-   */
+   * Gère le collage d'une image depuis le presse-papier (Ctrl+V).
+  */
   const handlePaste = useCallback((e) => {
     // Accès aux données du presse-papier
     const clipboardItems = e.clipboardData?.items;
@@ -110,7 +102,7 @@ export default function UploadZone({
 
   /**
    * Gère le dépôt d'un fichier via drag & drop.
-   * @param {DragEvent} e - Événement de drop natif.
+   * @param {DragEvent} e
   */
   function handleDrop(e) {
     e.preventDefault();
@@ -120,8 +112,8 @@ export default function UploadZone({
   }
 
   /**
-   * Gère la sélection d'un fichier via l'input natif.
-   * Réinitialise la valeur de l'input pour permettre la re-sélection du même fichier.
+   * Gère la sélection via l'input natif.
+   * Réinitialise la valeur pour permettre la re-sélection du même fichier.
    * @param {React.ChangeEvent<HTMLInputElement>} e
   */
   function handleChange(e) {

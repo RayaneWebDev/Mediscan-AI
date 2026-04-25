@@ -1,4 +1,4 @@
-/**
+/** 
  * @fileoverview Grille de résultats CBIR avec pagination, sélection, export et modales détail/comparaison.
  * @module components/ResultsGrid
  */
@@ -466,7 +466,7 @@ function ResultCompareModal({ result, comparisonSource, originRect, tone, conten
  * Grille paginée de résultats CBIR avec sélection, export et modales interactives.
  *
  * Fonctionnalités :
- * - Pagination automatique par blocs de {@link RESULTS_PER_PAGE} résultats.
+ * - Pagination automatique par blocs de 6 résultats.
  * - Sélection de résultats pour relance de recherche.
  * - Export des résultats en JSON, CSV et PDF.
  * - Modale détail avec animation depuis la carte source.
@@ -490,14 +490,6 @@ function ResultCompareModal({ result, comparisonSource, originRect, tone, conten
  * @param {function(): Promise<void>|null} [props.onExportPdf=null] - Callback d'export PDF (async).
  * @returns {JSX.Element|null} Null si "data" est null.
  *
- * @example
- * <ResultsGrid
- *   data={searchResults}
- *   animateOnMount
- *   onExportJson={exportJSON}
- *   onExportCsv={exportCSV}
- *   onExportPdf={exportPDF}
- * />
  */
 export default function ResultsGrid({
   data,

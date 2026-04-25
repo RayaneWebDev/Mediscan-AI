@@ -1,3 +1,7 @@
+"""
+Configuration de l'application chargée depuis les variables d'environnement.
+"""
+
 import os
 
 from mediscan.runtime import SUPPORTED_MODES
@@ -11,6 +15,12 @@ except ImportError:
 
 
 def _env_int(name: str, default: int) -> int:
+    """
+    Lit une variable d'environnement entière.
+
+    Raises:
+        ValueError: Si la valeur n'est pas convertible en entier.
+    """
     value = os.getenv(name)
     if value is None or not value.strip():
         return default
@@ -22,6 +32,7 @@ def _env_int(name: str, default: int) -> int:
 
 
 def _env_csv(name: str, default: tuple[str, ...]) -> list[str]:
+    """Lit une variable d'environnement CSV et retourne une liste de valeurs nettoyées."""
     value = os.getenv(name)
     if value is None or not value.strip():
         return list(default)

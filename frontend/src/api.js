@@ -1,14 +1,37 @@
+/**
+ * @fileoverview Client HTTP de l'API MediScan.
+ * @module api
+ */
+
+// Supprime le slash final si présent
 const API_BASE = (import.meta.env.VITE_API_BASE || "/api").replace(/\/$/, "");
 const JSON_HEADERS = { "Content-Type": "application/json" };
 
+/**
+ * Construit l'URL complète d'un endpoint.
+ * @param {string} path
+ * @returns {string}
+ */
 function buildApiUrl(path) {
   return `${API_BASE}${path}`;
 }
 
+/**
+ * Parse la réponse JSON sans lever d'erreur si le body est vide ou invalide.
+ * @param {Response} response
+ * @returns {Promise<object>}
+ */
 async function parseJsonSafely(response) {
   return response.json().catch(() => ({}));
 }
 
+/**
+ * Formate le champ "detail" d'une erreur API en message lisible.
+ * Gère les cas string, tableau de validations FastAPI et objet générique.
+ * @param {string|object|Array} detail
+ * @param {string} fallbackMessage
+ * @returns {string}
+ */
 function formatApiError(detail, fallbackMessage) {
   if (typeof detail === "string" && detail.trim()) {
     return detail;
@@ -53,6 +76,13 @@ function formatApiError(detail, fallbackMessage) {
   return fallbackMessage;
 }
 
+/**
+ * Effectue une requête vers l'API et retourne le JSON.
+ * Lève une Error avec le message formaté si la réponse n'est pas ok.
+ * @param {string} path
+ * @param {RequestInit} [options={}]
+ * @returns {Promise<object>}
+ */
 async function requestJson(path, options = {}) {
   const response = await fetch(buildApiUrl(path), options);
 
@@ -64,6 +94,12 @@ async function requestJson(path, options = {}) {
   return parseJsonSafely(response);
 }
 
+/**
+ * Raccourci POST JSON.
+ * @param {string} path
+ * @param {object} payload
+ * @returns {Promise<object>}
+ */
 function postJson(path, payload) {
   return requestJson(path, {
     method: "POST",

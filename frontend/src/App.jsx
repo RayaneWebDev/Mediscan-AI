@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Composant racine de l'application avec routing, transitions de page et gestion des surfaces.
+ * @module App
+ */
+
 import { lazy, Suspense, useState, useEffect, useRef, useContext } from "react";
 import { LangProvider } from "./context/LangContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -8,12 +13,14 @@ import HomePage from "./components/HomePage";
 import Footer from "./components/Footer";
 import Spinner from "./components/Spinner";
 
+// Chargement paresseux des pages secondaires
 const SearchPage = lazy(() => import("./components/SearchPage"));
 const ContactPage = lazy(() => import("./components/ContactPage"));
 const HowItWorks = lazy(() => import("./components/HowItWorks"));
 const FAQPage = lazy(() => import("./components/FAQPage"));
 const AboutPage = lazy(() => import("./components/AboutPage"));
 
+// Préchargement des chunks au repos pour accélérer la navigation
 const lazyPagePreloaders = [
   () => import("./components/SearchPage"),
   () => import("./components/ImageSearchView"),
@@ -26,6 +33,7 @@ const lazyPagePreloaders = [
 
 const MOTION_ENTER_DURATION_MS = 620;
 const MOTION_ENTER_EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+// Surfaces CSS appliquées au fond de page selon la route active
 const HOME_SURFACE = "home-page";
 const SEARCH_HUB_SURFACE = "search-hub-surface";
 const SEARCH_PRIMARY_SURFACE = "search-primary-surface";
@@ -36,6 +44,7 @@ const SURFACE_FADE_DURATION_MS = 620;
 const SEARCH_PAGE = "search";
 const DEFAULT_ROUTE = { page: "home", searchView: "hub" };
 const VALID_SEARCH_VIEWS = new Set(["hub", "image", "text"]);
+// Ton de navigation par défaut selon la vue de recherche
 const SEARCH_VIEW_TONES = {
   hub: "default",
   image: "primary",
@@ -62,6 +71,12 @@ const STATIC_ROUTE_SURFACES = {
   faq: HOME_SURFACE,
 };
 
+/**
+ * Normalise une route (string ou objet) et valide les valeurs.
+ * Retourne la route par défaut si la page est inconnue.
+ * @param {string|{page: string, searchView?: string}} nextRoute
+ * @returns {{page: string, searchView: string}}
+ */
 function normalizeRoute(nextRoute) {
   let page = DEFAULT_ROUTE.page;
   let searchView = DEFAULT_ROUTE.searchView;
@@ -100,9 +115,15 @@ function getInitialSearchTone(route) {
 }
 
 function shouldShowFooter(route) {
-  return route.page !== SEARCH_PAGE || route.searchView !== "hub";
+  return true;
 }
 
+/**
+ * Retourne la classe CSS de surface selon la route et le ton de recherche actif.
+ * @param {{page: string, searchView: string}} route
+ * @param {string} [searchTone="default"]
+ * @returns {string}
+ */
 function getRouteSurface(route, searchTone = "default") {
   if (route.page !== SEARCH_PAGE) {
     return STATIC_ROUTE_SURFACES[route.page] ?? DEFAULT_SURFACE;
@@ -122,6 +143,12 @@ function PageLoader() {
   );
 }
 
+/**
+ * Cœur de l'application : gère le routing, les transitions de page,
+ * les surfaces de fond et le préchargement des chunks.
+ *
+ * @component
+ */
 function AppInner() {
   const { langVisible } = useContext(LangContext);
   const { theme } = useTheme();
@@ -140,6 +167,7 @@ function AppInner() {
   const bodyLockedRef = useRef(false);
   const surfaceRevealFrameRef = useRef(0);
 
+  /** Verrouille le scroll du body pendant la transition de page */
   function lockBodyScroll() {
     if (bodyLockedRef.current) return;
     const y = window.scrollY;
@@ -152,6 +180,7 @@ function AppInner() {
     bodyLockedRef.current = true;
   }
 
+  /** Déverrouille le scroll et remet la position à 0 si resetScroll est vrai */
   function clearBodyScrollLock(resetScroll = true) {
     document.body.style.position = "";
     document.body.style.top = "";
@@ -169,6 +198,10 @@ function AppInner() {
     surfaceRevealFrameRef.current = 0;
   }
 
+  /**
+  * Navigue vers une route avec transition de page et fondu de surface.
+  * @param {string|{page: string, searchView?: string}} nextRouteLike
+  */
   function navigateToRoute(nextRouteLike) {
     const nextRoute = normalizeRoute(nextRouteLike);
     const nextSearchTone = getInitialSearchTone(nextRoute);
@@ -212,6 +245,7 @@ function AppInner() {
     navigateToRoute({ page: "search", searchView });
   }
 
+  /** Met à jour le ton sans provoquer de re-render si inchangé */
   function handleSearchToneChange(nextTone) {
     setSearchTone((currentTone) =>
       currentTone === nextTone ? currentTone : nextTone

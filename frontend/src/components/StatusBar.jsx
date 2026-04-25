@@ -1,27 +1,19 @@
-/**
- * @fileoverview Composant de barre de statut pour les états de chargement et d'erreur.
+/** 
+ * @fileoverview Barre de statut pour les états de chargement et d'erreur.
  * @module components/StatusBar
  */
 
 /**
- * Affiche une barre de statut contextuelle (chargement ou erreur).
- * Retourne "null" si aucun statut n'est fourni.
+ * Barre de statut contextuelle (chargement ou erreur).
+ * Retourne null si aucun statut n'est fourni.
  *
  * @component
  * @param {object} props
- * @param {Status|null} props.status - Objet décrivant l'état courant. Null = composant non rendu.
- * @param {"primary"|"accent"} [props.tone="primary"] - Palette de couleur pour l'état de chargement.
- * @param {boolean} [props.useHomeVisualTone=false] - Utilise le thème visuel de la page d'accueil (primary).
- * @param {boolean} [props.enableToneTransition=false] - Active les transitions CSS de changement de ton.
+ * @param {{type: "loading"|"error", message: string}|null} props.status - État courant, null = non rendu
+ * @param {"primary"|"accent"} [props.tone="primary"] - Palette de couleur pour l'état de chargement
+ * @param {boolean} [props.useHomeVisualTone=false] - Thème visuel de la page d'accueil
+ * @param {boolean} [props.enableToneTransition=false] - Active les transitions de changement de ton
  * @returns {JSX.Element|null}
- *
- * @example
- * // Barre d'erreur
- * <StatusBar status={{ type: "error", message: "Une erreur est survenue." }} />
- *
- * @example
- * // Barre de chargement avec ton accent
- * <StatusBar status={{ type: "loading", message: "Recherche en cours…" }} tone="accent" />
  */
 export default function StatusBar({
   status,

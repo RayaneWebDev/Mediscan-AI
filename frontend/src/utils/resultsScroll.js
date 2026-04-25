@@ -1,3 +1,15 @@
+/**
+ * @fileoverview Utilitaires de scroll vers la grille de résultats.
+ * @module utils/resultsScroll
+ */
+
+/**
+ * Calcule la position Y cible pour scroller vers la grille de résultats.
+ * Tient compte de la hauteur de la navbar selon le breakpoint et du scroll max.
+ * @param {HTMLElement} gridNode
+ * @param {number} [extraOffset=0] - Décalage supplémentaire en pixels
+ * @returns {number}
+ */
 export function getResultsGridScrollTargetY(gridNode, extraOffset = 0) {
   if (!gridNode || typeof window === "undefined" || typeof document === "undefined") {
     return 0;

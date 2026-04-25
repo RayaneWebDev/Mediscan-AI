@@ -1,8 +1,17 @@
+/** 
+ * @fileoverview Sous-composants de la grille de résultats CBIR.
+ * @module components/ResultsGridParts
+ */
+
 import { useRef, useState } from "react";
 import { ArrowDownToLine, ArrowLeftRight, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { imageUrl } from "../api";
 import { similarityScoreToPercent } from "../utils/searchResults";
 
+/**
+ * Ligne de métadonnée label/valeur dans la modale détail.
+ * Retourne null si value est vide.
+ */
 function DetailItem({ label, value, mono = false, className = "" }) {
   if (!value) return null;
 
@@ -18,6 +27,12 @@ function DetailItem({ label, value, mono = false, className = "" }) {
   );
 }
 
+/**
+ * Retourne les classes CSS d'une carte résultat selon le ton et le thème home.
+ * @param {"primary"|"accent"} tone
+ * @param {boolean} useHomeVisualTone
+ * @returns {{shell: string, selected: string, rank: string, checkbox: string, checkboxHover: string}}
+ */
 function getCardClasses(tone, useHomeVisualTone) {
   if (tone === "accent") {
     return {
@@ -38,6 +53,10 @@ function getCardClasses(tone, useHomeVisualTone) {
   };
 }
 
+/**
+ * Barre de score visuelle avec pourcentage et couleur adaptative.
+ * @param {{score: number, tone: "primary"|"accent"}} props
+ */
 function ScoreBar({ score, tone }) {
   const pct = similarityScoreToPercent(score);
   const color = tone === "accent"
@@ -68,6 +87,23 @@ function ScoreBar({ score, tone }) {
   );
 }
 
+/**
+ * Carte individuelle d'un résultat CBIR.
+ * Gère le fallback image, la sélection, l'ouverture détail et comparaison.
+ *
+ * @param {object} props
+ * @param {object} props.result - Résultat CBIR
+ * @param {boolean} props.selected - Carte sélectionnée ou non
+ * @param {function|null} props.onToggleSelect - Callback de sélection, null si désactivé
+ * @param {function} props.onOpenDetails - Ouvre la modale détail
+ * @param {function|null} props.onOpenCompare - Ouvre la modale comparaison, null si désactivé
+ * @param {object} props.content - Traductions
+ * @param {"primary"|"accent"} props.tone
+ * @param {number} [props.entryIndex=0] - Index pour le délai d'animation
+ * @param {boolean} [props.animateOnMount=false]
+ * @param {boolean} [props.useHomeVisualTone=false]
+ * @param {{src: string, alt?: string}|null} [props.comparisonSource=null]
+ */
 function ResultCard({
   result,
   selected,
@@ -238,6 +274,19 @@ function ResultCard({
   );
 }
 
+/**
+ * Contrôles de pagination avec ellipsis pour les grandes listes.
+ *
+ * @component
+ * @param {object} props
+ * @param {number} props.currentPage
+ * @param {number} props.totalPages
+ * @param {function(number): void} props.onPageChange
+ * @param {object} props.content - Traductions
+ * @param {"primary"|"accent"} props.tone
+ * @param {boolean} [props.useHomeVisualTone=false]
+ * @param {boolean} [props.showPageSummary=true]
+ */
 export function PaginationControls({
   currentPage,
   totalPages,
@@ -345,6 +394,10 @@ export function PaginationControls({
   );
 }
 
+/**
+ * Bouton d'export avec état de chargement.
+ * @param {{label: string, isLoading: boolean, disabled: boolean, onClick: function, className: string}} props
+ */
 function ExportButton({ label, isLoading, disabled, onClick, className }) {
   return (
     <button
@@ -358,6 +411,17 @@ function ExportButton({ label, isLoading, disabled, onClick, className }) {
   );
 }
 
+/**
+ * En-tête de la grille : nombre de résultats et badge de mode.
+ *
+ * @component
+ * @param {object} props
+ * @param {number} props.resultCount
+ * @param {object} props.content - Traductions
+ * @param {string} props.modeLabel
+ * @param {string} props.modeColor - Classes CSS du badge de mode
+ * @param {boolean} [props.headerHiddenOnDesktop=false]
+ */
 export function ResultsGridHeader({
   resultCount,
   content,
@@ -377,6 +441,25 @@ export function ResultsGridHeader({
   );
 }
 
+/**
+ * Barre d'outils de la grille : pagination et boutons d'export.
+ *
+ * @component
+ * @param {object} props
+ * @param {number} props.currentPage
+ * @param {number} props.totalPages
+ * @param {function(number): void} props.onPageChange
+ * @param {object} props.content - Traductions
+ * @param {"primary"|"accent"} props.tone
+ * @param {boolean} [props.useHomeVisualTone=false]
+ * @param {string} props.exportLabel
+ * @param {boolean} props.exportDisabled
+ * @param {string} props.exportButtonClass
+ * @param {"json"|"csv"|"pdf"|null} props.activeExport - Format d'export en cours
+ * @param {function} props.onExportJson
+ * @param {function} props.onExportCsv
+ * @param {function} props.onExportPdf
+ */
 export function ResultsGridToolbar({
   currentPage,
   totalPages,
@@ -433,6 +516,26 @@ export function ResultsGridToolbar({
   );
 }
 
+/**
+ * Grille de cartes résultats avec placeholders desktop pour aligner la hauteur.
+ *
+ * @component
+ * @param {object} props
+ * @param {object[]} props.results - Page courante de résultats
+ * @param {string[]} props.selectedIds
+ * @param {function|null} props.onToggleSelect
+ * @param {function} props.onOpenDetails
+ * @param {function|null} props.onOpenCompare
+ * @param {object} props.content - Traductions
+ * @param {"primary"|"accent"} props.tone
+ * @param {boolean} [props.animateOnMount=false]
+ * @param {boolean} [props.useHomeVisualTone=false]
+ * @param {{src: string}|null} [props.comparisonSource=null]
+ * @param {number} [props.desktopPlaceholderCount=0]
+ * @param {string} [props.desktopLockedHeightClass=""]
+ * @param {boolean} [props.desktopThreeColumns=false]
+ * @param {function} props.onGridRef - Callback ref sur le conteneur
+ */
 export function ResultsGridCards({
   results,
   selectedIds,
@@ -484,6 +587,26 @@ export function ResultsGridCards({
   );
 }
 
+/**
+ * Vue de la modale détail (rendu pur, sans logique).
+ * Utilisée via createPortal dans ResultDetailsModal.
+ *
+ * @component
+ * @param {object} props
+ * @param {React.Ref} props.modalRef
+ * @param {object} props.backdropStyle - Style inline du fond
+ * @param {object} props.panelStyle - Style inline du panneau (animation)
+ * @param {"primary"|"accent"} props.tone
+ * @param {string} props.modeLabel
+ * @param {object} props.content - Traductions
+ * @param {object} props.result
+ * @param {string} props.imageSrc
+ * @param {string} props.cuiValue
+ * @param {string} props.scorePercent
+ * @param {boolean} props.downloadPending
+ * @param {function} props.onRequestClose
+ * @param {function} props.onDownloadImage
+ */
 export function ResultDetailsModalView({
   modalRef,
   backdropStyle,
@@ -581,6 +704,24 @@ export function ResultDetailsModalView({
   );
 }
 
+/**
+ * Vue de la modale de comparaison (rendu pur, sans logique).
+ * Utilisée via createPortal dans ResultCompareModal.
+ *
+ * @component
+ * @param {object} props
+ * @param {React.Ref} props.modalRef
+ * @param {object} props.backdropStyle
+ * @param {object} props.panelStyle
+ * @param {"primary"|"accent"} props.tone
+ * @param {object} props.content - Traductions
+ * @param {object} props.result
+ * @param {{src: string, alt?: string, meta?: string}} props.comparisonSource
+ * @param {string} props.imageSrc
+ * @param {string} props.cuiValue
+ * @param {string} props.scorePercent
+ * @param {function} props.onRequestClose
+ */
 export function ResultCompareModalView({
   modalRef,
   backdropStyle,

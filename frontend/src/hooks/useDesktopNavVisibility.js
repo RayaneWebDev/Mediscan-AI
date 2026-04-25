@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Hook de visibilité de la navbar desktop au scroll.
+ * @module hooks/useDesktopNavVisibility
+ */
+
 import { useEffect, useRef, useState } from "react";
 
 const DESKTOP_BREAKPOINT = 768;
@@ -5,6 +10,13 @@ const NAV_HIDE_AFTER_Y = 300;
 const NAV_SHOW_THRESHOLD = 60;
 const TOP_RESET_Y = 10;
 
+/**
+ * Masque la navbar en scrollant vers le bas, la réaffiche vers le haut.
+ * Inactif sur mobile (< 768px) et quand forceVisible est vrai.
+ *
+ * @param {{ enabled?: boolean, forceVisible?: boolean }} [options={}]
+ * @returns {boolean}
+ */
 export default function useDesktopNavVisibility({
   enabled = true,
   forceVisible = false,

@@ -1,15 +1,37 @@
+/**
+ * @fileoverview Utilitaires partagés entre ImageSearchView et TextSearchView.
+ * @module utils/searchViewHelpers
+ */
+
 import { getResultCuiSet } from "./searchResults";
 
+/**
+ * Annule le timeout stocké dans une ref.
+ * @param {{ current: number }} timeoutRef
+ */
 export function clearTimeoutRef(timeoutRef) {
   window.clearTimeout(timeoutRef.current);
 }
 
+/**
+ * Retourne les filtres de caption actifs depuis leurs identifiants.
+ * @param {string[]} activeFilterIds
+ * @param {Array<{id: string, terms: string[]}>} availableFilters
+ * @returns {Array}
+ */
 export function getSelectedCaptionFilters(activeFilterIds, availableFilters) {
   return activeFilterIds
     .map((filterId) => availableFilters.find((entry) => entry.id === filterId))
     .filter(Boolean);
 }
 
+/**
+ * Construit les options de sélect CUI disponibles par type (modalite, anatomie, finding)
+ * à partir des résultats courants.
+ * @param {object[]} rows - Résultats de recherche
+ * @param {object} cuiTypes - Définitions des types CUI
+ * @returns {{ modalite: object[], anatomie: object[], finding: object[] }}
+ */
 export function buildAvailableCuiByType(rows, cuiTypes) {
   const found = { modalite: new Set(), anatomie: new Set(), finding: new Set() };
 
@@ -35,6 +57,12 @@ export function buildAvailableCuiByType(rows, cuiTypes) {
   };
 }
 
+/**
+ * Redéclenche l'animation de highlight d'une section guide.
+ * Coupe le highlight courant, attend un frame, puis relance pour 2200ms.
+ * @param {function(boolean): void} setter
+ * @param {{ current: number }} timerRef
+ */
 export function restartNoteHighlight(setter, timerRef) {
   window.clearTimeout(timerRef.current);
   setter(false);
@@ -47,6 +75,13 @@ export function restartNoteHighlight(setter, timerRef) {
   });
 }
 
+/**
+ * Retourne les classes CSS de highlight des éléments guide selon le ton.
+ * Retourne des chaînes vides si isHighlighted est faux.
+ * @param {boolean} isHighlighted
+ * @param {"primary"|"accent"} [tone="accent"]
+ * @returns {{ icon: string, heading: string, chip: string, title: string, copy: string }}
+ */
 export function getGuideHighlightClasses(isHighlighted, tone = "accent") {
   if (!isHighlighted) {
     return {
@@ -69,6 +104,11 @@ export function getGuideHighlightClasses(isHighlighted, tone = "accent") {
   };
 }
 
+/**
+ * Scrolle vers une section guide et déclenche un callback une fois arrivé.
+ * Respecte prefers-reduced-motion.
+ * @param {{ sectionId: string, eyebrowId?: string, scrollTimerRef: object, onComplete?: function }} params
+ */
 export function scrollToInfoSection({
   sectionId,
   eyebrowId,

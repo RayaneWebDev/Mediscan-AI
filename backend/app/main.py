@@ -1,3 +1,8 @@
+"""
+Point d'entrée de l'application FastAPI MediScan.
+Initialise les services, configure le CORS et monte le router.
+"""
+
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -29,7 +34,7 @@ if load_dotenv is not None:
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
-    """Start quickly and load heavy search resources on demand."""
+    """Initialise SearchService et EmailService au démarrage (ressources chargées à la demande)."""
     application.state.search_service = SearchService(resources={})
     application.state.email_service = EmailService()
     logger.info("Search resources will be loaded lazily on the first request.")
@@ -37,6 +42,7 @@ async def lifespan(application: FastAPI):
 
 
 def configure_cors(application: FastAPI) -> None:
+    """Configure le middleware CORS avec les origines autorisées."""
     application.add_middleware(
         CORSMiddleware,
         allow_origins=CORS_ALLOWED_ORIGINS,
@@ -46,6 +52,7 @@ def configure_cors(application: FastAPI) -> None:
 
 
 def create_app() -> FastAPI:
+    """Crée et configure l'application FastAPI."""
     application = FastAPI(title="MEDISCAN API", version="1.0", lifespan=lifespan)
     configure_cors(application)
     application.include_router(router, prefix="/api")

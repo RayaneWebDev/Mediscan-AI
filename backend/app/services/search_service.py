@@ -1,3 +1,7 @@
+"""
+Service de recherche CBIR — validation des entrées et délégation au pipeline mediscan.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -30,11 +34,13 @@ from mediscan.search import SearchResources, collect_ranked_results, query, quer
 
 
 class SearchUnavailableError(RuntimeError):
-    """Raised when a requested retrieval mode is not available at runtime."""
-
+    """Lancé quand un mode de recherche n'est pas disponible au runtime."""
 
 class SearchService:
-    """Validates user input and delegates to the mediscan search pipeline."""
+    """
+    Valide les entrées utilisateur et délègue au pipeline de recherche mediscan.
+    Les ressources FAISS sont chargées à la demande via SearchResourceRegistry.
+    """
 
     def __init__(self, resources: dict[str, SearchResources]) -> None:
         self._resource_registry = SearchResourceRegistry(resources)
@@ -80,6 +86,12 @@ class SearchService:
         return downloaded_image(image_id)
 
     def _get_resources(self, mode: str) -> SearchResources:
+        """
+        Récupère les ressources du mode demandé, les charge si nécessaire.
+
+        Raises:
+            SearchUnavailableError: Si le mode est indisponible sur cette instance.
+        """
         try:
             return self._resource_registry.get_or_load(mode)
         except (FileNotFoundError, RuntimeError) as exc:
@@ -128,6 +140,10 @@ class SearchService:
         mode: str = "visual",
         k: int = 5,
     ) -> dict:
+        """
+        Recherche par similarité à partir d'octets image.
+        Écrit l'image dans un fichier temporaire, la vérifie puis interroge l'index.
+        """
         normalized_mode = self._normalize_mode(mode)
         self._validate_k(k)
         self._validate_content_type(content_type)

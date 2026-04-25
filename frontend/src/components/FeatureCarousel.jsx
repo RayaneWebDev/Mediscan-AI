@@ -1,5 +1,24 @@
+/** 
+ * @fileoverview Carousel de fonctionnalités avec navigation clavier, drag souris et slideshow d'images.
+ * @module components/FeatureCarousel
+ */
+
 import { useCallback, useEffect, useRef, useState } from "react";
 
+/**
+ * Image défilante automatique avec crossfade entre plusieurs sources.
+ * Peut être contrôlée de l'extérieur via activeIndex.
+ *
+ * @component
+ * @param {object} props
+ * @param {string[]} props.srcs - Liste des URLs d'images
+ * @param {string} props.alt - Texte alternatif de la première image
+ * @param {number} [props.interval=2000] - Délai en ms entre chaque image (mode non contrôlé)
+ * @param {number} [props.activeIndex] - Index contrôlé depuis l'extérieur
+ * @param {"cover"|"contain"} [props.fit="cover"] - Mode d'affichage de l'image
+ * @param {boolean} [props.backdrop=false] - Affiche un fond flouté derrière l'image
+ * @returns {JSX.Element}
+ */
 function SlideshowImage({
   srcs,
   alt,
@@ -78,6 +97,10 @@ function SlideshowImage({
   );
 }
 
+/**
+ * Map des icônes SVG disponibles pour les cartes de fonctionnalités.
+ * Clé → nom de l'icône utilisé dans les données de carte.
+ */
 const CARD_ICONS = {
   search: function SearchIcon(props) {
     return (
@@ -256,7 +279,23 @@ function getClosestCardIndex(track) {
 
   return closestIndex;
 }
-
+/**
+ * Carousel de cartes de fonctionnalités ou de démonstrations.
+ * Supporte la navigation clavier (flèches), le drag souris et le scroll molette horizontal.
+ * Deux types de cartes : "image" (avec slideshow) ou carte icône+texte.
+ *
+ * @component
+ * @param {object} props
+ * @param {Array<object>} props.items - Cartes à afficher
+ * @param {string} [props.prevLabel] - Label aria du bouton précédent
+ * @param {string} [props.nextLabel] - Label aria du bouton suivant
+ * @param {string} [props.regionLabel] - Label aria de la région carousel
+ * @param {string} [props.tryLabel] - Label du bouton "essayer" sur les cartes démo
+ * @param {function(string): void} [props.onNavigate] - Callback de navigation depuis une carte démo
+ * @param {boolean} [props.synchronizedImagePlayback=false] - Synchronise le slideshow entre toutes les cartes
+ * @param {number} [props.slideshowInterval=3500] - Délai du slideshow partagé en ms
+ * @returns {JSX.Element}
+ */
 export default function FeatureCarousel({
   items = [],
   prevLabel = "Précédent",
@@ -274,6 +313,7 @@ export default function FeatureCarousel({
     scrollLeft: 0,
   });
   const [activeIndex, setActiveIndex] = useState(0);
+  /** @type {[number, function]} Index partagé du slideshow entre toutes les cartes image */
   const [sharedSlideIndex, setSharedSlideIndex] = useState(0);
 
   const synchronizedSlideCount = items.reduce((largestCount, item) => {
@@ -283,6 +323,7 @@ export default function FeatureCarousel({
     return Math.max(largestCount, item.srcs.length);
   }, 0);
 
+  // Slideshow synchronisé entre toutes les cartes image
   useEffect(() => {
     if (!synchronizedImagePlayback || synchronizedSlideCount <= 1) {
       return undefined;
@@ -315,6 +356,10 @@ export default function FeatureCarousel({
     };
   }, [items.length]);
 
+    /**
+   * Scrolle le carousel vers un index donné.
+   * @param {number} nextIndex - Index cible
+   */
   const scrollToIndex = useCallback(
     (index) => {
       const track = trackRef.current;
@@ -338,6 +383,7 @@ export default function FeatureCarousel({
     [items.length]
   );
 
+  /** Gestion du drag souris sur le carousel (desktop) */
   const handlePointerDown = useCallback((event) => {
     if (event.pointerType === "touch") {
       return;
@@ -372,6 +418,7 @@ export default function FeatureCarousel({
     window.addEventListener("pointerup", handlePointerUp);
   }, []);
 
+  /** Redirige le scroll vertical en scroll horizontal sur le carousel */
   const handleWheel = useCallback(
     (event) => {
       const track = trackRef.current;
@@ -392,6 +439,7 @@ export default function FeatureCarousel({
     []
   );
 
+  /** Navigation clavier flèche gauche/droite */
   const handleKeyDown = useCallback(
     (event) => {
       if (event.key === "ArrowRight") {

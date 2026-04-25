@@ -1,3 +1,16 @@
+/** 
+ * @fileoverview Composants de cartes de filtres pour la page de recherche CBIR.
+ * @module components/SearchFilterSections
+ */
+ 
+/**
+ * Carte de base enveloppant les filtres de recherche.
+ * @component
+ * @param {object} props
+ * @param {React.ReactNode} props.children
+ * @param {string} [props.className=""]
+ * @returns {JSX.Element}
+ */
 function SearchFilterCard({ children, className = "" }) {
   return (
     <div className={`search-filter-card rounded-[1.2rem] border border-border/70 bg-bg/60 p-3.5 ${className}`}>
@@ -6,10 +19,35 @@ function SearchFilterCard({ children, className = "" }) {
   );
 }
 
+/**
+ * Joint des noms de classes CSS en filtrant les valeurs vides.
+ * @param {...string} classNames
+ * @returns {string}
+ */
 function joinClassNames(...classNames) {
   return classNames.filter(Boolean).join(" ");
 }
 
+/**
+ * En-tête du panneau de filtres avec titre, compteur de filtres actifs et bouton reset.
+ *
+ * @component
+ * @param {object} props
+ * @param {string} props.title - Titre du panneau
+ * @param {string} [props.titleClassName=""]
+ * @param {string} props.infoLabel - Label aria du bouton info
+ * @param {function(): void} props.onInfoClick - Callback du bouton info
+ * @param {string} [props.infoButtonClassName=""]
+ * @param {number} [props.activeFilterCount=0] - Nombre de filtres actifs
+ * @param {string} [props.activeCountClassName=""]
+ * @param {string} props.hint - Texte d'aide sous le titre
+ * @param {string} [props.hintClassName=""]
+ * @param {function(): void} props.onReset - Callback du bouton reset
+ * @param {boolean} [props.resetDisabled=false]
+ * @param {string} props.resetLabel - Label du bouton reset
+ * @param {string} [props.resetButtonClassName=""]
+ * @returns {JSX.Element}
+ */
 export function SearchFilterPanelHeader({
   title,
   titleClassName = "",
@@ -54,6 +92,31 @@ export function SearchFilterPanelHeader({
   );
 }
 
+
+/**
+ * Carte de filtre par caption textuelle avec suggestions de termes rapides.
+ *
+ * @component
+ * @param {object} props
+ * @param {string} props.label - Label du champ
+ * @param {string} [props.labelClassName=""]
+ * @param {string} props.value - Valeur courante du champ texte
+ * @param {function(string): void} props.onChange - Callback de changement
+ * @param {string} props.placeholder
+ * @param {string} [props.inputWrapperClassName="mt-1.5"]
+ * @param {string} [props.inputClassName=""]
+ * @param {React.ReactNode} [props.leadingIcon=null] - Icône à gauche du champ
+ * @param {Array<{id: string, label: string, count: number}>} [props.suggestedFilters=[]] - Filtres suggérés
+ * @param {string[]} [props.activeFilterIds=[]] - IDs des filtres actifs
+ * @param {function(string): void} props.onToggleFilter - Callback de toggle d'un filtre
+ * @param {function(boolean): string} props.getToggleClassName - Retourne la classe CSS d'un bouton toggle
+ * @param {string} props.quickTermsLabel
+ * @param {string} [props.quickTermsLabelClassName=""]
+ * @param {string} props.quickTermsHint
+ * @param {string} [props.quickTermsHintClassName=""]
+ * @param {string} [props.quickTermsListClassName="mt-1.5 flex flex-wrap gap-2"]
+ * @returns {JSX.Element}
+ */
 export function SearchCaptionFilterCard({
   label,
   labelClassName = "",
@@ -126,6 +189,23 @@ export function SearchCaptionFilterCard({
   );
 }
 
+/**
+ * Carte de filtre par CUI (identifiant de concept médical) avec selects par type.
+ *
+ * @component
+ * @param {object} props
+ * @param {string} props.label
+ * @param {string} [props.labelClassName=""]
+ * @param {string} props.value - Valeur courante du champ texte CUI
+ * @param {function(string): void} props.onChange
+ * @param {string} props.placeholder
+ * @param {string} [props.inputClassName=""]
+ * @param {Array<{label: string, value: string, onChange: function, options: Array<{cui: string, label_fr: string, label_en: string}>}>} props.selectGroups - Groupes de selects par type CUI
+ * @param {string} [props.selectLabelClassName=""]
+ * @param {string} [props.selectClassName=""]
+ * @param {string} props.lang - Langue active ("fr" ou "en")
+ * @returns {JSX.Element}
+ */
 export function SearchCuiFilterCard({
   label,
   labelClassName = "",
@@ -190,6 +270,21 @@ export function SearchCuiFilterCard({
   );
 }
 
+/**
+ * Carte de filtre par score minimum (slider 0–100%).
+ *
+ * @component
+ * @param {object} props
+ * @param {string} props.label
+ * @param {string} [props.labelClassName=""]
+ * @param {number} props.value - Score minimum entre 0 et 1
+ * @param {function(number): void} props.onChange
+ * @param {string} [props.sliderClassName=""]
+ * @param {string} [props.scoreClassName=""]
+ * @param {object} [props.scoreStyle] - Style inline sur la valeur affichée
+ * @param {string} [props.scaleClassName=""]
+ * @returns {JSX.Element}
+ */
 export function SearchScoreFilterCard({
   label,
   labelClassName = "",
@@ -227,6 +322,19 @@ export function SearchScoreFilterCard({
   );
 }
 
+/**
+ * Carte de filtre par référence image (champ texte libre).
+ *
+ * @component
+ * @param {object} props
+ * @param {string} props.label
+ * @param {string} [props.labelClassName=""]
+ * @param {string} props.value
+ * @param {function(string): void} props.onChange
+ * @param {string} props.placeholder
+ * @param {string} [props.inputClassName=""]
+ * @returns {JSX.Element}
+ */
 export function SearchReferenceFilterCard({
   label,
   labelClassName = "",
@@ -251,6 +359,20 @@ export function SearchReferenceFilterCard({
   );
 }
 
+/**
+ * Carte de filtre de tri avec boutons de sélection d'option.
+ *
+ * @component
+ * @param {object} props
+ * @param {string} props.label
+ * @param {string} [props.labelClassName=""]
+ * @param {string} [props.shellClassName=""]
+ * @param {Array<{value: string, label: string}>} props.options - Options de tri disponibles
+ * @param {string} props.currentValue - Option active
+ * @param {function(string): void} props.onChange
+ * @param {function(string, boolean): string} props.getOptionClassName - Retourne la classe CSS d'une option
+ * @returns {JSX.Element}
+ */
 export function SearchSortFilterCard({
   label,
   labelClassName = "",

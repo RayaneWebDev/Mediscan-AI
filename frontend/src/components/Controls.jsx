@@ -1,4 +1,4 @@
-/**
+/** 
  * @fileoverview Panneau de contrôles de la recherche CBIR (mode, nombre de résultats, bouton lancer).
  * @module components/Controls
  */
@@ -8,11 +8,10 @@ import { createPortal } from "react-dom";
 import { LangContext } from "../context/LangContextValue";
 
 /**
- * Panneau de contrôle de la recherche CBIR regroupant :
- * - **Toggle de mode** : bascule entre recherche visuelle et sémantique.
- * - **Slider top-k** : sélection du nombre de résultats souhaités (1–50).
- * - **Bouton de lancement** : déclenche la recherche.
- * - **Confirmation** : affiché via un portail lorsque le changement de mode
+ * Panneau de contrôle de la recherche CBIR.
+ * Regroupe le toggle de mode visuel/sémantique, le slider top-k,
+ * le bouton de lancement et un popover de confirmation de changement de mode.
+ *
  *
  * @component
  * @param {object} props
@@ -36,16 +35,6 @@ import { LangContext } from "../context/LangContextValue";
  * @param {boolean} [props.modeInfoHighlighted=false] - Active l'illumination du bouton d'info.
  * @returns {JSX.Element}
  *
- * @example
- * <Controls
- *   mode="visual"
- *   onModeChange={(newMode, opts) => handleModeChange(newMode, opts)}
- *   k={5}
- *   onKChange={(val) => setK(val)}
- *   onSearch={handleSearch}
- *   disabled={!file}
- *   loading={isLoading}
- * />
  */
 export default function Controls({
   mode,

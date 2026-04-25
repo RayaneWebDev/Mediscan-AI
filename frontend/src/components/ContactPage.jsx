@@ -1,4 +1,4 @@
-/**
+/** 
  * @fileoverview Page de contact avec formulaire.
  * @module components/ContactPage
  */
@@ -10,19 +10,11 @@ import { sendContactMessage } from "../api";
 
 
 /**
- * Page de contact permettant à l'utilisateur d'envoyer un message via un formulaire.
- *
- * Fonctionnement :
- * 1. L'utilisateur remplit les champs nom, email, sujet et message.
- * 2. À la soumission, "sendContactMessage" est appelé avec les données nettoyées.
- * 3. En cas de succès, un écran de confirmation remplace le formulaire.
- * 4. En cas d'erreur, un message d'erreur est affiché au-dessus du bouton.
+ * Page de contact avec formulaire (nom, email, sujet, message).
+ * Affiche un écran de confirmation après envoi réussi.
  *
  * @component
  * @returns {JSX.Element}
- *
- * @example
- * <ContactPage />
  */
 export default function ContactPage() {
 
