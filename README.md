@@ -275,85 +275,36 @@ MEDISCAN AI est structuré comme une application complète. Le frontend React g�
 
 ```mermaid
 flowchart LR
-  User["Utilisateur"]:::actor
-  UI["Interface React / Vite<br/>Upload, texte, filtres, grille"]:::frontend
-  API["API FastAPI<br/>Routes /api"]:::backend
-  Validation["Validation<br/>image, texte, k, mode"]:::backend
-  Search["SearchService<br/>orchestration retrieval"]:::backend
-  Registry["ResourceRegistry<br/>chargement lazy des ressources"]:::backend
+  U["Utilisateur"]:::dark --> FE["Frontend React / Vite<br/>upload, texte, filtres, grille"]:::ui
+  FE --> API["Backend FastAPI<br/>routes /api"]:::api
+  API --> SVC["SearchService<br/>validation + orchestration"]:::api
 
-  User --> UI
-  UI -->|"image, texte, image_id, sélection"| API
-  API --> Validation --> Search --> Registry
+  SVC --> VIS["Visual Analysis<br/>DINOv2"]:::model
+  SVC --> SEM["Interpretive Analysis<br/>BioMedCLIP image"]:::model
+  SVC --> TXT["Text Query<br/>BioMedCLIP text"]:::model
+  SVC --> REL["Relance<br/>image_id / sélection"]:::model
 
-  subgraph Modes["Modes de recherche"]
-    Visual["Visual Analysis<br/>image → image"]:::mode
-    Semantic["Interpretive Analysis<br/>image → sens médical"]:::mode
-    Text["Text Query<br/>texte → image"]:::mode
-    Relaunch["Relance<br/>image_id ou sélection"]:::mode
-  end
+  VIS --> IV["index.faiss<br/>ids.json"]:::store
+  SEM --> IS["index_semantic.faiss<br/>ids_semantic.json"]:::store
+  TXT --> IS
+  REL --> IV
+  REL --> IS
 
-  Registry --> Visual
-  Registry --> Semantic
-  Registry --> Text
-  Registry --> Relaunch
+  IV --> RES["Résultats classés<br/>score, image_id, caption, CUI"]:::result
+  IS --> RES
+  RES --> JSON["Réponse JSON"]:::api
+  JSON --> FE
 
-  subgraph Encoding["Encodage"]
-    Dino["DINOv2<br/>embedding image 768D"]:::model
-    BioImg["BioMedCLIP<br/>embedding image 512D"]:::model
-    BioText["BioMedCLIP<br/>embedding texte 512D"]:::model
-    Centroid["Centroïde<br/>moyenne des embeddings"]:::model
-    Norm["Normalisation L2"]:::process
-  end
+  SVC -.-> OPT["MongoDB / Groq LLM / SMTP<br/>services optionnels"]:::optional
+  OPT -.-> JSON
 
-  Visual --> Dino --> Norm
-  Semantic --> BioImg --> Norm
-  Text --> BioText --> Norm
-  Relaunch --> Centroid --> Norm
-
-  subgraph Indexes["Index FAISS stables"]
-    VisualIndex["artifacts/index.faiss<br/>DINOv2"]:::store
-    SemanticIndex["artifacts/index_semantic.faiss<br/>BioMedCLIP fine-tuné"]:::store
-    VisualIds["artifacts/ids.json"]:::store
-    SemanticIds["artifacts/ids_semantic.json"]:::store
-  end
-
-  Norm -->|"mode visual"| VisualIndex
-  Norm -->|"mode semantic ou text"| SemanticIndex
-  VisualIndex --> VisualIds
-  SemanticIndex --> SemanticIds
-
-  subgraph Enrichment["Enrichissement et restitution"]
-    Mongo["MongoDB optionnel<br/>captions / CUI enrichis"]:::optional
-    HF["Images publiques<br/>Hugging Face"]:::external
-    Results["Résultats classés<br/>rank, score, image_id, caption, CUI"]:::result
-    Json["Réponse JSON validée"]:::result
-  end
-
-  VisualIds --> Results
-  SemanticIds --> Results
-  Mongo -.-> Results
-  HF -.-> Results
-  Results --> Json --> API --> UI
-
-  subgraph Optional["Services optionnels"]
-    Groq["Groq LLM<br/>conclusion prudente"]:::optional
-    SMTP["SMTP<br/>formulaire contact"]:::optional
-  end
-
-  API -.-> Groq -.-> Json
-  API -.-> SMTP -.-> Json
-
-  classDef actor fill:#111827,color:#ffffff,stroke:#111827,stroke-width:1px;
-  classDef frontend fill:#e0f2fe,color:#0f172a,stroke:#0284c7,stroke-width:1px;
-  classDef backend fill:#eef2ff,color:#111827,stroke:#4f46e5,stroke-width:1px;
-  classDef mode fill:#f0fdf4,color:#052e16,stroke:#16a34a,stroke-width:1px;
-  classDef model fill:#fff7ed,color:#431407,stroke:#f97316,stroke-width:1px;
-  classDef process fill:#fefce8,color:#422006,stroke:#ca8a04,stroke-width:1px;
+  classDef dark fill:#111827,color:#f8fafc,stroke:#111827,stroke-width:1px;
+  classDef ui fill:#e5e7eb,color:#111827,stroke:#6b7280,stroke-width:1px;
+  classDef api fill:#dbeafe,color:#0f172a,stroke:#1d4ed8,stroke-width:1px;
+  classDef model fill:#e2e8f0,color:#0f172a,stroke:#475569,stroke-width:1px;
   classDef store fill:#f8fafc,color:#0f172a,stroke:#64748b,stroke-width:1px;
-  classDef optional fill:#fdf2f8,color:#500724,stroke:#db2777,stroke-width:1px;
-  classDef external fill:#ecfeff,color:#164e63,stroke:#0891b2,stroke-width:1px;
-  classDef result fill:#dcfce7,color:#052e16,stroke:#15803d,stroke-width:1px;
+  classDef result fill:#d1d5db,color:#111827,stroke:#4b5563,stroke-width:1px;
+  classDef optional fill:#f3f4f6,color:#374151,stroke:#9ca3af,stroke-width:1px;
 ```
 
 Le backend charge les ressources de recherche via une registry partagée. Les index FAISS, les métadonnées d'images et les modèles sont donc utilisés de façon cohérente entre les routes API, les scripts CLI et les évaluations.
