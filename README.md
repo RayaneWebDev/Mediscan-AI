@@ -274,24 +274,24 @@ Les résultats peuvent être restitués pour garder une trace de l'exploration, 
 MEDISCAN AI est structuré comme une application complète. Le frontend React gère l'interface, le backend FastAPI valide les requêtes et orchestre les ressources, puis le moteur de retrieval interroge des index FAISS déjà construits.
 
 ```mermaid
-%%{init: {"theme": "base", "flowchart": {"htmlLabels": true, "nodeSpacing": 18, "rankSpacing": 38, "diagramPadding": 8, "curve": "basis"}, "themeVariables": {"darkMode": true, "fontFamily": "Inter, Arial, sans-serif", "fontSize": "12px", "background": "#101010", "primaryColor": "#252525", "primaryTextColor": "#f2f2f2", "primaryBorderColor": "#8a8a8a", "lineColor": "#b8b8b8", "clusterBkg": "#171717", "clusterBorder": "#777777", "edgeLabelBackground": "#101010"}}}%%
+%%{init: {"theme": "base", "flowchart": {"htmlLabels": true, "nodeSpacing": 20, "rankSpacing": 56, "diagramPadding": 8, "curve": "basis"}, "themeVariables": {"darkMode": true, "fontFamily": "Inter, Arial, sans-serif", "fontSize": "14px", "background": "#101010", "primaryColor": "#252525", "primaryTextColor": "#f2f2f2", "primaryBorderColor": "#8a8a8a", "lineColor": "#b8b8b8", "clusterBkg": "#171717", "clusterBorder": "#777777", "edgeLabelBackground": "#101010"}}}%%
 flowchart LR
   subgraph FE["COUCHE PRÉSENTATION"]
-    direction TB
+    direction LR
     FE_COMP["<b>frontend/src/components</b><br/>vues, upload, résultats"]
     FE_API["<b>frontend/src/api.js</b><br/>client HTTP vers /api"]
     FE_COMP --> FE_API
   end
 
   subgraph BE["COUCHE API FASTAPI"]
-    direction TB
+    direction LR
     BE_ROUTE["<b>backend/app/api</b> + <b>models</b><br/>routes REST et schémas"]
     BE_SERV["<b>backend/app/services</b><br/>validation, recherche, enrichissement"]
     BE_ROUTE --> BE_SERV
   end
 
   subgraph CORE["COEUR CBIR PYTHON"]
-    direction TB
+    direction LR
     CORE_SEARCH["<b>src/mediscan/search.py</b><br/>chargement, query, query_text"]
     CORE_RUNTIME["<b>src/mediscan/runtime.py</b><br/>modes, chemins, config stable"]
     CORE_EMB["<b>src/mediscan/embedders</b><br/>DINOv2 visuel · BioMedCLIP sémantique"]
@@ -299,7 +299,7 @@ flowchart LR
   end
 
   subgraph OFF["PIPELINE OFFLINE"]
-    direction TB
+    direction LR
     OFF_REBUILD["<b>scripts/rebuild_stable_indexes.py</b><br/>reconstruit visual + semantic"]
     OFF_BUILD["<b>scripts/build_index.py</b><br/>encode le dataset et écrit FAISS/ids"]
     OFF_EVAL["<b>scripts/evaluation</b><br/>métriques et preuves"]
@@ -307,14 +307,14 @@ flowchart LR
   end
 
   subgraph DATA["DONNÉES ET ARTEFACTS"]
-    direction TB
+    direction LR
     DATASET["<b>src/mediscan/dataset.py</b><br/>metadata ROCO vers records"]
     ARTIFACTS["<b>artifacts</b><br/>index.faiss · index_semantic.faiss<br/>ids.json · ids_semantic.json"]
     DATASET --> ARTIFACTS
   end
 
   subgraph EXT["SERVICES OPTIONNELS"]
-    direction TB
+    direction LR
     EXT_META["<b>MongoDB</b><br/>captions et CUI"]
     EXT_GEN["<b>Groq LLM</b> · <b>SMTP</b><br/>conclusion et contact"]
     EXT_HF["<b>Hugging Face</b><br/>images publiques"]
