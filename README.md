@@ -274,72 +274,76 @@ Les résultats peuvent être restitués pour garder une trace de l'exploration, 
 MEDISCAN AI est structuré comme une application complète. Le frontend React gère l'interface, le backend FastAPI valide les requêtes et orchestre les ressources, puis le moteur de retrieval interroge des index FAISS déjà construits.
 
 ```mermaid
-%%{init: {"theme": "base", "flowchart": {"htmlLabels": true, "nodeSpacing": 16, "rankSpacing": 24, "diagramPadding": 8, "curve": "basis"}, "themeVariables": {"darkMode": true, "fontFamily": "Inter, Arial, sans-serif", "fontSize": "13px", "background": "#111111", "primaryColor": "#262626", "primaryTextColor": "#f2f2f2", "primaryBorderColor": "#8a8a8a", "lineColor": "#b8b8b8", "clusterBkg": "#191919", "clusterBorder": "#7a7a7a", "edgeLabelBackground": "#111111"}}}%%
-flowchart TB
+%%{init: {"theme": "base", "flowchart": {"htmlLabels": true, "nodeSpacing": 18, "rankSpacing": 38, "diagramPadding": 8, "curve": "basis"}, "themeVariables": {"darkMode": true, "fontFamily": "Inter, Arial, sans-serif", "fontSize": "12px", "background": "#101010", "primaryColor": "#252525", "primaryTextColor": "#f2f2f2", "primaryBorderColor": "#8a8a8a", "lineColor": "#b8b8b8", "clusterBkg": "#171717", "clusterBorder": "#777777", "edgeLabelBackground": "#101010"}}}%%
+flowchart LR
+  subgraph FE["COUCHE PRÉSENTATION"]
+    direction TB
+    FE_COMP["<b>frontend/src/components</b><br/>vues, upload, résultats"]
+    FE_API["<b>frontend/src/api.js</b><br/>client HTTP vers /api"]
+    FE_COMP --> FE_API
+  end
+
+  subgraph BE["COUCHE API FASTAPI"]
+    direction TB
+    BE_ROUTE["<b>backend/app/api</b> + <b>models</b><br/>routes REST et schémas"]
+    BE_SERV["<b>backend/app/services</b><br/>validation, recherche, enrichissement"]
+    BE_ROUTE --> BE_SERV
+  end
+
+  subgraph CORE["COEUR CBIR PYTHON"]
+    direction TB
+    CORE_SEARCH["<b>src/mediscan/search.py</b><br/>chargement, query, query_text"]
+    CORE_RUNTIME["<b>src/mediscan/runtime.py</b><br/>modes, chemins, config stable"]
+    CORE_EMB["<b>src/mediscan/embedders</b><br/>DINOv2 visuel · BioMedCLIP sémantique"]
+    CORE_SEARCH --> CORE_RUNTIME --> CORE_EMB
+  end
+
   subgraph OFF["PIPELINE OFFLINE"]
-    direction LR
-    SCRIPTS["scripts/<br/>build · rebuild · évaluation"]
-    ART["artifacts/<br/>index FAISS · ids JSON · manifests"]
-    SCRIPTS -->|produit| ART
+    direction TB
+    OFF_REBUILD["<b>scripts/rebuild_stable_indexes.py</b><br/>reconstruit visual + semantic"]
+    OFF_BUILD["<b>scripts/build_index.py</b><br/>encode le dataset et écrit FAISS/ids"]
+    OFF_EVAL["<b>scripts/evaluation</b><br/>métriques et preuves"]
+    OFF_REBUILD --> OFF_BUILD
   end
 
-  subgraph RUN["ARCHITECTURE CODE RUNTIME"]
-    direction LR
-
-    subgraph FE["frontend/src"]
-      direction TB
-      FE_UI["components + views<br/>upload · recherche · résultats"]
-      FE_STATE["api + context<br/>HTTP · langue · thème"]
-      FE_UI --> FE_STATE
-    end
-
-    subgraph BE["backend/app"]
-      direction TB
-      BE_API["api + schemas<br/>contrats REST"]
-      BE_SERV["services/<br/>validation · search · enrichissement"]
-      BE_CONF["config<br/>variables d'environnement"]
-      BE_API --> BE_SERV
-      BE_CONF --> BE_SERV
-    end
-
-    subgraph SRC["src/mediscan"]
-      direction TB
-      SRC_SEARCH["runtime + search<br/>ressources · requêtes top-k"]
-      SRC_EMB["embedders/<br/>DINOv2 · BioMedCLIP"]
-      SRC_DATA["dataset + process<br/>préparation · normalisation"]
-      SRC_SEARCH --> SRC_EMB
-      SRC_DATA --> SRC_EMB
-    end
-
-    subgraph EXT["SERVICES OPTIONNELS"]
-      direction TB
-      EXT_APP["MongoDB · Groq LLM · SMTP<br/>metadata · conclusion · contact"]
-      EXT_IMG["Hugging Face<br/>accès aux images"]
-    end
-
-    FE_STATE <-->|HTTP / JSON| BE_API
-    BE_SERV -->|appelle| SRC_SEARCH
-    SRC_SEARCH -->|lit| ART
-    BE_SERV -.->|intègre| EXT_APP
-    SRC_SEARCH -.->|résout les URLs| EXT_IMG
+  subgraph DATA["DONNÉES ET ARTEFACTS"]
+    direction TB
+    DATASET["<b>src/mediscan/dataset.py</b><br/>metadata ROCO vers records"]
+    ARTIFACTS["<b>artifacts</b><br/>index.faiss · index_semantic.faiss<br/>ids.json · ids_semantic.json"]
+    DATASET --> ARTIFACTS
   end
 
-  SCRIPTS -.->|utilise| SRC_DATA
-  SCRIPTS -.->|utilise| SRC_EMB
+  subgraph EXT["SERVICES OPTIONNELS"]
+    direction TB
+    EXT_META["<b>MongoDB</b><br/>captions et CUI"]
+    EXT_GEN["<b>Groq LLM</b> · <b>SMTP</b><br/>conclusion et contact"]
+    EXT_HF["<b>Hugging Face</b><br/>images publiques"]
+  end
 
-  classDef node fill:#262626,color:#f2f2f2,stroke:#8a8a8a,stroke-width:1px;
-  classDef core fill:#2f2f2f,color:#ffffff,stroke:#a0a0a0,stroke-width:1.2px;
+  FE_API <-->|HTTP JSON| BE_ROUTE
+  BE_SERV --> CORE_SEARCH
+  CORE_SEARCH --> ARTIFACTS
+  OFF_BUILD --> DATASET
+  OFF_BUILD --> CORE_EMB
+  OFF_BUILD --> ARTIFACTS
+  OFF_EVAL -.-> CORE_SEARCH
+  BE_SERV -.-> EXT_META
+  BE_ROUTE -.-> EXT_GEN
+  BE_SERV -.-> EXT_HF
+
+  classDef module fill:#252525,color:#f2f2f2,stroke:#8a8a8a,stroke-width:1px;
+  classDef core fill:#303030,color:#ffffff,stroke:#a0a0a0,stroke-width:1.1px;
   classDef optional fill:#202020,color:#d8d8d8,stroke:#8a8a8a,stroke-width:1px,stroke-dasharray:4 3;
-  class SCRIPTS,ART,FE_UI,FE_STATE,BE_API,BE_SERV,BE_CONF node;
-  class SRC_SEARCH,SRC_EMB,SRC_DATA core;
-  class EXT_APP,EXT_IMG optional;
+  class FE_COMP,FE_API,BE_ROUTE,BE_SERV,OFF_REBUILD,OFF_BUILD,OFF_EVAL,DATASET,ARTIFACTS module;
+  class CORE_SEARCH,CORE_RUNTIME,CORE_EMB core;
+  class EXT_META,EXT_GEN,EXT_HF optional;
 
-  style OFF fill:#171717,stroke:#777777,stroke-width:1px,color:#f2f2f2
-  style RUN fill:#111111,stroke:#777777,stroke-width:1px,color:#f2f2f2
-  style FE fill:#1b1b1b,stroke:#777777,stroke-width:1px,color:#f2f2f2
-  style BE fill:#1b1b1b,stroke:#777777,stroke-width:1px,color:#f2f2f2
-  style SRC fill:#202020,stroke:#8a8a8a,stroke-width:1.2px,color:#ffffff
-  style EXT fill:#181818,stroke:#777777,stroke-width:1px,color:#d8d8d8
+  style FE fill:#171717,stroke:#777777,stroke-width:1px,color:#f2f2f2
+  style BE fill:#171717,stroke:#777777,stroke-width:1px,color:#f2f2f2
+  style CORE fill:#1b1b1b,stroke:#8a8a8a,stroke-width:1.2px,color:#ffffff
+  style OFF fill:#151515,stroke:#777777,stroke-width:1px,color:#f2f2f2
+  style DATA fill:#171717,stroke:#777777,stroke-width:1px,color:#f2f2f2
+  style EXT fill:#151515,stroke:#777777,stroke-width:1px,color:#d8d8d8
 ```
 
 Le backend charge les ressources de recherche via une registry partagée. Les index FAISS, les métadonnées d'images et les modèles sont donc utilisés de façon cohérente entre les routes API, les scripts CLI et les évaluations.
