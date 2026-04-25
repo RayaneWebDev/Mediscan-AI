@@ -269,41 +269,64 @@ Les résultats peuvent être restitués pour garder une trace de l'exploration, 
 
 ### 2.1 Vue d'ensemble
 
-> Cette sous-section présente le flux global entre l'utilisateur, le frontend, le backend et les moteurs de recherche vectorielle.
+> Cette sous-section présente l'architecture logicielle du projet : frontend, backend, services, coeur de retrieval, artifacts et services externes.
 
 MEDISCAN AI est structuré comme une application complète. Le frontend React gère l'interface, le backend FastAPI valide les requêtes et orchestre les ressources, puis le moteur de retrieval interroge des index FAISS déjà construits.
 
 ```mermaid
-flowchart LR
-  U["Utilisateur"]:::dark --> FE["Frontend React / Vite<br/>upload, texte, filtres, grille"]:::ui
-  FE --> API["Backend FastAPI<br/>routes /api"]:::api
-  API --> SVC["SearchService<br/>validation + orchestration"]:::api
+%%{init: {"theme": "base", "flowchart": {"htmlLabels": true, "nodeSpacing": 40, "rankSpacing": 48}, "themeVariables": {"fontFamily": "Inter, Arial, sans-serif", "fontSize": "18px", "primaryColor": "#1f2933", "primaryTextColor": "#f8fafc", "primaryBorderColor": "#9ca3af", "lineColor": "#6b7280", "clusterBkg": "#f3f4f6", "clusterBorder": "#9ca3af"}}}%%
+flowchart TB
+  subgraph FRONT["Frontend React / Vite"]
+    APPUI["App + navigation"]:::node
+    SEARCHUI["Search views<br/>image · texte · résultats"]:::node
+    CLIENT["API client<br/>frontend/src/api.js"]:::node
+  end
 
-  SVC --> VIS["Visual Analysis<br/>DINOv2"]:::model
-  SVC --> SEM["Interpretive Analysis<br/>BioMedCLIP image"]:::model
-  SVC --> TXT["Text Query<br/>BioMedCLIP text"]:::model
-  SVC --> REL["Relance<br/>image_id / sélection"]:::model
+  subgraph BACK["Backend FastAPI"]
+    MAIN["main.py<br/>app · CORS · lifespan"]:::node
+    ROUTES["api/routes.py<br/>endpoints /api"]:::node
+    SCHEMA["Pydantic schemas<br/>request / response"]:::node
+    SERVICES["Services backend<br/>Search · validation · image_store"]:::node
+  end
 
-  VIS --> IV["index.faiss<br/>ids.json"]:::store
-  SEM --> IS["index_semantic.faiss<br/>ids_semantic.json"]:::store
-  TXT --> IS
-  REL --> IV
-  REL --> IS
+  subgraph CORE["Core retrieval package"]
+    RUNTIME["mediscan.runtime<br/>configs stables"]:::node
+    SEARCH["mediscan.search<br/>query · query_text"]:::node
+    EMBED["embedders<br/>DINOv2 · BioMedCLIP"]:::node
+  end
 
-  IV --> RES["Résultats classés<br/>score, image_id, caption, CUI"]:::result
-  IS --> RES
-  RES --> JSON["Réponse JSON"]:::api
-  JSON --> FE
+  subgraph ART["Artifacts et données"]
+    INDEX["FAISS indexes<br/>index.faiss · index_semantic.faiss"]:::store
+    IDS["Metadata JSON<br/>ids.json · ids_semantic.json"]:::store
+    MANIFEST["Manifests<br/>visual · semantic"]:::store
+  end
 
-  SVC -.-> OPT["MongoDB / Groq LLM / SMTP<br/>services optionnels"]:::optional
-  OPT -.-> JSON
+  subgraph EXT["Services externes optionnels"]
+    MONGO["MongoDB<br/>enrichissement captions / CUI"]:::optional
+    GROQ["Groq LLM<br/>conclusion prudente"]:::optional
+    SMTP["SMTP<br/>formulaire contact"]:::optional
+    HF["Hugging Face<br/>images publiques"]:::optional
+  end
 
-  classDef dark fill:#111827,color:#f8fafc,stroke:#111827,stroke-width:1px;
-  classDef ui fill:#e5e7eb,color:#111827,stroke:#6b7280,stroke-width:1px;
-  classDef api fill:#dbeafe,color:#0f172a,stroke:#1d4ed8,stroke-width:1px;
-  classDef model fill:#e2e8f0,color:#0f172a,stroke:#475569,stroke-width:1px;
-  classDef store fill:#f8fafc,color:#0f172a,stroke:#64748b,stroke-width:1px;
-  classDef result fill:#d1d5db,color:#111827,stroke:#4b5563,stroke-width:1px;
+  APPUI --> SEARCHUI --> CLIENT --> ROUTES
+  MAIN --> ROUTES
+  ROUTES --> SCHEMA --> SERVICES
+  SERVICES --> RUNTIME --> SEARCH --> EMBED
+  SEARCH --> INDEX
+  SEARCH --> IDS
+  RUNTIME --> MANIFEST
+  SERVICES -.-> MONGO
+  ROUTES -.-> GROQ
+  ROUTES -.-> SMTP
+  SERVICES -.-> HF
+  INDEX --> SERVICES
+  IDS --> SERVICES
+  SERVICES --> ROUTES --> CLIENT
+
+  classDef dark fill:#1f2933,color:#f8fafc,stroke:#111827,stroke-width:1.2px;
+  classDef node fill:#e5e7eb,color:#111827,stroke:#6b7280,stroke-width:1.2px;
+  classDef store fill:#f9fafb,color:#111827,stroke:#4b5563,stroke-width:1.2px;
+  classDef result fill:#d1d5db,color:#111827,stroke:#374151,stroke-width:1.2px;
   classDef optional fill:#f3f4f6,color:#374151,stroke:#9ca3af,stroke-width:1px;
 ```
 
