@@ -11,6 +11,11 @@ Executable principal macOS / Linux :
 Executable Windows :
   Double-cliquer sur MEDISCAN_EXECUTABLE_WINDOWS.bat
 
+Si Windows a deja echoue pendant l'installation des dependances :
+  1. Relancer MEDISCAN_EXECUTABLE_WINDOWS.bat
+  2. Si l'erreur continue, supprimer le dossier .venv311 dans mediscan/
+  3. Relancer MEDISCAN_EXECUTABLE_WINDOWS.bat
+
 Pourquoi deux fichiers ?
   Windows utilise les fichiers .bat.
   macOS et Linux utilisent les scripts shell, ici fournis en .command pour le double-clic.

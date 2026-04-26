@@ -87,15 +87,53 @@ if not exist ".venv311\Scripts\activate.bat" (
         echo [ERREUR] Impossible de creer le venv.
         pause & exit /b 1
     )
-    .venv311\Scripts\python.exe -m pip install -q --upgrade pip
-    if exist "requirements.lock.txt" (
-        .venv311\Scripts\python.exe -m pip install -q -r requirements.lock.txt
-    ) else (
-        .venv311\Scripts\python.exe -m pip install -q -r requirements.txt
+) else (
+    echo [1/3] Venv deja present.
+)
+
+if not exist ".venv311\.mediscan_deps_ok" (
+    echo [1/3] Installation des dependances Python...
+    .venv311\Scripts\python.exe -m pip install --upgrade pip setuptools wheel
+    if !errorlevel! neq 0 (
+        echo [ERREUR] Impossible de mettre pip/setuptools/wheel a jour.
+        pause & exit /b 1
     )
+
+    set PY_DEPS_INSTALLED=0
+    if exist "requirements.lock.txt" (
+        echo      Essai avec requirements.lock.txt...
+        .venv311\Scripts\python.exe -m pip install -r requirements.lock.txt
+        if !errorlevel! equ 0 set PY_DEPS_INSTALLED=1
+        if !PY_DEPS_INSTALLED! equ 0 (
+            echo.
+            echo [AVERTISSEMENT] Le lockfile a echoue sur cette machine Windows.
+            echo      Nouvel essai avec requirements.txt, plus souple pour Windows...
+            echo.
+        )
+    )
+
+    if !PY_DEPS_INSTALLED! equ 0 (
+        .venv311\Scripts\python.exe -m pip install -r requirements.txt
+        if !errorlevel! equ 0 set PY_DEPS_INSTALLED=1
+    )
+
+    if !PY_DEPS_INSTALLED! equ 0 (
+        echo.
+        echo [ERREUR] Installation des dependances Python impossible.
+        echo  Verifie :
+        echo   - Python 3.11 installe, pas Python 3.12/3.13
+        echo   - connexion Internet active
+        echo   - Visual C++ Redistributable installe si Windows le demande
+        echo   - Git LFS execute : git lfs pull
+        echo.
+        echo  Tu peux relancer apres correction : exe\MEDISCAN_EXECUTABLE_WINDOWS.bat
+        pause & exit /b 1
+    )
+
+    echo ok > .venv311\.mediscan_deps_ok
     echo      OK
 ) else (
-    echo [1/3] Venv deja present, installation ignoree.
+    echo [1/3] Dependances Python deja installees.
 )
 
 REM ── Frontend ─────────────────────────────────────────────────────────────────
