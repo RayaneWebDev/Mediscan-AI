@@ -1,5 +1,10 @@
 """
-Outils de gestion pour les métadonnées du dataset ROCO.
+Outils de gestion pour les métadonnées du dataset ROCOv2.
+
+Ce module fournit les structures de données et les outils de chargement
+pour manipuler les métadonnées du dataset ROCOv2 utilisé par MediScan AI.
+Chaque image est représentée par un identifiant, un chemin, une légende
+médicale et des codes CUI (Concept Unique Identifier UMLS).
 """
 
 from __future__ import annotations
@@ -13,7 +18,14 @@ from typing import Iterator
 @dataclass(frozen=True)
 class MetadataRecord:
     """
-    - Représente une ligne unique de métadonnées médicales.
+    Représente une ligne unique de métadonnées pour une image médicale ROCOv2.
+
+    Attributes:
+        image_id (str): Identifiant unique de l'image (ex: 'ROCOv2_2023_train_000001').
+        path (str): Chemin relatif vers le fichier image depuis la racine du projet.
+        caption (str): Légende médicale descriptive de l'image en anglais.
+        cui (str): Codes CUI UMLS associés à l'image, sérialisés en JSON
+            (ex: '["C0040405"]'). Peut être vide si aucun concept n'est identifié.
     """
     image_id: str
     path: str
@@ -21,6 +33,13 @@ class MetadataRecord:
     cui: str
 
     def to_dict(self) -> dict[str, str]:
+        """
+        Convertit l'enregistrement en dictionnaire sérialisable.
+
+        Returns:
+            dict[str, str]: Dictionnaire avec les clés 'image_id', 'path',
+                'caption' et 'cui'.
+        """
         return {
             "image_id": self.image_id,
             "path": self.path,
@@ -31,21 +50,61 @@ class MetadataRecord:
 
 class RocoDataset:
     """
-    - Chargeur en mémoire pour les métadonnées.csv avec un ordre d'itération déterministe.
+    Chargeur en mémoire pour les métadonnées du dataset ROCOv2.
+
+    Charge et valide l'intégralité du fichier metadata.csv au moment
+    de l'initialisation. L'ordre d'itération est déterministe et correspond
+    à l'ordre des lignes dans le CSV, garantissant la reproductibilité
+    de la construction des index FAISS.
+
+    Attributes:
+        metadata_csv (Path): Chemin vers le fichier metadata.csv chargé.
+
+    Example:
+        >>> dataset = RocoDataset("data/roco_train_full/metadata.csv")
+        >>> print(len(dataset))
+        59962
+        >>> for record in dataset:
+        ...     print(record.image_id)
     """
     REQUIRED_COLUMNS = ("image_id", "path", "caption", "cui")
 
-    def __init__(self, metadata_csv: str | Path = "data/roco_train_full/metadata.csv") -> None:
+    def __init__(
+        self,
+        metadata_csv: str | Path = "data/roco_train_full/metadata.csv",
+    ) -> None:
+        """
+        Initialise le dataset en chargeant et validant le fichier CSV.
+
+        Args:
+            metadata_csv (str | Path): Chemin vers le fichier metadata.csv.
+                Défaut : 'data/roco_train_full/metadata.csv'.
+
+        Raises:
+            FileNotFoundError: Si le fichier metadata.csv n'existe pas.
+            ValueError: Si le fichier CSV est vide, manque des colonnes requises,
+                ou contient des lignes avec image_id ou path manquants.
+        """
         self.metadata_csv = Path(metadata_csv)
         if not self.metadata_csv.exists():
             raise FileNotFoundError(f"Metadata CSV not found: {self.metadata_csv}")
-
         self._records = self._load_records()
 
     def _load_records(self) -> list[MetadataRecord]:
         """
-        - Charge les métadonnées depuis le fichier CSV et les valide.
-        - Assure que les colonnes requises sont présentes et que les données sont cohérentes.
+        Charge et valide les métadonnées depuis le fichier CSV.
+
+        Vérifie la présence des colonnes requises et la validité de chaque
+        ligne (image_id et path obligatoires). Les champs caption et cui
+        peuvent être vides.
+
+        Returns:
+            list[MetadataRecord]: Liste ordonnée de tous les enregistrements
+                valides du dataset.
+
+        Raises:
+            ValueError: Si le CSV n'a pas d'en-tête, si des colonnes requises
+                sont manquantes, ou si une ligne a un image_id ou path vide.
         """
         records: list[MetadataRecord] = []
 
@@ -55,12 +114,12 @@ class RocoDataset:
                 raise ValueError(f"CSV file has no header: {self.metadata_csv}")
 
             missing_columns = [
-                column for column in self.REQUIRED_COLUMNS if column not in reader.fieldnames
+                column for column in self.REQUIRED_COLUMNS
+                if column not in reader.fieldnames
             ]
             if missing_columns:
                 raise ValueError(
-                    "CSV missing required columns "
-                    f"{missing_columns} in {self.metadata_csv}"
+                    f"CSV missing required columns {missing_columns} in {self.metadata_csv}"
                 )
 
             for row_number, row in enumerate(reader, start=2):
@@ -87,13 +146,31 @@ class RocoDataset:
         return records
 
     def __len__(self) -> int:
+        """
+        Retourne le nombre total d'enregistrements dans le dataset.
+
+        Returns:
+            int: Nombre d'images indexées dans le dataset.
+        """
         return len(self._records)
 
     def __iter__(self) -> Iterator[MetadataRecord]:
+        """
+        Itère sur les enregistrements du dataset dans l'ordre du CSV.
+
+        Returns:
+            Iterator[MetadataRecord]: Itérateur sur les enregistrements.
+        """
         return iter(self._records)
 
     @property
     def records(self) -> list[MetadataRecord]:
+        """
+        Retourne une copie de la liste de tous les enregistrements.
+
+        Returns:
+            list[MetadataRecord]: Copie de la liste complète des enregistrements.
+        """
         return list(self._records)
 
 

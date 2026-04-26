@@ -1,0 +1,1 @@
+"""Scripts de visualisation MediScan AI — génération de grilles de démonstration."""

@@ -1,0 +1,1 @@
+"""Scripts utilitaires MediScan AI — construction d'index, recherche et évaluation."""
