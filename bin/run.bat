@@ -6,6 +6,8 @@ cd /d "%~dp0"
 for %%I in ("%~dp0..") do set "PROJECT_DIR=%%~fI"
 cd /d "%PROJECT_DIR%"
 set BACKEND_PORT=8000
+set PY_STAMP_FILE=.venv311\.mediscan_py_deps_stamp
+set FE_STAMP_FILE=frontend\.mediscan_fe_deps_stamp
 
 if exist ".env" (
     for /f "tokens=1,* delims==" %%a in ('findstr /R "^BACKEND_PORT=" ".env"') do (
@@ -41,20 +43,62 @@ if "!PYTHON311!"=="" (
 )
 
 if "!PYTHON311!"=="" (
-    echo [ERREUR] Python 3.11 introuvable.
-    echo  Installe Python 3.11 : https://www.python.org/downloads/release/python-31119/
-    echo  Coche bien "Add Python to PATH" lors de l'installation.
-    echo  Ou utilise le Python Launcher : py -3.11 --version
-    pause & exit /b 1
+    where winget >nul 2>&1
+    if !errorlevel! equ 0 (
+        echo [INFO] Python 3.11 introuvable, tentative d'installation via winget...
+        winget install -e --id Python.Python.3.11 --accept-source-agreements --accept-package-agreements
+    )
+
+    where py >nul 2>&1
+    if !errorlevel! equ 0 (
+        py -3.11 --version >nul 2>&1
+        if !errorlevel! equ 0 (
+            set PYTHON311=py -3.11
+        )
+    )
+
+    if "!PYTHON311!"=="" (
+        where python3.11 >nul 2>&1
+        if !errorlevel! equ 0 (
+            set PYTHON311=python3.11
+        )
+    )
+
+    if "!PYTHON311!"=="" (
+        where python >nul 2>&1
+        if !errorlevel! equ 0 (
+            python --version 2>&1 | findstr /C:"3.11" >nul
+            if !errorlevel! equ 0 (
+                set PYTHON311=python
+            )
+        )
+    )
+
+    if "!PYTHON311!"=="" (
+        echo [ERREUR] Python 3.11 introuvable.
+        echo  Installe Python 3.11 : https://www.python.org/downloads/release/python-31119/
+        echo  Coche bien "Add Python to PATH" lors de l'installation.
+        echo  Ou utilise le Python Launcher : py -3.11 --version
+        pause & exit /b 1
+    )
 )
 echo [OK] Python 3.11 trouve : !PYTHON311!
 
 REM ── Node.js : Vite 8 requiert Node >=20.19.0 ou >=22.12.0 ──────────────────
 where node >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERREUR] Node.js introuvable.
-    echo  Installe Node.js 22 LTS : https://nodejs.org/
-    pause & exit /b 1
+    where winget >nul 2>&1
+    if !errorlevel! equ 0 (
+        echo [INFO] Node.js introuvable, tentative d'installation via winget...
+        winget install -e --id OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements
+    )
+
+    where node >nul 2>&1
+    if !errorlevel! neq 0 (
+        echo [ERREUR] Node.js introuvable.
+        echo  Installe Node.js 22 LTS : https://nodejs.org/
+        pause & exit /b 1
+    )
 )
 
 for /f "tokens=1" %%v in ('node -e "process.stdout.write(process.version.slice(1))"') do set NODE_VERSION=%%v
@@ -78,7 +122,18 @@ REM ── Git LFS (avertissement) ───────────────
 git lfs version >nul 2>&1
 if %errorlevel% neq 0 (
     echo [AVERTISSEMENT] Git LFS introuvable. Les index FAISS pourraient etre vides.
-    echo  Installe : winget install GitHub.GitLFS  puis  git lfs install  puis  git lfs pull
+    where winget >nul 2>&1
+    if !errorlevel! equ 0 (
+        echo [INFO] Tentative d'installation de Git LFS via winget...
+        winget install -e --id GitHub.GitLFS --accept-source-agreements --accept-package-agreements >nul 2>&1
+    )
+    echo  Si besoin : winget install GitHub.GitLFS  puis  git lfs install  puis  git lfs pull
+)
+
+where curl >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [ERREUR] curl introuvable dans PATH. Installe Git for Windows ou active curl Windows.
+    pause & exit /b 1
 )
 
 REM ── Venv Python 3.11 ─────────────────────────────────────────────────────────
@@ -93,7 +148,16 @@ if not exist ".venv311\Scripts\activate.bat" (
     echo [1/3] Venv deja present.
 )
 
-if not exist ".venv311\.mediscan_deps_ok" (
+set LOCK_HASH=NOLOCK
+if exist "requirements.lock.txt" (
+    for /f %%h in ('powershell -NoProfile -Command "(Get-FileHash -Algorithm SHA256 'requirements.lock.txt').Hash"') do set LOCK_HASH=%%h
+)
+for /f %%h in ('powershell -NoProfile -Command "(Get-FileHash -Algorithm SHA256 'requirements.txt').Hash"') do set REQ_HASH=%%h
+set EXPECTED_PY_STAMP=!REQ_HASH!^|!LOCK_HASH!
+set CURRENT_PY_STAMP=
+if exist "!PY_STAMP_FILE!" set /p CURRENT_PY_STAMP=<"!PY_STAMP_FILE!"
+
+if not "!CURRENT_PY_STAMP!"=="!EXPECTED_PY_STAMP!" (
     echo [1/3] Installation des dependances Python...
     .venv311\Scripts\python.exe -m pip install --upgrade pip setuptools wheel
     if !errorlevel! neq 0 (
@@ -132,22 +196,36 @@ if not exist ".venv311\.mediscan_deps_ok" (
         pause & exit /b 1
     )
 
-    echo ok > .venv311\.mediscan_deps_ok
+    > "!PY_STAMP_FILE!" echo !EXPECTED_PY_STAMP!
     echo      OK
 ) else (
     echo [1/3] Dependances Python deja installees.
 )
 
 REM ── Frontend ─────────────────────────────────────────────────────────────────
-echo [2/3] Installation des dependances frontend (npm ci)...
-cd frontend
-call npm ci --silent
-if %errorlevel% neq 0 (
-    echo [ERREUR] npm ci a echoue. Essaie : cd frontend ^&^& npm ci
-    pause & exit /b 1
+for /f %%h in ('powershell -NoProfile -Command "(Get-FileHash -Algorithm SHA256 'frontend/package.json').Hash"') do set FE_PKG_HASH=%%h
+set FE_LOCK_HASH=NOLOCK
+if exist "frontend\package-lock.json" (
+    for /f %%h in ('powershell -NoProfile -Command "(Get-FileHash -Algorithm SHA256 'frontend/package-lock.json').Hash"') do set FE_LOCK_HASH=%%h
 )
-cd ..
-echo      OK
+set EXPECTED_FE_STAMP=!FE_PKG_HASH!^|!FE_LOCK_HASH!
+set CURRENT_FE_STAMP=
+if exist "!FE_STAMP_FILE!" set /p CURRENT_FE_STAMP=<"!FE_STAMP_FILE!"
+
+if not "!CURRENT_FE_STAMP!"=="!EXPECTED_FE_STAMP!" (
+    echo [2/3] Installation des dependances frontend (npm ci)...
+    cd frontend
+    call npm ci --silent
+    if !errorlevel! neq 0 (
+        echo [ERREUR] npm ci a echoue. Essaie : cd frontend ^&^& npm ci
+        pause & exit /b 1
+    )
+    > ".mediscan_fe_deps_stamp" echo !EXPECTED_FE_STAMP!
+    cd ..
+    echo      OK
+) else (
+    echo [2/3] Dependances frontend deja installees.
+)
 
 if /I "%~1"=="docs" (
     echo [3/3] Generation de la documentation unifiee...
