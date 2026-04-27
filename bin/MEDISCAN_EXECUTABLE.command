@@ -5,8 +5,8 @@ set -e
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_DIR"
 
-if [ ! -x "./run.sh" ]; then
-    chmod +x ./run.sh 2>/dev/null || true
+if [ ! -x "./bin/run.sh" ]; then
+    chmod +x ./bin/run.sh 2>/dev/null || true
 fi
 
-./run.sh
+./bin/run.sh

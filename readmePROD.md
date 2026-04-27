@@ -18,7 +18,7 @@ Avant, le site fonctionnait, mais plusieurs points etaient fragiles pour la prod
 - il n'y avait pas de vraie route `/ready`;
 - les dependances Python n'etaient pas figees;
 - l'audit npm remontait une vulnerabilite `dompurify`;
-- `run.sh` et `run.bat` installaient encore les dependances Python depuis des plages larges.
+- `bin/run.sh` et `bin/run.bat` installaient encore les dependances Python depuis des plages larges.
 
 Maintenant:
 
@@ -29,7 +29,7 @@ Maintenant:
 - MongoDB a des timeouts courts et un `ping` de validation;
 - `/api/health` et `/api/ready` existent;
 - les dependances Python sont figees dans `requirements.lock.txt`;
-- les scripts `run.sh` et `run.bat` utilisent le lockfile si present;
+- les scripts `bin/run.sh` et `bin/run.bat` utilisent le lockfile si present;
 - l'audit npm frontend est propre.
 
 ---
@@ -327,7 +327,7 @@ Mais pour un deploiement pro, il faut utiliser `requirements.lock.txt`.
 
 ---
 
-## 8. Scripts locaux run.sh et run.bat
+## 8. Scripts locaux bin/run.sh et bin/run.bat
 
 ### Probleme
 
@@ -341,7 +341,7 @@ Ils n'utilisaient donc pas les versions figees.
 
 ### Correction
 
-`run.sh` et `run.bat` utilisent maintenant `requirements.lock.txt` s'il existe.
+`bin/run.sh` et `bin/run.bat` utilisent maintenant `requirements.lock.txt` s'il existe.
 Sinon ils retombent sur `requirements.txt`.
 
 Comportement actuel:
@@ -353,10 +353,10 @@ sinon -> installer requirements.txt
 
 ### Important
 
-`run.sh` et `run.bat` restent des scripts de developpement local.
+`bin/run.sh` et `bin/run.bat` restent des scripts de developpement local.
 Ils ne sont pas faits pour la production:
 
-- `run.sh` lance encore `uvicorn --reload`;
+- `bin/run.sh` lance encore `uvicorn --reload`;
 - les scripts lancent Vite en mode dev;
 - le frontend n'est pas servi depuis `frontend/dist`.
 

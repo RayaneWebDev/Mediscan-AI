@@ -74,7 +74,7 @@ python scripts/generate_docs.py
 Ou via le raccourci shell du projet :
 
 ```bash
-./run.sh docs
+./bin/run.sh docs
 ```
 
 Le portail généré se trouve ici :
@@ -682,7 +682,7 @@ Ces fichiers servent à vérifier si les résultats partagent la même modalité
 
 > Cette section regroupe les prérequis, la configuration `.env`, les commandes de lancement, les tests et les évaluations.
 
-Le dépôt peut être lancé localement avec le script `run.sh`. Il vérifie les prérequis, crée l'environnement Python `.venv311` si nécessaire, installe les dépendances frontend avec `npm ci`, démarre le backend FastAPI puis lance le frontend Vite.
+Le dépôt peut être lancé localement avec le script `bin/run.sh`. Il vérifie les prérequis, crée l'environnement Python `.venv311` si nécessaire, installe les dépendances frontend avec `npm ci`, démarre le backend FastAPI puis lance le frontend Vite.
 
 Prérequis :
 
@@ -697,10 +697,10 @@ Installation puis lancement :
 git lfs install
 git lfs pull
 cp .env.example .env
-./run.sh
+./bin/run.sh
 ```
 
-Sous Windows, le dépôt fournit aussi `run.bat`.
+Sous Windows, le dépôt fournit aussi `bin/run.bat`.
 
 URLs locales :
 
@@ -787,7 +787,7 @@ npm run build
 npm run lint
 ```
 
-Le script `run.sh` lance Vite sur `http://127.0.0.1:5173`. Si `npm run dev` est exécuté directement depuis `frontend/`, Vite peut utiliser le port défini dans `frontend/vite.config.js`.
+Le script `bin/run.sh` lance Vite sur `http://127.0.0.1:5173`. Si `npm run dev` est exécuté directement depuis `frontend/`, Vite peut utiliser le port défini dans `frontend/vite.config.js`.
 
 Backend :
 
@@ -842,8 +842,9 @@ Les évaluations dépendent des index stables, des métadonnées et, pour l'éva
 |-- proofs/perf/          CSV de preuves d'évaluation
 |-- scripts/              Build index, query CLI, visualisations, évaluations
 |-- tests/                Tests unitaires et API
-|-- run.sh                Lanceur macOS / Linux
-`-- run.bat               Lanceur Windows
+`-- bin/                  Lanceurs macOS, Linux et Windows
+    |-- run.sh            Lanceur macOS / Linux
+    `-- run.bat           Lanceur Windows
 ```
 
 ## Limites connues

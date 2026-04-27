@@ -3,6 +3,8 @@ REM run.bat — Lance MediScan AI (backend + frontend) sous Windows
 setlocal enabledelayedexpansion
 
 cd /d "%~dp0"
+for %%I in ("%~dp0..") do set "PROJECT_DIR=%%~fI"
+cd /d "%PROJECT_DIR%"
 set BACKEND_PORT=8000
 
 if exist ".env" (
@@ -126,7 +128,7 @@ if not exist ".venv311\.mediscan_deps_ok" (
         echo   - Visual C++ Redistributable installe si Windows le demande
         echo   - Git LFS execute : git lfs pull
         echo.
-        echo  Tu peux relancer apres correction : exe\MEDISCAN_EXECUTABLE_WINDOWS.bat
+        echo  Tu peux relancer apres correction : bin\run.bat
         pause & exit /b 1
     )
 

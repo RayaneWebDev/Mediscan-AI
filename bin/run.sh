@@ -2,7 +2,7 @@
 # run.sh - Lance MediScan AI (backend + frontend) en un seul script.
 set -euo pipefail
 
-readonly PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+readonly PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 readonly FRONTEND_DIR="$PROJECT_DIR/frontend"
 readonly VENV_DIR="$PROJECT_DIR/.venv311"
 readonly PYTHON_BIN="$VENV_DIR/bin/python"
