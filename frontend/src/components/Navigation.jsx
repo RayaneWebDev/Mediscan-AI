@@ -8,6 +8,9 @@ import { LangContext } from "../context/LangContextValue";
 import useDesktopNavVisibility from "../hooks/useDesktopNavVisibility";
 import LanguageSelector from "./LanguageSelector";
 
+// Match the page-exit duration closely so the mobile menu covers the old page
+// without making taps feel delayed.
+const MOBILE_MENU_ROUTE_CLOSE_DELAY_MS = 245;
 
 /**
  * Render the main navigation bar.
@@ -34,16 +37,27 @@ export default function Navigation({
   const { t } = useContext(LangContext);
   /** Mobile menu open state. */
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  /** Mobile route selected while the page transition is covered by the menu. */
+  const [pendingMobilePage, setPendingMobilePage] = useState(null);
   /** CSS style for the animated active-tab box. */
   const [activeBoxStyle, setActiveBoxStyle] = useState({ width: 0, x: 0, opacity: 0 });
   /** Tab container reference used to compute indicator position. */
   const shellRef = useRef(null);
   /** Map of DOM references for each tab button. */
   const tabRefs = useRef({});
+  /** Timer used to keep the mobile menu covering page transitions. */
+  const mobileMenuCloseTimerRef = useRef(null);
   const isDesktopNavVisible = useDesktopNavVisibility({
     enabled: visible,
     forceVisible: isMenuOpen,
   });
+
+  /** Cancel a pending delayed mobile-menu close. */
+  function clearMobileMenuCloseTimer() {
+    window.clearTimeout(mobileMenuCloseTimerRef.current);
+    mobileMenuCloseTimerRef.current = null;
+    setPendingMobilePage(null);
+  }
 
   // Lock body scrolling while the mobile menu is open.
   useEffect(() => {
@@ -58,9 +72,30 @@ export default function Navigation({
    * @param {string} id - Target page identifier.
   */
   const handlePageChange = (id) => {
+    clearMobileMenuCloseTimer();
+
+    if (isMenuOpen && id !== currentPage) {
+      setPendingMobilePage(id);
+      onPageChange(id);
+      // Close after the route swap so the user sees menu -> new page, not
+      // menu -> old page -> new page.
+      mobileMenuCloseTimerRef.current = window.setTimeout(() => {
+        setIsMenuOpen(false);
+        setPendingMobilePage(null);
+        mobileMenuCloseTimerRef.current = null;
+      }, MOBILE_MENU_ROUTE_CLOSE_DELAY_MS);
+      return;
+    }
+
     setIsMenuOpen(false);
     onPageChange(id);
   };
+
+  useEffect(() => {
+    return () => {
+      window.clearTimeout(mobileMenuCloseTimerRef.current);
+    };
+  }, []);
 
   // Measure the active tab indicator position and width.
   useEffect(() => {
@@ -158,7 +193,10 @@ export default function Navigation({
 
               <button
                 type="button"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                onClick={() => {
+                  clearMobileMenuCloseTimer();
+                  setIsMenuOpen(!isMenuOpen);
+                }}
                 className="md:hidden flex flex-col justify-center items-center w-6 h-6 relative outline-none"
               >
                 <span className="block h-[1.5px] absolute transition-all duration-300"
@@ -191,10 +229,12 @@ export default function Navigation({
             <button
               key={tab.id}
               onClick={() => handlePageChange(tab.id)}
-              className="text-left text-[1.3rem] font-medium tracking-tight py-4 transition-opacity active:opacity-40"
+              className="text-left text-[1.3rem] font-medium tracking-tight py-4 transition-all duration-150 active:opacity-40"
               style={{
-                color: "var(--palette-text)",
+                color: pendingMobilePage === tab.id ? "var(--palette-title, var(--palette-text))" : "var(--palette-text)",
                 borderBottom: i < mainTabs.length - 1 ? "1px solid var(--palette-border)" : "none",
+                opacity: pendingMobilePage && pendingMobilePage !== tab.id ? 0.42 : 1,
+                transform: pendingMobilePage === tab.id ? "translateX(6px)" : "translateX(0)",
               }}
             >
               {tab.label}
