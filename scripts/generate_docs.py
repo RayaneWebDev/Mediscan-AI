@@ -8,6 +8,7 @@ import html
 import re
 import subprocess
 import tokenize
+import platform
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
@@ -907,8 +908,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 def run_frontend_jsdoc() -> None:
     """Generate frontend documentation through the existing JSDoc setup."""
+    command = "npm.cmd" if platform.system() == "Windows" else "npm"
+    
     subprocess.run(
-        ["npm", "run", "docs", "--", "--destination", str(FRONTEND_DOCS_DIR)],
+        [command, "run", "docs", "--", "--destination", str(FRONTEND_DOCS_DIR)],
         cwd=FRONTEND_DIR,
         check=True,
     )
