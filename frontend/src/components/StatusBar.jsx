@@ -1,18 +1,17 @@
-/** 
- * @fileoverview Barre de statut pour les états de chargement et d'erreur.
+/**
+ * @fileoverview Documentation for components/StatusBar.
  * @module components/StatusBar
  */
 
 /**
- * Barre de statut contextuelle (chargement ou erreur).
- * Retourne null si aucun statut n'est fourni.
+ * Documentation for components/StatusBar.
  *
  * @component
  * @param {object} props
- * @param {{type: "loading"|"error", message: string}|null} props.status - État courant, null = non rendu
- * @param {"primary"|"accent"} [props.tone="primary"] - Palette de couleur pour l'état de chargement
- * @param {boolean} [props.useHomeVisualTone=false] - Thème visuel de la page d'accueil
- * @param {boolean} [props.enableToneTransition=false] - Active les transitions de changement de ton
+ * @param {{type: "loading"|"error", message: string}|null} props.status
+ * @param {"primary"|"accent"} [props.tone="primary"]
+ * @param {boolean} [props.useHomeVisualTone=false]
+ * @param {boolean} [props.enableToneTransition=false]
  * @returns {JSX.Element|null}
  */
 export default function StatusBar({

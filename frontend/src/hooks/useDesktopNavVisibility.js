@@ -1,5 +1,5 @@
 /**
- * @fileoverview Hook de visibilité de la navbar desktop au scroll.
+ * @fileoverview Scroll-aware desktop navigation visibility hook.
  * @module hooks/useDesktopNavVisibility
  */
 
@@ -11,10 +11,14 @@ const NAV_SHOW_THRESHOLD = 60;
 const TOP_RESET_Y = 10;
 
 /**
- * Masque la navbar en scrollant vers le bas, la réaffiche vers le haut.
- * Inactif sur mobile (< 768px) et quand forceVisible est vrai.
+ * Hide the desktop navigation while scrolling down and reveal it while scrolling up.
  *
- * @param {{ enabled?: boolean, forceVisible?: boolean }} [options={}]
+ * The hook stays inactive on mobile widths and when forceVisible is enabled, so
+ * page-specific overlays can pin the navigation without duplicating scroll logic.
+ *
+ * @param {object} [options={}]
+ * @param {boolean} [options.enabled]
+ * @param {boolean} [options.forceVisible]
  * @returns {boolean}
  */
 export default function useDesktopNavVisibility({
@@ -34,6 +38,9 @@ export default function useDesktopNavVisibility({
 
     let frameId = 0;
 
+    /**
+     * Compute visibility from scroll direction, threshold, and viewport width.
+     */
     const updateVisibility = () => {
       const y = window.scrollY;
       const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
@@ -68,6 +75,9 @@ export default function useDesktopNavVisibility({
       lastY.current = y;
     };
 
+    /**
+     * Batch scroll/resize updates into one animation-frame callback.
+     */
     const scheduleUpdate = () => {
       cancelAnimationFrame(frameId);
       frameId = requestAnimationFrame(updateVisibility);

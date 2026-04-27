@@ -1,5 +1,5 @@
-/** 
- * @fileoverview Grille de résultats CBIR avec pagination, sélection, export et modales détail/comparaison.
+/**
+ * @fileoverview Paginated result grid with selection, details, comparison, and exports.
  * @module components/ResultsGrid
  */
 
@@ -16,26 +16,25 @@ import {
   ResultsGridToolbar,
 } from "./ResultsGridParts";
 
-/** Durée en ms de la transition de fermeture de la modale détail. */
+/** Detail modal close transition duration in milliseconds. */
 const DETAIL_MODAL_TRANSITION_MS = 420;
-/** Durée en ms de la transition du panneau de la modale détail. */
+/** Detail modal panel transition duration in milliseconds. */
 const DETAIL_MODAL_PANEL_TRANSITION_MS = 520;
-/** Courbe d'animation du fond de la modale détail. */
+/** Detail modal backdrop animation curve. */
 const DETAIL_MODAL_BACKDROP_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
-/** Courbe d'animation du panneau de la modale détail. */
+/** Detail modal panel animation curve. */
 const DETAIL_MODAL_PANEL_EASE = "cubic-bezier(0.19, 1, 0.22, 1)";
-/** Durée en ms de la transition de la modale de comparaison. */
+/** Compare modal transition duration in milliseconds. */
 const COMPARE_MODAL_TRANSITION_MS = 320;
-/** Nombre de résultats affichés par page dans la grille. */
+/** Number of results displayed per grid page. */
 const RESULTS_PER_PAGE = 6;
-/** Classe CSS ajoutée au body quand une modale est ouverte (verrouillage du scroll). */
+/** CSS class added to the body while a modal locks scrolling. */
 const BODY_MODAL_LOCK_CLASS = "search-modal-open";
-/** Attribut HTML comptant le nombre de modales ouvertes simultanément. */
+/** HTML attribute that counts concurrently open modals. */
 const BODY_MODAL_LOCK_COUNT_ATTR = "data-search-modal-open-count";
 
 /**
- * Verrouille le scroll global du document lors de l'ouverture d'une modale.
- * Utilise un compteur pour gérer les ouvertures multiples simultanées.
+ * Lock global navigation and page chrome while one or more result modals are open.
  */
 function lockGlobalSearchModalUi() {
   if (typeof document === "undefined") return;
@@ -49,8 +48,7 @@ function lockGlobalSearchModalUi() {
 }
 
 /**
- * Déverrouille le scroll global du document à la fermeture d'une modale.
- * Ne retire la classe que si toutes les modales sont fermées (compteur à 0).
+ * Release one modal lock and restore global chrome when the last modal closes.
  */
 function unlockGlobalSearchModalUi() {
   if (typeof document === "undefined") return;
@@ -69,10 +67,10 @@ function unlockGlobalSearchModalUi() {
 }
 
 /**
- * Normalise une valeur CUI (identifiant de concept médical) en chaîne lisible.
+ * Format CUI metadata for compact display in cards and modals.
  *
- * @param {string|string[]} cui - Valeur CUI brute (chaîne ou tableau).
- * @returns {string} CUI normalisé.
+ * @param {string|string[]} cui
+ * @returns {string}
  */
 function formatCuiValue(cui) {
   if (Array.isArray(cui)) {
@@ -82,7 +80,7 @@ function formatCuiValue(cui) {
 }
 
 /**
- * Limite une valeur numérique dans un intervalle [min, max].
+ * Clamp a numeric value into an inclusive range.
  *
  * @param {number} value
  * @param {number} min
@@ -94,10 +92,10 @@ function clamp(value, min, max) {
 }
 
 /**
- * Assigne un nœud DOM à une ref externe (objet ou fonction).
+ * Assign a DOM node to either a callback ref or mutable object ref.
  *
- * @param {React.Ref|function|null} externalRef - Ref externe.
- * @param {HTMLElement|null} node - Nœud DOM à assigner.
+ * @param {React.Ref|function|null} externalRef
+ * @param {HTMLElement|null} node
  */
 function assignExternalRef(externalRef, node) {
   if (!externalRef) return;
@@ -111,29 +109,26 @@ function assignExternalRef(externalRef, node) {
 }
 
 /**
- * Retourne l'URL de l'image d'un résultat (chemin direct ou URL via API).
+ * Resolve the best image source for a result row.
  *
- * @param {{path?: string, image_id?: string}} result - Résultat CBIR.
- * @returns {string} URL de l'image.
+ * @param {object} result
+ * @returns {string}
  */
 function getResultImageSrc(result) {
   return result.path || imageUrl(result.image_id);
 }
 
 /**
- * Modale de détail d'un résultat CBIR.
- * Affiche l'image en grand avec ses métadonnées (score, CUI, caption, référence).
- * Supporte le téléchargement de l'image et la navigation clavier (Escape pour fermer).
- * Animation d'entrée depuis la position de la carte source (origin animation).
+ * Display one result in the detail modal with an origin-aware entry animation.
  *
  * @component
  * @param {object} props
- * @param {object} props.result - Résultat CBIR à afficher.
- * @param {DOMRect|null} props.originRect - Rectangle de la carte source pour l'animation d'entrée.
- * @param {"primary"|"accent"} props.tone - Ton de couleur de la modale.
- * @param {string} props.modeLabel - Libellé du mode de recherche.
- * @param {object} props.content - Traductions de la section résultats.
- * @param {function(): void} props.onClose - Callback de fermeture de la modale.
+ * @param {object} props.result
+ * @param {DOMRect|null} props.originRect
+ * @param {"primary"|"accent"} props.tone
+ * @param {string} props.modeLabel
+ * @param {object} props.content
+ * @param {function(): void} props.onClose
  * @returns {JSX.Element}
  */
 function ResultDetailsModal({ result, originRect, tone, modeLabel, content, onClose }) {
@@ -161,11 +156,11 @@ function ResultDetailsModal({ result, originRect, tone, modeLabel, content, onCl
     }, DETAIL_MODAL_TRANSITION_MS);
   }, [onClose]);
 
-  /**
-   * Télécharge l'image du résultat via fetch + création d'un lien temporaire.
-   *
-   * @param {React.MouseEvent} event
-  */
+	  /**
+	   * Download the currently displayed result image from its resolved URL.
+	   *
+	   * @param {React.MouseEvent} event
+	  */
   async function handleDownloadImage(event) {
     event.stopPropagation();
     if (downloadPending) return;
@@ -195,7 +190,7 @@ function ResultDetailsModal({ result, originRect, tone, modeLabel, content, onCl
     }
   }
 
-  // Animation d'entrée depuis la position de la carte source
+  // Entry animation from the source card position
   useLayoutEffect(() => {
     if (!modalRef.current) return;
 
@@ -233,8 +228,12 @@ function ResultDetailsModal({ result, originRect, tone, modeLabel, content, onCl
     };
   }, [originRect]);
 
-  // Fermeture au clavier (Escape) + verrouillage du scroll du body
+  // Close on Escape and lock body scrolling while the modal is open.
   useEffect(() => {
+    /**
+     * Close the details modal from keyboard input.
+     * @param {KeyboardEvent} event
+     */
     function handleKeyDown(event) {
       if (event.key === "Escape") {
         requestClose();
@@ -314,16 +313,16 @@ function ResultDetailsModal({ result, originRect, tone, modeLabel, content, onCl
 }
 
 /**
- * Modale de comparaison côte à côte entre l'image requête et un résultat CBIR.
+ * Display a side-by-side comparison modal between the query image and one result.
  *
  * @component
  * @param {object} props
- * @param {object} props.result - Résultat CBIR à comparer.
- * @param {{src: string, alt?: string}} props.comparisonSource - Image source de la requête.
- * @param {DOMRect|null} props.originRect - Rectangle de la carte source pour l'animation.
- * @param {"primary"|"accent"} props.tone - Ton de couleur.
- * @param {object} props.content - Traductions de la section résultats.
- * @param {function(): void} props.onClose - Callback de fermeture.
+ * @param {object} props.result
+ * @param {object} props.comparisonSource
+ * @param {DOMRect|null} props.originRect
+ * @param {"primary"|"accent"} props.tone
+ * @param {object} props.content
+ * @param {function(): void} props.onClose
  * @returns {JSX.Element}
  */
 function ResultCompareModal({ result, comparisonSource, originRect, tone, content, onClose }) {
@@ -388,6 +387,10 @@ function ResultCompareModal({ result, comparisonSource, originRect, tone, conten
   }, [originRect]);
 
   useEffect(() => {
+    /**
+     * Close the comparison modal from keyboard input.
+     * @param {KeyboardEvent} event
+     */
     function handleKeyDown(event) {
       if (event.key === "Escape") {
         requestClose();
@@ -463,32 +466,28 @@ function ResultCompareModal({ result, comparisonSource, originRect, tone, conten
 }
 
 /**
- * Grille paginée de résultats CBIR avec sélection, export et modales interactives.
+ * Render the complete result grid surface.
  *
- * Fonctionnalités :
- * - Pagination automatique par blocs de 6 résultats.
- * - Sélection de résultats pour relance de recherche.
- * - Export des résultats en JSON, CSV et PDF.
- * - Modale détail avec animation depuis la carte source.
- * - Modale de comparaison côte à côte avec l'image requête.
+ * The grid handles pagination, controlled or local multi-selection, detail and
+ * comparison modals, and export loading states while keeping result rows immutable.
  *
  * @component
  * @param {object} props
- * @param {object|null} props.data - Données de résultats CBIR. Structure : { mode, results, onRelaunch, onRelaunchMultiple }.
- * @param {boolean} [props.useHomeVisualTone=false] - Utilise le thème primary de la home page.
- * @param {string} [props.className="mt-8"] - Classes CSS supplémentaires.
- * @param {boolean} [props.headerHiddenOnDesktop=false] - Masque le header sur desktop.
- * @param {boolean} [props.animateOnMount=false] - Active les animations d'entrée des cartes.
- * @param {string[]} [props.selectedIds] - IDs sélectionnés (mode contrôlé).
- * @param {function(string[]): void} [props.onSelectedIdsChange] - Callback de changement de sélection (mode contrôlé).
- * @param {{src: string, alt?: string}|null} [props.comparisonSource=null] - Source de comparaison pour les modales.
- * @param {React.Ref} [props.cardsGridExternalRef=null] - Ref externe sur la grille de cartes.
- * @param {string} [props.desktopLockedHeightClass=""] - Classe CSS de hauteur verrouillée sur desktop.
- * @param {boolean} [props.desktopThreeColumns=false] - Force 3 colonnes sur desktop (sinon 2 ou 3 selon breakpoint).
- * @param {function(): void|null} [props.onExportJson=null] - Callback d'export JSON.
- * @param {function(): void|null} [props.onExportCsv=null] - Callback d'export CSV.
- * @param {function(): Promise<void>|null} [props.onExportPdf=null] - Callback d'export PDF (async).
- * @returns {JSX.Element|null} Null si "data" est null.
+ * @param {object|null} props.data
+ * @param {boolean} [props.useHomeVisualTone=false]
+ * @param {string} [props.className="mt-8"]
+ * @param {boolean} [props.headerHiddenOnDesktop=false]
+ * @param {boolean} [props.animateOnMount=false]
+ * @param {string[]} [props.selectedIds]
+ * @param {function(string[]): void} [props.onSelectedIdsChange]
+ * @param {object|null} [props.comparisonSource=null]
+ * @param {React.Ref} [props.cardsGridExternalRef=null]
+ * @param {string} [props.desktopLockedHeightClass=""]
+ * @param {boolean} [props.desktopThreeColumns=false]
+ * @param {function(): void|null} [props.onExportJson=null]
+ * @param {function(): void|null} [props.onExportCsv=null]
+ * @param {function(): Promise<void>|null} [props.onExportPdf=null]
+ * @returns {JSX.Element|null}
  *
  */
 export default function ResultsGrid({
@@ -543,21 +542,21 @@ export default function ResultsGrid({
   const paginatedResults = resultRows.slice(pageStartIndex, pageStartIndex + RESULTS_PER_PAGE);
   const desktopPlaceholderCount = Math.max(0, RESULTS_PER_PAGE - paginatedResults.length);
 
-  // Réinitialise la page courante au changement de résultats ou de mode
+  // Reset the current page when results or mode change.
   useEffect(() => {
     setCurrentPage(1);
   }, [resultRows, dataMode]);
 
-  // Assure que la page courante ne dépasse pas le nombre total de pages
+  // Ensure the current page does not exceed the total page count.
   useEffect(() => {
     setCurrentPage((previousPage) => Math.min(previousPage, totalPages));
   }, [totalPages]);
 
   if (!data) return null;
 
-  
+
   /**
-   * Met à jour les IDs sélectionnés (mode contrôlé ou local).
+   * Update selected ids through the controlled API when available.
    * @param {string[]|function} updater
   */
   function updateSelectedIds(updater) {
@@ -571,7 +570,7 @@ export default function ResultsGrid({
   }
 
   /**
-   * Bascule la sélection d'un résultat par son ID image.
+   * Toggle one result id in the active selection.
    * @param {string} imageId
   */
   function handleToggleSelect(imageId) {
@@ -581,7 +580,7 @@ export default function ResultsGrid({
   }
 
   /**
-   * Ouvre la modale de détail pour un résultat.
+   * Open the detail modal from a result card and preserve its origin rect.
    * @param {object} result
    * @param {DOMRect} originRect
   */
@@ -590,7 +589,7 @@ export default function ResultsGrid({
   }
 
   /**
-   * Ouvre la modale de comparaison pour un résultat.
+   * Open the visual comparison modal when a source image is available.
    * @param {object} result
    * @param {DOMRect} originRect
   */
@@ -600,7 +599,7 @@ export default function ResultsGrid({
   }
 
   /**
-   * Navigue vers une page de la grille.
+   * Navigate to a safe page inside the result grid.
    * @param {number} nextPage
   */
   function handlePageChange(nextPage) {
@@ -611,7 +610,7 @@ export default function ResultsGrid({
   }
 
   /**
-   * Assigne la ref interne de la grille et la ref externe si fournie.
+   * Assign the grid node to the external ref when one is provided.
    * @param {HTMLElement|null} node
   */
   function handleCardsGridRef(node) {
@@ -619,9 +618,9 @@ export default function ResultsGrid({
   }
 
   /**
-   * Déclenche un export dans le format spécifié et gère l'état de chargement.
-   * @param {"json"|"csv"|"pdf"} format - Format d'export.
-   * @param {function|null} exportAction - Fonction d'export à appeler.
+   * Run one export action while exposing which format is currently busy.
+   * @param {"json"|"csv"|"pdf"} format
+   * @param {function|null} exportAction
   */
   async function handleExportClick(format, exportAction) {
     if (!exportAction || activeExport) return;
@@ -679,7 +678,7 @@ export default function ResultsGrid({
         onGridRef={handleCardsGridRef}
       />
 
-      {/* Modale détail */}
+      {/* Detail modal */}
       {detailState && (
         <ResultDetailsModal
           result={detailState.result}
@@ -691,7 +690,7 @@ export default function ResultsGrid({
         />
       )}
 
-      {/* Modale comparaison */}
+      {/* Compare modal */}
       {compareState && comparisonSource?.src && (
         <ResultCompareModal
           result={compareState.result}

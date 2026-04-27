@@ -1,5 +1,5 @@
-/* Bloc global extrait de l'ancien index.css: tokens, resets, animations et utilitaires partagés. */
-/* ── Typographie ── */
+/* Global block extracted from the previous index.css: tokens, resets, animations, and shared utilities. */
+/* Typography */
 :root {
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
   --motion-enter-duration: 1650ms;
@@ -7,7 +7,7 @@
   --motion-enter-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Tokens de couleur — mode clair ── */
+/* Color tokens - light mode */
 :root {
   --palette-title: #1e293b;
   --palette-text: #1e293b;
@@ -377,10 +377,10 @@
 }
 
 html {
-  /* scroll-behavior: smooth retiré intentionnellement :
-     la valeur "smooth" est héritée par window.scrollTo({ behavior:"auto" }),
-     ce qui anime le scroll lors des navigations React et crée des sauts visuels.
-     La navigation est entièrement gérée par les transitions JS du composant App. */
+  /* scroll-behavior: smooth is intentionally removed:
+     the "smooth" value is inherited by window.scrollTo({ behavior:"auto" }),
+     which animates scrolling during React navigation and creates visual jumps.
+     Navigation is fully handled by the App component's JS transitions. */
   scroll-behavior: auto;
 }
 
@@ -402,7 +402,7 @@ body.search-modal-open nav.sticky {
 }
 
 
-/* ── View Transition : révélation circulaire pour le changement de thème ── */
+/* View transition: circular reveal for theme switching */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -415,7 +415,7 @@ body.search-modal-open nav.sticky {
   z-index: 0;
 }
 
-/* ── Animation icône thème (Sun → Moon et vice-versa) ── */
+/* Theme icon animation (Sun to Moon and back) */
 @keyframes theme-icon-enter {
   from { transform: rotate(-90deg) scale(0.4); opacity: 0; }
   to   { transform: rotate(0deg) scale(1); opacity: 1; }
@@ -871,14 +871,14 @@ button {
     drop-shadow(0 8px 18px rgba(0, 0, 0, 0.24));
 }
 
-/* ── Taxonomie des surfaces ── */
+/* Surface taxonomy */
 
-/* Hero : pleine largeur, fort contraste, fond dégradé */
+/* Hero: full width, strong contrast, gradient background */
 .surface-hero {
   background: linear-gradient(135deg, var(--theme-primary-pale) 0%, var(--theme-bg-soft) 60%, var(--theme-bg) 100%);
 }
 
-/* Panel outil : fond légèrement opaque, bordure structurante */
+/* Tool panel: lightly opaque background with a structural border */
 .surface-panel {
   background-color: var(--theme-surface);
   border: 1.5px solid var(--theme-border);
@@ -886,7 +886,7 @@ button {
   backdrop-filter: blur(8px);
 }
 
-/* Card résultat : plus subtile, hover distinct */
+/* Result card: subtler surface with a distinct hover state */
 .surface-result {
   background-color: var(--theme-bg-soft);
   border: 1px solid var(--theme-border);
@@ -898,7 +898,7 @@ button {
   transform: translateY(-2px);
 }
 
-/* Card info/marketing : dégradé doux */
+/* Info/marketing card: soft gradient */
 .surface-info {
   background: linear-gradient(135deg, var(--theme-primary-pale) 0%, var(--theme-surface) 100%);
   border: 1px solid color-mix(in srgb, var(--theme-primary) 20%, transparent);
@@ -1183,12 +1183,12 @@ button {
   box-shadow: 0 16px 34px var(--mediscan-accent-button-hover-shadow);
 }
 
-/* Slider sans scrollbar visible */
+/* Slider without a visible scrollbar */
 .features-slider::-webkit-scrollbar {
   display: none;
 }
 
-/* Conteneur standard : max-w unifié sur toutes les pages */
+/* Standard container: unified max width across pages */
 .page-container {
   max-width: 1320px;
   margin-left: auto;

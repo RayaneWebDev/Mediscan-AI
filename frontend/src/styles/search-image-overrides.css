@@ -387,8 +387,8 @@
 }
 
 
-/* Force la teinte demandee sur les 3 blocs visuels de la page Image Search
-   en mode jour uniquement, meme si d'autres couches de style passent apres. */
+/* Force the requested tint on the three visual blocks of the Image Search page
+   in light mode only, even when later style layers are applied. */
 :root:not([data-theme="dark"]) .search-workspace-primary .image-search-visual-stage-panel.mediscan-primary-surface {
   background-color: color-mix(in srgb, #acd2d9 66%, white 34%) !important;
   border-color: color-mix(in srgb, #acd2d9 76%, white 24%) !important;

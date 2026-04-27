@@ -1,5 +1,5 @@
-/** 
- * @fileoverview Zone de dépôt et de sélection d'image pour la recherche CBIR par image.
+/**
+ * @fileoverview Image upload surface with drag/drop, paste, preview, and removal.
  * @module components/UploadZone
  */
 
@@ -7,18 +7,20 @@ import { useContext, useEffect, useId, useMemo, useRef, useState, useCallback } 
 import { LangContext } from "../context/LangContextValue";
 
 /**
- * Zone interactive pour sélectionner ou glisser-déposer une image (JPEG ou PNG).
- * Affiche une prévisualisation une fois le fichier sélectionné.
+ * Render the image upload dropzone used by visual and semantic image search.
+ *
+ * The component normalizes three entry points into the same onFileSelect callback:
+ * file picker, drag/drop, and clipboard paste.
  *
  * @component
  * @param {object} props
- * @param {File|null} props.file - Fichier image sélectionné, null si aucun
- * @param {function(File): void} props.onFileSelect - Appelé quand un fichier est choisi
- * @param {function(): void} props.onRemove - Appelé quand l'utilisateur supprime l'image
- * @param {boolean} [props.isAccent=false] - Palette accent (recherche sémantique)
- * @param {boolean} [props.useHomeVisualTone=false] - Thème visuel de la home page
- * @param {boolean} [props.fillHeight=false] - Étend la zone pour remplir la hauteur disponible
- * @param {boolean} [props.enableToneTransition=false] - Active les transitions de changement de ton
+ * @param {File|null} props.file
+ * @param {function(File): void} props.onFileSelect
+ * @param {function(): void} props.onRemove
+ * @param {boolean} [props.isAccent=false]
+ * @param {boolean} [props.useHomeVisualTone=false]
+ * @param {boolean} [props.fillHeight=false]
+ * @param {boolean} [props.enableToneTransition=false]
  * @returns {JSX.Element}
  */
 export default function UploadZone({
@@ -39,7 +41,7 @@ export default function UploadZone({
   const toneSyncClass = enableToneTransition ? "search-tone-sync" : "";
   const uploadFrameClass = "w-full min-h-[15.5rem] sm:min-h-[17rem] lg:min-h-[20rem]";
 
-  // Révocation de l'URL objet pour éviter les fuites mémoire
+  // Revoke the preview object URL to avoid memory leaks.
   useEffect(() => {
     return () => {
       if (previewUrl) {
@@ -61,15 +63,15 @@ export default function UploadZone({
     : "bg-primary-pale text-primary";
 
   /**
-   * Gère le collage d'une image depuis le presse-papier (Ctrl+V).
+   * Read image data from the clipboard and forward it as a selected file.
   */
   const handlePaste = useCallback((e) => {
-    // Accès aux données du presse-papier
+    // Clipboard items are browser-provided and may include non-file entries.
     const clipboardItems = e.clipboardData?.items;
     if (!clipboardItems) return;
 
     const item = Array.from(clipboardItems).find(i => i.type.includes("image"));
-    
+
     if (item) {
       const pastedFile = item.getAsFile();
       if (pastedFile) {
@@ -84,9 +86,9 @@ export default function UploadZone({
       window.removeEventListener("paste", handlePaste);
     };
   }, [handlePaste]);
-  
+
   /**
-   * Ouvre le sélecteur de fichier natif du navigateur.
+   * Open the hidden file input, preferring showPicker when the browser supports it.
   */
   function handleOpenFilePicker() {
     try {
@@ -95,13 +97,13 @@ export default function UploadZone({
         return;
       }
     } catch {
-      // showPicker() non supporté ou exception → fallback
+      // showPicker() unsupported or failed -> fallback
     }
     inputRef.current?.click();
   }
 
   /**
-   * Gère le dépôt d'un fichier via drag & drop.
+   * Accept the first dropped file and leave validation to the parent workflow.
    * @param {DragEvent} e
   */
   function handleDrop(e) {
@@ -112,8 +114,7 @@ export default function UploadZone({
   }
 
   /**
-   * Gère la sélection via l'input natif.
-   * Réinitialise la valeur pour permettre la re-sélection du même fichier.
+   * Forward the selected file and reset the input so the same file can be reselected.
    * @param {React.ChangeEvent<HTMLInputElement>} e
   */
   function handleChange(e) {

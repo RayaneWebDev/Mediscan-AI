@@ -1,46 +1,92 @@
-"""
-Service de génération de synthèse clinique IA via le LLM Groq.
-
-Ce module fournit une analyse prudente et non diagnostique des résultats
-de recherche d'images médicales. Il utilise le modèle Groq (Llama) pour
-produire un résumé en anglais à partir des descriptions textuelles des
-images les plus similaires trouvées par le pipeline CBIR.
-
-Important : cette synthèse est un outil exploratoire non clinique et
-ne remplace en aucun cas l'avis d'un professionnel de santé.
-"""
+"""AI clinical summary generation service using the Groq LLM."""
 
 from __future__ import annotations
+
+from functools import lru_cache
+from typing import Any
 
 from groq import Groq
 
 from backend.app.config import GROQ_API_KEY, GROQ_MODEL, MAX_CONCLUSION_RESULTS
+from backend.app.image_utils import sanitize_image_id
+from mediscan.runtime import STABLE_MODE_CONFIGS, load_indexed_rows
 
 
 class ClinicalConclusionError(RuntimeError):
-    """
-    Lancé lorsque le service de synthèse IA optionnel ne peut pas être utilisé.
-    Causes possibles : clé API absente, service indisponible, réponse vide.
-    """
+    """Raised when the optional AI summary service cannot be used."""
+
+
+SERVER_CAPTION_MAX_LENGTH = 600
+
+
+def _normalize_caption(caption: object) -> str:
+    """Clean and bound a caption loaded from server artifacts."""
+    text = " ".join(str(caption or "").split())
+    if len(text) <= SERVER_CAPTION_MAX_LENGTH:
+        return text
+    return f"{text[:SERVER_CAPTION_MAX_LENGTH].rstrip()}..."
+
+
+@lru_cache(maxsize=4)
+def _caption_lookup_for_mode(mode: str) -> dict[str, str]:
+    """Load server-side captions for a stable mode and cache them."""
+    config = STABLE_MODE_CONFIGS[mode]
+    rows = load_indexed_rows(config.ids_path)
+    return {
+        str(row.get("image_id", "")): _normalize_caption(row.get("caption", ""))
+        for row in rows
+        if row.get("image_id")
+    }
+
+
+def _candidate_modes(mode: str | None) -> tuple[str, ...]:
+    """Prioritize the requested mode, then stable fallback modes."""
+    normalized_mode = str(mode or "").strip().lower()
+    modes = list(STABLE_MODE_CONFIGS)
+    if normalized_mode in STABLE_MODE_CONFIGS:
+        return (normalized_mode, *[candidate for candidate in modes if candidate != normalized_mode])
+    return tuple(modes)
+
+
+def _server_caption_for_image_id(image_id: str, mode: str | None) -> str:
+    """Fetch a caption from server artifacts, never from the client."""
+    safe_image_id = sanitize_image_id(image_id)
+    for candidate_mode in _candidate_modes(mode):
+        caption = _caption_lookup_for_mode(candidate_mode).get(safe_image_id, "")
+        if caption:
+            return caption
+    return ""
+
+
+def build_server_owned_conclusion_context(search_result: dict[str, Any]) -> dict[str, Any]:
+    """Rebuild the LLM context using server-owned captions."""
+    mode = str(search_result.get("mode") or "").strip().lower() or None
+    trusted_results: list[dict[str, Any]] = []
+
+    for raw_result in search_result.get("results", [])[:MAX_CONCLUSION_RESULTS]:
+        image_id = str(raw_result.get("image_id", "")).strip()
+        caption = _server_caption_for_image_id(image_id, mode)
+        if not caption:
+            continue
+
+        trusted_results.append(
+            {
+                "rank": int(raw_result.get("rank", len(trusted_results) + 1)),
+                "image_id": sanitize_image_id(image_id),
+                "score": float(raw_result.get("score", 0)),
+                "caption": caption,
+            }
+        )
+
+    return {
+        "mode": mode or "inconnu",
+        "embedder": search_result.get("embedder"),
+        "results": trusted_results,
+    }
 
 
 def _prepare_ranked_captions(search_result: dict) -> tuple[str, int]:
-    """
-    Extrait et formate les descriptions des résultats de recherche pour le prompt LLM.
-
-    Sélectionne les MAX_CONCLUSION_RESULTS premiers résultats disposant d'une
-    description (caption), les formate avec leur score de similarité, et les
-    concatène en une chaîne prête à l'envoi au modèle.
-
-    Args:
-        search_result: Le dictionnaire de résultats bruts du pipeline de recherche.
-
-    Returns:
-        Un tuple (texte_formaté, nombre_de_descriptions) prêt pour le prompt.
-
-    Raises:
-        ValueError: Si aucun résultat ne possède de description exploitable.
-    """
+    """Extract and format search result descriptions for the LLM prompt."""
     results = search_result.get("results", [])
     ranked_captions: list[str] = []
 
@@ -59,19 +105,7 @@ def _prepare_ranked_captions(search_result: dict) -> tuple[str, int]:
 
 
 def _build_messages(search_result: dict) -> list[dict[str, str]]:
-    """
-    Construit la liste de messages (system + user) pour l'appel au LLM Groq.
-
-    Le prompt system instruit le modèle à rester prudent, non diagnostique
-    et à ne pas mentionner l'infrastructure technique (FAISS, embeddings, etc.).
-    Le prompt user fournit les descriptions triées par similarité décroissante.
-
-    Args:
-        search_result: Le dictionnaire de résultats bruts du pipeline de recherche.
-
-    Returns:
-        La liste de messages au format attendu par l'API Groq.
-    """
+    """Build the message list (system + user) for the Groq LLM call."""
     ranked_captions, caption_count = _prepare_ranked_captions(search_result)
     mode = str(search_result.get("mode", "inconnu")).strip() or "inconnu"
 
@@ -108,37 +142,18 @@ def _build_messages(search_result: dict) -> list[dict[str, str]]:
 
 
 def generate_clinical_conclusion(search_result: dict) -> str:
-    """
-    Génère une synthèse clinique prudente à partir des résultats de recherche.
-
-    Appelle l'API Groq avec un prompt non diagnostique construit à partir des
-    descriptions des images similaires trouvées. Retourne un texte en anglais
-    structuré en 3 paragraphes (interprétation clinique, limites, rappel non clinique).
-
-    Args:
-        search_result: Le dictionnaire de résultats bruts du pipeline de recherche,
-                       incluant les champs 'results', 'mode', et les métadonnées
-                       associées (caption, score, etc.).
-
-    Returns:
-        La synthèse textuelle générée par le LLM, en anglais.
-
-    Raises:
-        ClinicalConclusionError: Si GROQ_API_KEY n'est pas configuré,
-                                  si le service est indisponible,
-                                  ou si la réponse est vide.
-        ValueError: Si aucun résultat ne possède de description exploitable.
-    """
+    """Generate a cautious clinical summary from search results."""
     if not GROQ_API_KEY:
         raise ClinicalConclusionError(
             "La fonctionnalite d'analyse IA n'est pas configuree sur cette instance."
         )
 
     try:
+        trusted_context = build_server_owned_conclusion_context(search_result)
         client = Groq(api_key=GROQ_API_KEY)
         response = client.chat.completions.create(
             model=GROQ_MODEL,
-            messages=_build_messages(search_result),
+            messages=_build_messages(trusted_context),
             temperature=0.2,
             max_tokens=500,
         )

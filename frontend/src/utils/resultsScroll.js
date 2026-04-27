@@ -1,13 +1,15 @@
 /**
- * @fileoverview Utilitaires de scroll vers la grille de résultats.
+ * @fileoverview Scroll-position helpers shared by search result views.
  * @module utils/resultsScroll
  */
 
 /**
- * Calcule la position Y cible pour scroller vers la grille de résultats.
- * Tient compte de la hauteur de la navbar selon le breakpoint et du scroll max.
+ * Account for navbar height by breakpoint and maximum scroll range.
+ *
+ * The result panels are rendered below sticky navigation, so scroll targets need
+ * to be bounded and offset rather than using raw element positions.
  * @param {HTMLElement} gridNode
- * @param {number} [extraOffset=0] - Décalage supplémentaire en pixels
+ * @param {number} [extraOffset=0]
  * @returns {number}
  */
 export function getResultsGridScrollTargetY(gridNode, extraOffset = 0) {
@@ -25,11 +27,13 @@ export function getResultsGridScrollTargetY(gridNode, extraOffset = 0) {
 }
 
 /**
- * Scroll fluide custom via RAF avec easing easeInOutCubic.
- * Retourne une fonction cancel() pour stopper l'animation en cours.
- * @param {number} targetY  - Position Y cible en pixels
- * @param {number} duration - Durée en ms (défaut 1100ms)
- * @param {Function} [onComplete] - Callback appelé à la fin de l'animation
+ * Run a cancellable smooth scroll using requestAnimationFrame.
+ *
+ * This is used when native smooth scrolling is not precise enough for the result
+ * panels, especially after cards finish entering the layout.
+ * @param {number} targetY
+ * @param {number} duration
+ * @param {Function} [onComplete]
  */
 export function smoothScrollTo(targetY, duration = 1100, onComplete) {
   if (typeof window === "undefined") return () => {};
@@ -46,10 +50,19 @@ export function smoothScrollTo(targetY, duration = 1100, onComplete) {
   let rafId = 0;
   let cancelled = false;
 
+  /**
+   * Easing curve used by the custom scroll animation.
+   * @param {number} t
+   * @returns {number}
+   */
   function easeInOutCubic(t) {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
+  /**
+   * Advance one animation frame for the custom scroll.
+   * @param {number} now - Timestamp provided by requestAnimationFrame.
+   */
   function step(now) {
     if (cancelled) return;
     const elapsed = now - startTime;

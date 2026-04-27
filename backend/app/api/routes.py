@@ -1,19 +1,21 @@
-"""
-Endpoints de l'API de recherche Mediscan.
-
-Ce module définit les routes FastAPI pour la recherche d'images médicales
-par téléchargement d'image, par texte, ou par identifiants d'images existants.
-Il expose également les routes de génération de synthèse IA et de contact.
-"""
+"""Search API endpoints for MediScan."""
 
 from collections.abc import Callable
+from contextlib import contextmanager
 from typing import Any, TypeVar
 
+from anyio import to_thread
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel
 
-from backend.app.config import MAX_UPLOAD_BYTES
+from backend.app.config import (
+    CONCURRENCY_LIMITS,
+    MAX_UPLOAD_BYTES,
+    RATE_LIMITS,
+    RATE_LIMIT_WINDOW_SECONDS,
+    TRUST_PROXY_HEADERS,
+)
 from backend.app.image_utils import hf_image_url, sanitize_image_id, with_public_result_paths
 from backend.app.models.schema import (
     ConclusionRequest,
@@ -27,42 +29,81 @@ from backend.app.models.schema import (
 )
 from backend.app.services.analysis_service import ClinicalConclusionError, generate_clinical_conclusion
 from backend.app.services.email_service import EmailConfigurationError, EmailDeliveryError, EmailService
+from backend.app.services.request_guards import (
+    InMemoryRateLimiter,
+    RequestConcurrencyLimiter,
+    TooManyConcurrentRequests,
+    client_identifier,
+)
+from backend.app.services.readiness import build_readiness_report
 from backend.app.services.search_service import SearchService, SearchUnavailableError
 
 router = APIRouter()
 ResponseModelT = TypeVar("ResponseModelT", bound=BaseModel)
 UPLOAD_CHUNK_SIZE = 1024 * 1024
+CONCURRENCY_BUCKET_SEARCH = "search"
+CONCURRENCY_BUCKET_CONCLUSION = "conclusion"
+CONCURRENCY_BUCKET_CONTACT = "contact"
 
 
 def _get_service(request: Request) -> SearchService:
-    """
-    Récupère l'instance globale de SearchService.
-    Le service est stocké dans l'état de l'application (app.state) lors du démarrage.
-    """
+    """Return the global SearchService instance."""
     return request.app.state.search_service
 
 
 def _get_email_service(request: Request) -> EmailService:
-    """
-    Récupère l'instance globale de EmailService.
-    Le service est initialisé au démarrage à partir des variables d'environnement SMTP.
-    """
+    """Return the global EmailService instance."""
     return request.app.state.email_service
 
 
+def _get_rate_limiter(request: Request) -> InMemoryRateLimiter:
+    """Get or create the process-local rate limiter shared by all requests."""
+    limiter = getattr(request.app.state, "rate_limiter", None)
+    if limiter is None:
+        limiter = InMemoryRateLimiter(RATE_LIMITS, RATE_LIMIT_WINDOW_SECONDS)
+        request.app.state.rate_limiter = limiter
+    return limiter
+
+
+def _get_concurrency_limiter(request: Request) -> RequestConcurrencyLimiter:
+    """Get or create the limiter used to protect expensive CPU/model work."""
+    limiter = getattr(request.app.state, "concurrency_limiter", None)
+    if limiter is None:
+        limiter = RequestConcurrencyLimiter(CONCURRENCY_LIMITS)
+        request.app.state.concurrency_limiter = limiter
+    return limiter
+
+
+def _enforce_rate_limit(request: Request, bucket: str) -> None:
+    """Apply the per-client quota for a public endpoint bucket."""
+    identifier = client_identifier(request, trust_proxy_headers=TRUST_PROXY_HEADERS)
+    decision = _get_rate_limiter(request).check(bucket, identifier)
+    if decision.allowed:
+        return
+
+    raise HTTPException(
+        status_code=429,
+        detail="Too many requests. Please retry later.",
+        headers={"Retry-After": str(decision.retry_after_seconds)},
+    )
+
+
+@contextmanager
+def _guard_concurrency(request: Request, bucket: str):
+    """Reserve an expensive-processing slot or surface a retryable 429 error."""
+    try:
+        with _get_concurrency_limiter(request).acquire(bucket):
+            yield
+    except TooManyConcurrentRequests as exc:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many concurrent requests. Please retry shortly.",
+            headers={"Retry-After": "1"},
+        ) from exc
+
+
 def _sanitize_image_id_or_400(image_id: str) -> str:
-    """
-    Nettoie et valide un identifiant d'image, ou lève une HTTPException 400.
-
-    Args:
-        image_id: L'identifiant brut à vérifier.
-
-    Returns:
-        L'identifiant nettoyé s'il est valide.
-
-    Raises:
-        HTTPException (400): Si l'identifiant contient des caractères non autorisés.
-    """
+    """Clean and validate an image identifier at the HTTP boundary."""
     try:
         return sanitize_image_id(image_id)
     except ValueError as exc:
@@ -70,7 +111,7 @@ def _sanitize_image_id_or_400(image_id: str) -> str:
 
 
 def _as_http_exception(exc: Exception) -> HTTPException:
-    """Convertit une exception métier en HTTPException avec le bon code HTTP."""
+    """Map domain/service exceptions to the HTTP status expected by clients."""
     if isinstance(exc, ValueError):
         return HTTPException(status_code=400, detail=str(exc))
     if isinstance(exc, SearchUnavailableError):
@@ -85,48 +126,36 @@ def _response_from_payload(
     payload: dict[str, Any],
 ) -> ResponseModelT:
     """
-    Convertit un dictionnaire de résultats bruts en modèle de réponse Pydantic.
-    Remplace les chemins locaux par les URLs HuggingFace publiques avant la validation.
+    Convert a raw result dictionary into a Pydantic response model.
+
+    Replace local paths with public HuggingFace URLs before validation.
     """
     return model_class.model_validate(with_public_result_paths(payload))
 
 
-def _run_service_call(
+async def _run_guarded_service_call(
+    request: Request,
+    *,
+    concurrency_bucket: str,
     model_class: type[ResponseModelT],
     call: Callable[[], dict[str, Any]],
 ) -> ResponseModelT:
     """
-    Exécute un appel au service de recherche et gère les exceptions de manière uniforme.
+    Run a blocking service call in a worker thread behind concurrency limits.
 
-    Args:
-        model_class: Le modèle Pydantic cible pour la réponse.
-        call: La fonction lambda qui appelle le service.
-
-    Returns:
-        Une instance du modèle de réponse remplie avec les résultats.
-
-    Raises:
-        HTTPException: En cas d'erreur métier (400, 503, 500).
+    Model inference and FAISS work are synchronous, so this helper keeps FastAPI's
+    event loop responsive while still applying the same error mapping everywhere.
     """
     try:
-        return _response_from_payload(model_class, call())
+        with _guard_concurrency(request, concurrency_bucket):
+            payload = await to_thread.run_sync(call)
+        return _response_from_payload(model_class, payload)
     except (ValueError, SearchUnavailableError, FileNotFoundError, RuntimeError) as exc:
         raise _as_http_exception(exc) from exc
 
 
 async def _read_upload_bytes(image: UploadFile) -> bytes:
-    """
-    Lit le fichier image uploadé par chunks et vérifie que la taille ne dépasse pas la limite.
-
-    Args:
-        image: Le fichier image uploadé via la requête multipart.
-
-    Returns:
-        Les octets du fichier image.
-
-    Raises:
-        HTTPException (413): Si la taille du fichier dépasse MAX_UPLOAD_BYTES.
-    """
+    """Read an uploaded file in chunks while enforcing the configured size limit."""
     chunks: list[bytes] = []
     total_size = 0
 
@@ -149,8 +178,15 @@ async def _read_upload_bytes(image: UploadFile) -> bytes:
 
 @router.get("/health")
 def health() -> dict[str, str]:
-    """Vérifie si l'API est opérationnelle."""
+    """Check only that the API process responds."""
     return {"status": "ok"}
+
+
+@router.get("/ready")
+def ready(request: Request) -> JSONResponse:
+    """Check that dependencies required for production traffic are ready."""
+    report = build_readiness_report(_get_email_service(request))
+    return JSONResponse(status_code=report.http_status, content=report.payload)
 
 
 @router.post("/search", response_model=SearchResponse)
@@ -160,20 +196,16 @@ async def search_image(
     mode: str = Form("visual"),
     k: int = Form(5),
 ) -> SearchResponse:
-    """
-    Recherche par similarité à partir d'un fichier image uploadé.
-
-    - Le fichier image doit être au format PNG ou JPEG.
-    - Le mode peut être 'visual' (similarité visuelle via DinoV2)
-      ou 'semantic' (similarité sémantique via BioMedCLIP).
-    - Retourne les k images les plus similaires du dataset ROCOv2.
-    """
+    """Run visual or semantic similarity search from an uploaded image file."""
+    _enforce_rate_limit(request, "search")
     service = _get_service(request)
     image_bytes = await _read_upload_bytes(image)
 
-    return _run_service_call(
-        SearchResponse,
-        lambda: service.search(
+    return await _run_guarded_service_call(
+        request,
+        concurrency_bucket=CONCURRENCY_BUCKET_SEARCH,
+        model_class=SearchResponse,
+        call=lambda: service.search(
             image_bytes=image_bytes,
             filename=image.filename or "query.png",
             content_type=image.content_type,
@@ -184,35 +216,34 @@ async def search_image(
 
 
 class TextSearchRequest(BaseModel):
+    """Request body for text-to-image search."""
+
     text: str
     k: int = 5
 
 
 @router.post("/search-text", response_model=TextSearchResponse)
 async def search_text(body: TextSearchRequest, request: Request) -> TextSearchResponse:
-    """
-    Recherche Text-to-Image via l'index sémantique BioMedCLIP.
-    Permet de trouver des images médicales à partir d'une description textuelle
-    en exploitant les capacités multimodales du modèle BioMedCLIP.
-    """
+    """Run text-to-image search through the BioMedCLIP semantic index."""
+    _enforce_rate_limit(request, "search_text")
     service = _get_service(request)
-    return _run_service_call(
-        TextSearchResponse,
-        lambda: service.search_text(text=body.text, k=body.k),
+    return await _run_guarded_service_call(
+        request,
+        concurrency_bucket=CONCURRENCY_BUCKET_SEARCH,
+        model_class=TextSearchResponse,
+        call=lambda: service.search_text(text=body.text, k=body.k),
     )
 
 
 @router.get("/images/{image_id}")
 async def get_image(image_id: str) -> RedirectResponse:
-    """
-    Redirige directement vers l'image hébergée sur HuggingFace.
-    Détermine dynamiquement le sous-dossier (images_01, images_02, etc.)
-    à partir du numéro de séquence présent dans l'identifiant ROCOv2.
-    """
+    """Redirect directly to the image hosted on HuggingFace."""
     return RedirectResponse(url=hf_image_url(_sanitize_image_id_or_400(image_id)))
 
 
 class IdSearchRequest(BaseModel):
+    """Request body for relaunching a search from one image_id."""
+
     image_id: str
     mode: str = "visual"
     k: int = 5
@@ -220,16 +251,16 @@ class IdSearchRequest(BaseModel):
 
 @router.post("/search-by-id", response_model=IdSearchResponse)
 async def search_by_id(body: IdSearchRequest, request: Request) -> IdSearchResponse:
-    """
-    Lance une recherche de similarité à partir d'une seule image existante (via son ID).
-    Utile pour relancer une recherche depuis un résultat déjà affiché.
-    """
+    """Run similarity search from one existing image by ID."""
+    _enforce_rate_limit(request, "search_by_id")
     service = _get_service(request)
     safe_id = _sanitize_image_id_or_400(body.image_id)
 
-    return _run_service_call(
-        IdSearchResponse,
-        lambda: service.search_by_id(
+    return await _run_guarded_service_call(
+        request,
+        concurrency_bucket=CONCURRENCY_BUCKET_SEARCH,
+        model_class=IdSearchResponse,
+        call=lambda: service.search_by_id(
             image_id=safe_id,
             mode=body.mode,
             k=body.k,
@@ -238,6 +269,8 @@ async def search_by_id(body: IdSearchRequest, request: Request) -> IdSearchRespo
 
 
 class IdsSearchRequest(BaseModel):
+    """Request body for relaunching a search from multiple image_ids."""
+
     image_ids: list[str]
     mode: str = "visual"
     k: int = 5
@@ -245,17 +278,16 @@ class IdsSearchRequest(BaseModel):
 
 @router.post("/search-by-ids", response_model=IdsSearchResponse)
 async def search_by_ids(body: IdsSearchRequest, request: Request) -> IdsSearchResponse:
-    """
-    Recherche par centroïde à partir d'une sélection de plusieurs images.
-    Combine les vecteurs des images sélectionnées via mean-pooling des embeddings
-    pour produire un vecteur requête unique représentatif de la sélection.
-    """
+    """Run centroid search from a sanitized multi-image selection."""
+    _enforce_rate_limit(request, "search_by_ids")
     service = _get_service(request)
     safe_ids = [_sanitize_image_id_or_400(image_id) for image_id in body.image_ids]
 
-    return _run_service_call(
-        IdsSearchResponse,
-        lambda: service.search_by_ids(
+    return await _run_guarded_service_call(
+        request,
+        concurrency_bucket=CONCURRENCY_BUCKET_SEARCH,
+        model_class=IdsSearchResponse,
+        call=lambda: service.search_by_ids(
             image_ids=safe_ids,
             mode=body.mode,
             k=body.k,
@@ -264,15 +296,14 @@ async def search_by_ids(body: IdsSearchRequest, request: Request) -> IdsSearchRe
 
 
 @router.post("/generate-conclusion", response_model=ConclusionResponse)
-async def get_conclusion(body: ConclusionRequest) -> ConclusionResponse:
-    """
-    Génère une synthèse IA prudente à partir des résultats de recherche.
-    Utilise le LLM Groq pour produire un résumé cliniquement prudent
-    à partir des descriptions des images les plus similaires trouvées.
-    Ne remplace pas l'avis d'un professionnel de santé.
-    """
+async def get_conclusion(body: ConclusionRequest, request: Request) -> ConclusionResponse:
+    """Generate a cautious AI summary from server-owned search-result context."""
+    _enforce_rate_limit(request, "conclusion")
     try:
-        conclusion = generate_clinical_conclusion(body.model_dump())
+        with _guard_concurrency(request, CONCURRENCY_BUCKET_CONCLUSION):
+            conclusion = await to_thread.run_sync(
+                lambda: generate_clinical_conclusion(body.model_dump())
+            )
     except (ValueError, ClinicalConclusionError) as exc:
         raise _as_http_exception(exc) from exc
 
@@ -281,19 +312,23 @@ async def get_conclusion(body: ConclusionRequest) -> ConclusionResponse:
 
 @router.post("/contact", response_model=ContactResponse)
 async def contact(body: ContactRequest, request: Request) -> ContactResponse:
-    """
-    Envoie un message de contact par email via le service SMTP configuré.
-    Nécessite que les variables d'environnement MEDISCAN_SMTP_* soient définies.
-    """
+    """Send a contact message by email through the configured SMTP service."""
+    _enforce_rate_limit(request, "contact")
+    if body.website:
+        raise HTTPException(status_code=400, detail="Invalid contact submission.")
+
     email_service = _get_email_service(request)
 
     try:
-        email_service.send_contact_email(
-            name=body.name,
-            email=body.email,
-            subject=body.subject,
-            message=body.message,
-        )
+        with _guard_concurrency(request, CONCURRENCY_BUCKET_CONTACT):
+            await to_thread.run_sync(
+                lambda: email_service.send_contact_email(
+                    name=body.name,
+                    email=body.email,
+                    subject=body.subject,
+                    message=body.message,
+                )
+            )
     except EmailConfigurationError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except EmailDeliveryError as exc:

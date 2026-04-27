@@ -1,4 +1,4 @@
-/* Bloc hero + search hub extrait de l'ancien index.css pour alléger le point d'entree CSS. */
+/* Hero and search hub block extracted from the previous index.css to keep the CSS entrypoint lighter. */
 .hero-frame {
   position: relative;
   width: 100%;

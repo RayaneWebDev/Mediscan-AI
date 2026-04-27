@@ -1,16 +1,22 @@
-"""
-Schémas Pydantic de l'API MediScan.
-
-Définit les modèles de requête et de réponse pour les endpoints
-de recherche, de conclusion IA et de contact.
-"""
+"""Pydantic schemas for the MediScan API."""
 
 from email.utils import parseaddr
 from typing import Union
-from pydantic import BaseModel, Field, field_validator
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from backend.app.config import ALLOWED_MODES, MAX_CONCLUSION_RESULTS
+from backend.app.image_utils import sanitize_image_id
+
+CONCLUSION_IMAGE_ID_MAX_LENGTH = 80
+CONCLUSION_MODE_MAX_LENGTH = 24
+CONCLUSION_EMBEDDER_MAX_LENGTH = 80
+CONCLUSION_RESULTS_LIMIT = max(1, min(MAX_CONCLUSION_RESULTS, 20))
 
 
 class SearchResult(BaseModel):
+    """Full result returned by search endpoints."""
+
     rank: int
     image_id: str
     score: float
@@ -21,69 +27,105 @@ class SearchResult(BaseModel):
     @field_validator("cui", mode="before")
     @classmethod
     def coerce_cui(cls, v):
-        """Normalise le champ CUI : extrait le premier élément si c'est une liste."""
+        """Normalize the CUI field by extracting the first item when it is a list."""
         if isinstance(v, list):
             return v[0] if v else ""
         return v
 
 
 class SearchResponseBase(BaseModel):
-    """Base commune aux réponses de recherche."""
+    """Common base for search responses."""
     mode: str
     embedder: str
     results: list[SearchResult]
 
 
 class SearchResponse(SearchResponseBase):
-    """Réponse à une recherche par image uploadée."""
+    """Response for an uploaded-image search."""
     query_image: str
 
 
 class TextSearchResponse(SearchResponseBase):
-    """Réponse à une recherche par texte."""
+    """Response for a text search."""
     query_text: str
 
 
 class IdSearchResponse(SearchResponseBase):
-    """Réponse à une recherche depuis un identifiant image existant."""
+    """Response for a search from an existing image identifier."""
     query_image_id: str
 
 
 class IdsSearchResponse(SearchResponseBase):
-    """Réponse à une recherche par centroïde depuis plusieurs identifiants."""
+    """Response for a centroid search from multiple image identifiers."""
     query_image_ids: list[str]
 
 
 class ConclusionSearchResult(BaseModel):
-    """Résultat allégé utilisé comme contexte pour la génération de conclusion IA."""
-    rank: int = Field(ge=1)
-    image_id: str = ""
-    score: float
-    caption: str = ""
+    """Compact result used as context for AI clinical conclusion generation."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    rank: int = Field(ge=1, le=100)
+    image_id: str = Field(min_length=1, max_length=CONCLUSION_IMAGE_ID_MAX_LENGTH)
+    score: float = Field(ge=0, le=1)
+
+    @field_validator("image_id")
+    @classmethod
+    def validate_image_id(cls, value: str) -> str:
+        """Validate the identifier before any server-side resolution."""
+        return sanitize_image_id(value.strip())
 
 
 class ConclusionRequest(BaseModel):
-    """Requête de génération de conclusion clinique IA."""
-    mode: str | None = None
-    embedder: str | None = None
-    results: list[ConclusionSearchResult] = Field(min_length=1, max_length=20)
+    """Request for AI clinical conclusion generation."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    mode: str | None = Field(default=None, max_length=CONCLUSION_MODE_MAX_LENGTH)
+    embedder: str | None = Field(default=None, max_length=CONCLUSION_EMBEDDER_MAX_LENGTH)
+    results: list[ConclusionSearchResult] = Field(
+        min_length=1,
+        max_length=CONCLUSION_RESULTS_LIMIT,
+    )
+
+    @field_validator("mode")
+    @classmethod
+    def validate_mode(cls, value: str | None) -> str | None:
+        """Reject unknown modes to limit the context sent to the LLM."""
+        if value is None:
+            return None
+        normalized = value.strip().lower()
+        if normalized not in ALLOWED_MODES:
+            raise ValueError(f"Unsupported mode: {value}")
+        return normalized
+
+    @field_validator("embedder")
+    @classmethod
+    def strip_optional_embedder(cls, value: str | None) -> str | None:
+        """Normalize the optional embedder name without making it required."""
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
 
 
 class ConclusionResponse(BaseModel):
-    """Réponse contenant la conclusion clinique générée."""
+    """Response containing the generated clinical conclusion."""
     conclusion: str
 
 
 class ContactRequest(BaseModel):
-    """Requête d'envoi de message de contact."""
+    """Request for sending a contact message."""
     name: str = Field(min_length=1, max_length=120)
     email: str = Field(min_length=3, max_length=320)
     subject: str = Field(min_length=1, max_length=160)
     message: str = Field(min_length=1, max_length=5000)
+    website: str = Field(default="", max_length=200)
 
     @field_validator("name", "subject", "message")
     @classmethod
     def strip_required_text(cls, value: str) -> str:
+        """Clean a required text field and reject empty values."""
         text = value.strip()
         if not text:
             raise ValueError("Field cannot be empty.")
@@ -92,6 +134,7 @@ class ContactRequest(BaseModel):
     @field_validator("email")
     @classmethod
     def validate_email(cls, value: str) -> str:
+        """Validate and normalize a contact email address."""
         email = value.strip()
         parsed_name, parsed_email = parseaddr(email)
         if parsed_name or not parsed_email or "@" not in parsed_email:
@@ -103,6 +146,6 @@ class ContactRequest(BaseModel):
 
 
 class ContactResponse(BaseModel):
-    """Réponse à l'envoi d'un message de contact."""
+    """Response for contact message delivery."""
     success: bool
     message: str

@@ -1,5 +1,5 @@
-/** 
- * @fileoverview Vue de recherche par texte (mode sémantique/interprétif).
+/**
+ * @fileoverview Text-search workflow for semantic CBIR queries and result exploration.
  * @module components/TextSearchView
  */
 
@@ -39,14 +39,14 @@ import {
 } from "../utils/searchViewHelpers";
 import { CUI_TYPES } from "../data/cuiCategories";
 
-// Ajuste cette valeur selon le rendu souhaite: negatif = moins bas, positif = plus bas.
+// Positive values scroll slightly lower; negative values keep the result block higher.
 const TEXT_SEARCH_SCROLL_OFFSET = 60;
 const TEXT_SEARCH_SCROLL_MAX_RETRIES = 4;
 const TEXT_SEARCH_SCROLL_RETRY_DELAY_MS = 160;
 const TEXT_SEARCH_SCROLL_TOLERANCE = 6;
 
 /**
- * Retourne les classes CSS actives/inactives d'un bouton de filtre toggle.
+ * Return CSS classes for active and inactive filter toggles.
  * @param {boolean} isActive
  * @returns {string}
  */
@@ -56,14 +56,16 @@ function getFilterToggleStateClasses(isActive) {
 }
 
 /**
- * Vue de recherche CBIR par description textuelle.
- * Gère la saisie de requête, le déclenchement de la recherche,
- * les filtres de résultats et le scroll automatique vers les résultats.
+ * Render the text-driven CBIR search view.
+ *
+ * Text search always uses the semantic index. The component mirrors the image
+ * result exploration tools so users can filter, export, inspect details, and ask
+ * for a cautious conclusion from the returned neighbors.
  *
  * @component
  * @param {object} props
- * @param {function(): void} props.onBack - Retour vers le hub de recherche
- * @param {function(string): void} props.onChromeToneChange - Callback de changement de ton du chrome
+ * @param {function(): void} props.onBack
+ * @param {function(string): void} props.onChromeToneChange
  * @returns {JSX.Element}
  */
 export default function TextSearchView({ onBack, onChromeToneChange }) {
@@ -77,7 +79,7 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // filtres
+  // Client-side filters applied to the current text-search result set.
   const [minScore, setMinScore] = useState(0);
   const [searchText, setSearchText] = useState("");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -88,7 +90,7 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
   const [referenceFilter, setReferenceFilter] = useState("");
   const [activeCaptionFilterIds, setActiveCaptionFilterIds] = useState([]);
 
-  // UI
+  // UI timers and refs for guided notes and automatic result scrolling.
   const [quickNoteHighlighted, setQuickNoteHighlighted] = useState(false);
   const [filterNoteHighlighted, setFilterNoteHighlighted] = useState(false);
   const [entryAnimationsActive, setEntryAnimationsActive] = useState(true);
@@ -104,7 +106,7 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
   const hasSearchResults = Boolean(results);
   const resultCount = results?.results?.length ?? 0;
 
-  /** Annule le scroll automatique en cours vers les résultats. */
+  /** Cancel the pending automatic result scroll. */
   const cancelSearchAutoScroll = useCallback(() => {
     window.clearTimeout(scrollRetryTimerRef.current);
     scrollRetryTimerRef.current = 0;
@@ -112,11 +114,10 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
     scrollCancelRef.current = null;
   }, []);
 
-  /**
- * Tente un scroll automatique vers la zone de résultats après une recherche.
- * Se relance jusqu'à TEXT_SEARCH_SCROLL_MAX_RETRIES fois si la cible n'est pas atteinte.
- * @param {number} [attempt=0] - Numéro de la tentative courante
- */
+	  /**
+	 * Scroll to the result section after search, retrying while layout settles.
+	 * @param {number} [attempt=0]
+	 */
   const runSearchAutoScrollAttempt = useCallback((attempt = 0) => {
     const targetNode = resultsStageRef.current || resultsAnchorRef.current;
     if (!targetNode || typeof window === "undefined") {
@@ -126,6 +127,9 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
 
     const targetY = getResultsGridScrollTargetY(targetNode, TEXT_SEARCH_SCROLL_OFFSET);
 
+    /**
+     * Finalize one scroll attempt and retry if the layout shifted after render.
+     */
     const finalizeAttempt = () => {
       scrollCancelRef.current = null;
 
@@ -217,8 +221,7 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
   }, [cancelSearchAutoScroll, hasSearchResults, loading, resultCount, runSearchAutoScrollAttempt]);
 
   /**
-  * Déclenche une recherche sémantique avec la requête courante.
-  * Applique un délai minimum pour éviter un flash de l'interface.
+  * Run semantic text search and prepare the result panel for automatic scrolling.
   */
   async function handleSearch() {
     const trimmed = query.trim();
@@ -248,7 +251,7 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
   }
 
   /**
-  * Réinitialise tous les filtres à leur valeur par défaut.
+  * Reset all filters to their default values.
   */
   function resetFilters() {
     setMinScore(0);
@@ -263,28 +266,28 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
   }
 
   /**
-  * Exporte les résultats filtrés (ou bruts) en JSON.
+  * Export the current filtered text-search payload as JSON.
   */
   function exportJSON() {
     exportResultsAsJson(filteredResults ?? results, "results_text.json");
   }
 
   /**
-  * Exporte les résultats filtrés (ou bruts) en CSV.
+  * Export the current filtered text-search payload as CSV.
   */
   function exportCSV() {
     exportResultsAsCsv(filteredResults ?? results, "results_text.csv");
   }
 
   /**
-  * Exporte les résultats filtrés (ou bruts) en PDF.
+  * Export the current filtered text-search payload as PDF.
   */
   async function exportPDF() {
     await exportResultsAsPdf(filteredResults ?? results, "results_text.pdf");
   }
 
   /**
-  * Scrolle vers la section guide des filtres et déclenche son highlight.
+  * Scroll to the filter explanation and pulse the related guide note.
   */
   function handleFilterInfoClick() {
     scrollToInfoSection({
@@ -301,7 +304,7 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
   }
 
   /**
-  * Scrolle vers la section guide du mode interprétif et déclenche son highlight.
+  * Scroll to the text-search mode explanation and pulse the related guide note.
   */
   function handleModeInfoClick() {
     scrollToInfoSection({
@@ -311,9 +314,9 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
       onComplete: () => restartNoteHighlight(setQuickNoteHighlighted, quickNoteHighlightTimerRef),
     });
   }
-  
+
   /**
-  * Active ou désactive un filtre de caption par son identifiant.
+  * Toggle one curated caption filter chip.
   * @param {string} filterId
   */
   function handleCaptionFilterToggle(filterId) {
@@ -410,8 +413,19 @@ export default function TextSearchView({ onBack, onChromeToneChange }) {
   const filterScoreValueClassName = "search-filter-score-value-accent min-w-[2.8rem] text-right text-sm font-bold mediscan-accent-text";
   const filterScoreScaleClassName = "mt-2 flex items-center justify-between text-[11px] text-muted";
   const filterSortShellClassName = "image-search-mode-shell image-search-mode-shell-accent mt-1.5 flex gap-1 rounded-xl border p-1";
+  /**
+   * Compose classes for a caption-filter chip.
+   * @param {boolean} isActive
+   * @returns {string}
+   */
   const getCaptionFilterButtonClassName = (isActive) =>
     `search-mode-option inline-flex items-center gap-1.5 rounded-full border border-transparent px-3 py-1.5 text-xs font-medium transition-all ${getFilterToggleStateClasses(isActive)}`;
+  /**
+   * Compose classes for one sort option.
+   * @param {string} _value
+   * @param {boolean} isActive
+   * @returns {string}
+   */
   const getSortOptionClassName = (_value, isActive) =>
     `search-mode-option flex-1 rounded-[0.8rem] border border-transparent px-3 py-2 text-xs font-medium transition-all ${getFilterToggleStateClasses(isActive)}`;
   const quickGuideHighlightClasses = getGuideHighlightClasses(quickNoteHighlighted, "accent");

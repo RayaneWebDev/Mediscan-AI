@@ -1,12 +1,4 @@
-"""
-Gestion du stockage temporaire et du téléchargement des images pour le pipeline de recherche.
-
-Ce module fournit des utilitaires pour :
-- Vérifier l'intégrité des fichiers image (format valide, non corrompu)
-- Gérer des fichiers temporaires supprimés automatiquement après usage
-- Télécharger des images depuis HuggingFace pour les recherches par ID
-- Calculer un embedding centroïde à partir d'une sélection d'images (mean-pooling)
-"""
+"""Temporary storage and image download handling for the search pipeline."""
 
 from __future__ import annotations
 
@@ -30,15 +22,7 @@ MAX_DOWNLOAD_WORKERS = 8
 
 
 def verify_image(temp_path: Path) -> None:
-    """
-    Vérifie qu'un fichier image temporaire est valide et non corrompu.
-
-    Args:
-        temp_path: Le chemin vers le fichier image temporaire à vérifier.
-
-    Raises:
-        ValueError: Si le fichier n'est pas une image valide ou est corrompu.
-    """
+    """Check that a temporary image file is valid and not corrupted."""
     try:
         with Image.open(temp_path) as image:
             image.verify()
@@ -48,15 +32,7 @@ def verify_image(temp_path: Path) -> None:
 
 @contextmanager
 def temporary_image_path(*, suffix: str) -> Iterator[Path]:
-    """
-    Gestionnaire de contexte qui crée un fichier temporaire et le supprime à la sortie.
-
-    Args:
-        suffix: L'extension du fichier temporaire (ex: '.png', '.jpg').
-
-    Yields:
-        Le chemin vers le fichier temporaire créé.
-    """
+    """Context manager that creates a temporary file and removes it on exit."""
     with NamedTemporaryFile(delete=False, suffix=suffix) as handle:
         temp_path = Path(handle.name)
 
@@ -68,23 +44,7 @@ def temporary_image_path(*, suffix: str) -> Iterator[Path]:
 
 @contextmanager
 def downloaded_image(image_id: str) -> Iterator[Path]:
-    """
-    Gestionnaire de contexte qui télécharge une image depuis HuggingFace dans un fichier temporaire.
-
-    Télécharge l'image identifiée par image_id depuis le dataset ROCOv2 hébergé sur
-    HuggingFace, la stocke dans un fichier temporaire, vérifie son intégrité,
-    puis supprime le fichier à la sortie du contexte.
-
-    Args:
-        image_id: L'identifiant ROCOv2 de l'image à télécharger.
-
-    Yields:
-        Le chemin vers le fichier image temporaire téléchargé et vérifié.
-
-    Raises:
-        RuntimeError: Si le téléchargement échoue (réseau indisponible, image introuvable).
-        ValueError: Si le fichier téléchargé n'est pas une image valide.
-    """
+    """Context manager that downloads a HuggingFace image into a temporary file."""
     with temporary_image_path(suffix=".png") as temp_path:
         try:
             with urlopen(
@@ -100,16 +60,7 @@ def downloaded_image(image_id: str) -> Iterator[Path]:
 
 
 def encode_remote_image(image_id: str, embedder) -> object:
-    """
-    Télécharge une image distante et calcule son embedding via l'encodeur fourni.
-
-    Args:
-        image_id: L'identifiant ROCOv2 de l'image à encoder.
-        embedder: L'instance d'embedder (DinoV2 ou BioMedCLIP) à utiliser.
-
-    Returns:
-        Le vecteur d'embedding calculé pour l'image.
-    """
+    """Download a remote image and compute its embedding with the provided encoder."""
     with downloaded_image(image_id) as temp_path:
         with Image.open(temp_path) as pil_image:
             return embedder.encode_pil(pil_image)
@@ -121,21 +72,7 @@ def build_centroid_embedding(
     embedder,
     max_download_workers: int = MAX_DOWNLOAD_WORKERS,
 ) -> np.ndarray:
-    """
-    Calcule un embedding centroïde à partir d'une sélection d'images (mean-pooling).
-
-    Télécharge et encode toutes les images en parallèle, puis combine les embeddings
-    obtenus en prenant la moyenne élément par élément (mean-pooling). Cette approche
-    produit un vecteur requête représentatif de l'ensemble de la sélection.
-
-    Args:
-        image_ids: Liste des identifiants ROCOv2 des images sélectionnées.
-        embedder: L'instance d'embedder à utiliser pour l'encodage.
-        max_download_workers: Nombre maximum de threads parallèles pour le téléchargement.
-
-    Returns:
-        Un tableau numpy de forme (1, embedding_dim) représentant le centroïde.
-    """
+    """Compute a centroid embedding from a selected image set using mean pooling."""
     worker_count = max(1, min(len(image_ids), max_download_workers))
     with ThreadPoolExecutor(max_workers=worker_count) as executor:
         embeddings = list(executor.map(partial(encode_remote_image, embedder=embedder), image_ids))

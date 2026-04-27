@@ -3,9 +3,9 @@
  * @module data/palettes
  */
 
-/** Clé de stockage de la palette sélectionnée dans localStorage */
+/** Storage key for the selected palette in localStorage. */
 export const PALETTE_STORAGE_KEY = "mediscan-palette";
-/** Identifiant de la palette par défaut */
+/** Default palette identifier. */
 export const DEFAULT_PALETTE_ID = "classic";
 
 /** Palettes disponibles avec leurs tokens light/dark */
@@ -198,7 +198,7 @@ export const COLOR_PALETTES = {
 };
 
 /**
- * Vérifie si une valeur est un identifiant de palette valide.
+ * Documentation for theme/palettes.
  * @param {*} value
  * @returns {boolean}
  */
@@ -207,8 +207,7 @@ export function isPaletteId(value) {
 }
 
 /**
- * Retourne les tokens de couleur d'une palette pour un thème donné.
- * Fallback sur "light" si le thème n'existe pas.
+ * Documentation for theme/palettes.
  * @param {"light"|"dark"} theme
  * @param {string} [paletteId=DEFAULT_PALETTE_ID]
  * @returns {object}
@@ -220,7 +219,7 @@ export function getPalette(theme, paletteId = DEFAULT_PALETTE_ID) {
 }
 
 /**
- * Applique les tokens d'une palette comme variables CSS sur un élément racine.
+ * Documentation for theme/palettes.
  * @param {HTMLElement} root
  * @param {"light"|"dark"} theme
  * @param {string} paletteId

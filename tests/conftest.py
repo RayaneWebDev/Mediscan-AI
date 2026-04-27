@@ -1,1 +1,3 @@
-# pytest discovers src/ and project root via pyproject.toml [tool.pytest.ini_options]
+"""Shared pytest configuration for the MediScan test suite."""
+
+from __future__ import annotations

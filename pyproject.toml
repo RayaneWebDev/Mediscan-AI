@@ -14,3 +14,6 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "."]
+markers = [
+    "integration: tests that read real project artifacts or external resources",
+]

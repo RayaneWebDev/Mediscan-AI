@@ -1,17 +1,17 @@
-/** 
- * @fileoverview Composant de chargement animé.
+/**
+ * @fileoverview Documentation for components/Spinner.
  * @module components/Spinner
  */
 
 /**
- * Spinner de chargement animé.
+ * Documentation for components/Spinner.
  *
  * @component
  * @param {object} props
- * @param {string} [props.label] - Texte affiché sous le spinner
- * @param {"primary"|"accent"} [props.tone="primary"] - Palette de couleur
- * @param {"sm"|"md"|"lg"} [props.size="md"] - Taille du spinner
- * @param {boolean} [props.inline=false] - Affiche le spinner et le label côte à côte
+ * @param {string} [props.label]
+ * @param {"primary"|"accent"} [props.tone="primary"]
+ * @param {"sm"|"md"|"lg"} [props.size="md"]
+ * @param {boolean} [props.inline=false]
  * @returns {JSX.Element}
  */
 export default function Spinner({ label, tone = "primary", size = "md", inline = false }) {

@@ -1,6 +1,8 @@
 /**
- * Catégories CUI groupées par type sémantique (modalité, anatomie, finding).
+ * @fileoverview CUI category definitions grouped by semantic type.
+ * @module data/cuiCategories
  */
+
 export const CUI_TYPES = {
   modalite: [
     { cui: "C0040405", label_fr: "Scanner CT", label_en: "Computed Tomography" },

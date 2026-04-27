@@ -1,5 +1,5 @@
-/** 
- * @fileoverview Page explicative du fonctionnement du système CBIR MediScan.
+/**
+ * @fileoverview Documentation for components/HowItWorks.
  * @module components/HowItWorks
  */
 
@@ -7,8 +7,7 @@ import { useContext } from "react";
 import { LangContext } from "../context/LangContextValue";
 
 /**
- * Page décrivant les deux modes de recherche CBIR :
- * visuel (descripteurs d'image) et sémantique (embeddings de captions).
+ * Documentation for components/HowItWorks.
  *
  * @component
  * @returns {JSX.Element}

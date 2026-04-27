@@ -493,45 +493,45 @@
 
 /* ─── Hub-and-Spoke Section ───────────────────────────────────────── */
 /*
- * VARIABLES DE RÉGLAGE — modifie ici sans toucher au reste.
+ * TUNING VARIABLES - edit here without touching the rest.
  *
- * Positionnement radial
- *   --hub-angle-1    angle de la carte 1 depuis le nord (sens horaire)
- *   --hub-angle-2    angle de la carte 2 depuis le nord (sens horaire)
- *   --hub-radius     distance centre → milieu de la carte
- *   --hub-card-w     largeur des cartes
- *   --hub-max-w      largeur max du layout
- *   --hub-h          hauteur du conteneur (desktop)
+ * Radial positioning
+ *   --hub-angle-1    card 1 angle from north (clockwise)
+ *   --hub-angle-2    card 2 angle from north (clockwise)
+ *   --hub-radius     distance from center to card midpoint
+ *   --hub-card-w     card width
+ *   --hub-max-w      layout max width
+ *   --hub-h          container height (desktop)
  *
- * Anneau
- *   --hub-ring-size    diamètre de l'anneau pointillé extérieur
- *   --hub-donut-size   diamètre du donut coloré
- *   --hub-donut-inset  épaisseur du donut (plus grand = plus fin)
- *   --hub-core-size    taille du chip central
- *   --hub-core-radius  arrondi du chip
+ * Ring
+ *   --hub-ring-size    outer dashed ring diameter
+ *   --hub-donut-size   colored donut diameter
+ *   --hub-donut-inset  donut thickness control (larger = thinner)
+ *   --hub-core-size    central chip size
+ *   --hub-core-radius  central chip radius
  *
- * Donut — segments conic-gradient (moitié haute / moitié basse)
- *   --hub-seg1-color   moitié supérieure (sémantique)
- *   --hub-seg2-color   moitié inférieure (visuel)
+ * Donut - conic-gradient segments (upper half / lower half)
+ *   --hub-seg1-color   upper half (semantic)
+ *   --hub-seg2-color   lower half (visual)
  */
 .home-hub-section {
-  /* Positionnement radial des cartes (depuis le nord, sens horaire) */
-  --hub-angle-1: 315deg;   /* Analyse visuelle       — haut-gauche */
-  --hub-angle-2: 45deg;    /* Recherche textuelle    — haut-droit  */
+  /* Radial card positioning (from north, clockwise) */
+  --hub-angle-1: 315deg;   /* Visual analysis - top-left */
+  --hub-angle-2: 45deg;    /* Text search - top-right */
   --hub-radius:  328px;
   --hub-card-w:  360px;
   --hub-max-w:   100%;
   --hub-h:       760px;
 
-  /* Anneau */
+  /* Ring */
   --hub-ring-size:    calc(var(--hub-donut-size) + 32px);
   --hub-donut-size:   200px;
   --hub-donut-inset:  46px;
   --hub-core-size:    68px;
   --hub-core-radius:  0.95rem;
 
-  /* Segments donut */
-  /* Segments stricts imposes par specification */
+  /* Donut segments */
+  /* Strict segments required by the specification */
   --hub-seg1-color: var(--home-tree-accent-bg-mid);
   --hub-seg2-color: var(--home-tree-blue-bg-mid);
 
@@ -630,7 +630,7 @@
   }
 }
 
-/* Conteneur radial — positionnement absolu des éléments */
+/* Radial container with absolutely positioned elements */
 .home-hub-layout {
   position: relative;
   width: min(100%, var(--hub-max-w));

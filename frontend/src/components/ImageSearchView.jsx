@@ -1,5 +1,5 @@
-/** 
- * @fileoverview Vue de recherche CBIR par image avec upload, filtres, résultats et sélection.
+/**
+ * @fileoverview Image-search workflow: upload, mode switching, relaunch, filters, and exports.
  * @module components/ImageSearchView
  */
 
@@ -42,7 +42,7 @@ import { VisualModeIcon, InterpretiveModeIcon } from "./icons";
 import { CUI_TYPES } from "../data/cuiCategories";
 
 /**
- * Exécute et vide la ref de cleanup si elle est définie.
+ * Run a cleanup function stored in a ref when one is registered.
  * @param {{ current: function|null }} cleanupRef
  */
 function runCleanupRef(cleanupRef) {
@@ -50,8 +50,12 @@ function runCleanupRef(cleanupRef) {
 }
 
 /**
- * Badge d'étape numérotée avec ton adaptatif (primary, accent ou home).
- * @param {{ label: string, isAccent: boolean, useHomeVisualTone: boolean, enableToneTransition?: boolean }} props
+ * Render the numbered step badge with the current visual or semantic tone.
+ * @param {object} props
+ * @param {string} props.label
+ * @param {boolean} props.isAccent
+ * @param {boolean} props.useHomeVisualTone
+ * @param {boolean} [props.enableToneTransition]
  */
 function StepBadge({ label, isAccent, useHomeVisualTone, enableToneTransition = false }) {
   const toneClass = isAccent
@@ -67,7 +71,7 @@ function StepBadge({ label, isAccent, useHomeVisualTone, enableToneTransition = 
 }
 
 /**
- * Retourne les classes CSS d'un bouton de filtre toggle selon son état et le ton actif.
+ * Return the tone-aware CSS classes for filter toggle buttons.
  * @param {boolean} isActive
  * @param {boolean} isAccent
  * @param {boolean} useHomeVisualTone
@@ -92,14 +96,16 @@ function getFilterToggleStateClasses(isActive, isAccent, useHomeVisualTone) {
 }
 
 /**
- * Vue de recherche CBIR par image.
- * Gère l'upload, le choix de mode, la recherche, les filtres,
- * la sélection de résultats et le scroll automatique.
+ * Render the image-driven CBIR search view.
+ *
+ * This component owns the complete image-search workflow: upload validation,
+ * visual/semantic mode changes, relaunch from one result, centroid relaunch from
+ * multiple selected results, client-side filters, and export actions.
  *
  * @component
  * @param {object} props
- * @param {function(): void} props.onBack - Retour vers le hub de recherche
- * @param {function(string): void} props.onChromeToneChange - Callback de changement de ton du chrome
+ * @param {function(): void} props.onBack
+ * @param {function(string): void} props.onChromeToneChange
  * @returns {JSX.Element}
  */
 export default function ImageSearchView({ onBack, onChromeToneChange }) {
@@ -118,7 +124,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
 
-  // filtres
+  // Search filters shown once results are available.
   const [minScore, setMinScore] = useState(0);
   const [searchText, setSearchText] = useState("");
   const [cuiFilter, setCuiFilter] = useState("");
@@ -161,6 +167,10 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     };
   }, []);
 
+  /**
+   * Validate an image selected by the user and reset stale search state.
+   * @param {File} f
+   */
   function handleFileSelect(f) {
     if (!f.type.match(/^image\/(jpeg|png)$/)) {
       setStatus({
@@ -174,17 +184,19 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     clearResults();
   }
 
+  /** Remove the current image and reset search state. */
   function handleRemove() {
     setFile(null);
     clearResults();
     setStatus(null);
   }
 
-  /** Attache les callbacks de relance aux données de résultats */
+  /** Attach relaunch callbacks to result data. */
   function attachCallbacks(data) {
     return { ...data, onRelaunch: handleRelaunch, onRelaunchMultiple: handleRelaunchMultiple };
   }
 
+  /** Clear all results and the current selection. */
   function clearResults() {
     setResults(null);
     setVisualResults(null);
@@ -193,9 +205,10 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
   }
 
   /**
-  * Exécute une action de recherche avec délai minimum et gestion d'erreur.
+  * Run a search-like async action while managing loading, errors, and minimum visual feedback time.
   * @param {function(): Promise<void>} action
-  * @param {{ clearExistingResults?: boolean }} [options={}]
+  * @param {object} [options={}]
+  * @param {boolean} [options.clearExistingResults]
   */
   async function runSearch(action, { clearExistingResults = true } = {}) {
     setLoading(true);
@@ -220,7 +233,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
   }
 
   /**
-  * Lance la recherche avec le fichier courant (mode simple ou comparaison).
+  * Search from the uploaded image using the currently selected mode and result count.
   */
   async function handleSearch() {
     if (!file) return;
@@ -242,7 +255,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
   }
 
   /**
-  * Relance la recherche depuis un résultat existant par son image_id.
+  * Relaunch search from a single result image while keeping the current mode.
   * @param {string} imageId
   */
   async function handleRelaunch(imageId) {
@@ -264,7 +277,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
   }
 
   /**
-  * Relance la recherche depuis une sélection multiple d'image_ids.
+  * Relaunch search from a multi-result selection by querying the centroid endpoint.
   * @param {string[]} imageIds
   */
   async function handleRelaunchMultiple(imageIds) {
@@ -285,23 +298,28 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     }, { clearExistingResults: false });
   }
 
+  /** Run centroid search from the active selection. */
   async function handleSelectionSearch() {
     if (selectedIds.length === 0 || loading) return;
     await handleRelaunchMultiple(selectedIds);
   }
 
+  /**
+   * Remove one image id from the active multi-selection.
+   * @param {string} imageId
+   */
   function handleSelectionRemove(imageId) {
     setSelectedIds((currentIds) => currentIds.filter((currentId) => currentId !== imageId));
   }
 
   /**
-  * Tente de changer le mode de recherche.
-  * Retourne "confirm" si des résultats existent et que force est faux.
-  * 
+  * Attempt to change the search mode while guarding against losing existing results.
+  *
   * @param {"visual"|"semantic"} nextMode
-  * @param {{ force?: boolean }} [options={}]
+  * @param {object} [options={}]
+  * @param {boolean} [options.force]
   * @returns {"noop"|"blocked"|"confirm"|"changed"}
-  */ 
+  */
   function handleModeChange(nextMode, { force = false } = {}) {
     if (nextMode === mode) return "noop";
     if (loading) return "blocked";
@@ -320,18 +338,22 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     return "changed";
   }
 
+  /** Export filtered results as JSON. */
   function exportJSON() {
     exportResultsAsJson(filteredResults, `results_${mode}.json`);
   }
 
+  /** Export filtered results as CSV. */
   function exportCSV() {
     exportResultsAsCsv(filteredResults, `results_${mode}.csv`);
   }
 
+  /** Export filtered results as PDF. */
   async function exportPDF() {
     await exportResultsAsPdf(filteredResults, `results_${mode}.pdf`);
   }
 
+  /** Reset all filters to their default values. */
   function resetFilters() {
     setMinScore(0);
     setSearchText("");
@@ -760,7 +782,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
             return;
           }
 
-          // Ajuste cette valeur selon le rendu souhaite: negatif = moins bas, positif = plus bas.
+          // Positive values scroll slightly lower; negative values keep the result block higher.
           const IMAGE_SEARCH_SCROLL_OFFSET = 20;
           const boundedTargetY = getResultsGridScrollTargetY(gridNode, IMAGE_SEARCH_SCROLL_OFFSET);
           scrollCancelRef.current?.();
@@ -791,6 +813,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     };
   }, [loading, hasSearchResults, singleResultCount, visualResultCount, semanticResultCount]);
 
+  /** Scroll to the mode-choice guide and trigger its highlight. */
   function handleModeInfoClick() {
     scrollToInfoSection({
       sectionId: "image-search-quick-note",
@@ -800,6 +823,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     });
   }
 
+  /** Scroll to the filter guide and trigger its highlight. */
   function handleFilterInfoClick() {
     scrollToInfoSection({
       sectionId: "image-search-quick-note",
@@ -815,6 +839,7 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     setFilterOrderOnlyHighlighted(false);
   }
 
+  /** Scroll to the multi-selection guide and trigger its highlight. */
   function handleSelectionInfoClick() {
     scrollToInfoSection({
       sectionId: "image-search-quick-note",
@@ -831,6 +856,10 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
     setFilterOrderOnlyHighlighted(false);
   }
 
+  /**
+   * Toggle one curated caption filter chip.
+   * @param {string} filterId
+   */
   function handleCaptionFilterToggle(filterId) {
     setActiveCaptionFilterIds((currentIds) => (
       currentIds.includes(filterId)
@@ -859,8 +888,19 @@ export default function ImageSearchView({ onBack, onChromeToneChange }) {
   const filterScoreValueClassName = `${toneSyncClass} min-w-[2.8rem] text-right text-sm font-bold ${isAccent ? "mediscan-accent-text search-filter-score-value-accent" : useHomeVisualTone ? "search-filter-score-value-primary" : "text-primary"}`;
   const filterScoreScaleClassName = `${toneSyncClass} mt-2 flex items-center justify-between text-[11px] text-muted`;
   const filterSortShellClassName = `search-mode-shell mt-1.5 flex gap-1 rounded-xl border p-1 ${filterPanelShellClass} ${useHomeVisualTone ? "search-sort-shell-primary" : ""}`;
+  /**
+   * Compose classes for a caption-filter chip.
+   * @param {boolean} isActive
+   * @returns {string}
+   */
   const getCaptionFilterButtonClassName = (isActive) =>
     `search-mode-option inline-flex items-center gap-1.5 rounded-full border border-transparent px-3 py-1.5 text-xs font-medium transition-all ${getFilterToggleStateClasses(isActive, isAccent, useHomeVisualTone)}`;
+  /**
+   * Compose classes for one sort option.
+   * @param {string} _value
+   * @param {boolean} isActive
+   * @returns {string}
+   */
   const getSortOptionClassName = (_value, isActive) =>
     `search-mode-option flex-1 rounded-[0.8rem] border border-transparent px-3 py-2 text-xs font-medium transition-all ${getFilterToggleStateClasses(isActive, isAccent, useHomeVisualTone)} ${useHomeVisualTone ? `search-sort-option-primary ${isActive ? "search-sort-option-active-primary" : ""}` : ""}`;
 

@@ -1,4 +1,4 @@
-/** 
+/**
  * @fileoverview Page de contact avec formulaire.
  * @module components/ContactPage
  */
@@ -11,7 +11,7 @@ import { sendContactMessage } from "../api";
 
 /**
  * Page de contact avec formulaire (nom, email, sujet, message).
- * Affiche un écran de confirmation après envoi réussi.
+ * Documentation for components/ContactPage.
  *
  * @component
  * @returns {JSX.Element}
@@ -21,17 +21,17 @@ export default function ContactPage() {
   const { t } = useContext(LangContext);
   const content = t.contact;
 
-  /** @type {[{name: string, email: string, subject: string, message: string}, function]} État du formulaire de contact. */
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
-  /** @type {[boolean, function]} Indique si le message a été envoyé avec succès */
+  /** Contact form state. */
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "", website: "" });
+  /** Indicate whether the message was sent successfully. */
   const [sent, setSent] = useState(false);
-  /** @type {[boolean, function]} Indique si la soumission est en cours */
+  /** Indicate whether submission is in progress. */
   const [isSubmitting, setIsSubmitting] = useState(false);
-  /** @type {[string, function]} Message d'erreur de soumission */
+  /** Submission error message. */
   const [error, setError] = useState("");
-  /** @type {[string|null, function]} Nom du champ actuellement focus */
+  /** Nom du champ actuellement focus. */
   const [focused, setFocused] = useState(null);
-  /** @type {[boolean, function]} Déclenche les animations d'entrée après le premier frame */
+  /** Trigger entry animations after the first frame. */
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function ContactPage() {
   }, []);
 
   /**
-   * Met à jour un champ du formulaire par son nom.
+   * Documentation for components/ContactPage.
    * @param {React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>} e
   */
   const handleChange = (e) => {
@@ -50,7 +50,7 @@ export default function ContactPage() {
 
   /**
    * Soumet le formulaire de contact.
-   * Nettoie les données, appelle l'API Groq et gère les états succès/erreur.
+   * Documentation for components/ContactPage.
   */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,9 +63,10 @@ export default function ContactPage() {
         email: form.email.trim(),
         subject: form.subject.trim(),
         message: form.message.trim(),
+        website: form.website.trim(),
       });
       setSent(true);
-      setForm({ name: "", email: "", subject: "", message: "" });
+      setForm({ name: "", email: "", subject: "", message: "", website: "" });
     } catch (err) {
       setError(err.message || content.errorGeneric);
     } finally {
@@ -74,8 +75,8 @@ export default function ContactPage() {
   };
 
   /**
-   * Retourne les classes CSS d'un champ selon son état (focus ou non).
-   * @param {string} name - Nom du champ.
+   * Documentation for components/ContactPage.
+   * @param {string} name
    * @returns {string}
   */
   const inputClass = (name) =>
@@ -116,7 +117,7 @@ export default function ContactPage() {
               <p className="text-sm text-muted leading-relaxed mb-3 hidden md:block">
                 {content.supportDesc}
               </p>
-              
+
                 <a href={`mailto:${content.supportAddr}`}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-text hover:gap-2.5 transition-all duration-200"
               >
@@ -166,6 +167,16 @@ export default function ContactPage() {
                 onSubmit={handleSubmit}
                 className="p-7 md:p-9 rounded-2xl border border-border bg-bg space-y-5"
               >
+                <input
+                  type="text"
+                  name="website"
+                  value={form.website}
+                  onChange={handleChange}
+                  autoComplete="off"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  className="hidden"
+                />
                 {/* Name + Email row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>

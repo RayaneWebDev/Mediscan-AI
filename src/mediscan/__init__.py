@@ -1,1 +1,1 @@
-"""Librairie principale MediScan AI — pipeline CBIR médical."""
+"""Main MediScan AI library for the medical CBIR pipeline."""

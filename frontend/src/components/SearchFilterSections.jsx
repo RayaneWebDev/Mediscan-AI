@@ -1,10 +1,10 @@
-/** 
- * @fileoverview Composants de cartes de filtres pour la page de recherche CBIR.
+/**
+ * @fileoverview Filter card components for the CBIR search page.
  * @module components/SearchFilterSections
  */
- 
+
 /**
- * Carte de base enveloppant les filtres de recherche.
+ * Render the base card wrapper used around search filters.
  * @component
  * @param {object} props
  * @param {React.ReactNode} props.children
@@ -20,7 +20,7 @@ function SearchFilterCard({ children, className = "" }) {
 }
 
 /**
- * Joint des noms de classes CSS en filtrant les valeurs vides.
+ * Join CSS class names after filtering empty values.
  * @param {...string} classNames
  * @returns {string}
  */
@@ -29,22 +29,22 @@ function joinClassNames(...classNames) {
 }
 
 /**
- * En-tête du panneau de filtres avec titre, compteur de filtres actifs et bouton reset.
+ * Render the filter panel header with title, active count, and reset action.
  *
  * @component
  * @param {object} props
- * @param {string} props.title - Titre du panneau
+ * @param {string} props.title
  * @param {string} [props.titleClassName=""]
- * @param {string} props.infoLabel - Label aria du bouton info
- * @param {function(): void} props.onInfoClick - Callback du bouton info
+ * @param {string} props.infoLabel
+ * @param {function(): void} props.onInfoClick
  * @param {string} [props.infoButtonClassName=""]
- * @param {number} [props.activeFilterCount=0] - Nombre de filtres actifs
+ * @param {number} [props.activeFilterCount=0]
  * @param {string} [props.activeCountClassName=""]
- * @param {string} props.hint - Texte d'aide sous le titre
+ * @param {string} props.hint
  * @param {string} [props.hintClassName=""]
- * @param {function(): void} props.onReset - Callback du bouton reset
+ * @param {function(): void} props.onReset
  * @param {boolean} [props.resetDisabled=false]
- * @param {string} props.resetLabel - Label du bouton reset
+ * @param {string} props.resetLabel
  * @param {string} [props.resetButtonClassName=""]
  * @returns {JSX.Element}
  */
@@ -94,22 +94,22 @@ export function SearchFilterPanelHeader({
 
 
 /**
- * Carte de filtre par caption textuelle avec suggestions de termes rapides.
+ * Render the caption text filter and curated quick-term chips.
  *
  * @component
  * @param {object} props
- * @param {string} props.label - Label du champ
+ * @param {string} props.label
  * @param {string} [props.labelClassName=""]
- * @param {string} props.value - Valeur courante du champ texte
- * @param {function(string): void} props.onChange - Callback de changement
+ * @param {string} props.value
+ * @param {function(string): void} props.onChange
  * @param {string} props.placeholder
  * @param {string} [props.inputWrapperClassName="mt-1.5"]
  * @param {string} [props.inputClassName=""]
- * @param {React.ReactNode} [props.leadingIcon=null] - Icône à gauche du champ
- * @param {Array<{id: string, label: string, count: number}>} [props.suggestedFilters=[]] - Filtres suggérés
- * @param {string[]} [props.activeFilterIds=[]] - IDs des filtres actifs
- * @param {function(string): void} props.onToggleFilter - Callback de toggle d'un filtre
- * @param {function(boolean): string} props.getToggleClassName - Retourne la classe CSS d'un bouton toggle
+ * @param {React.ReactNode} [props.leadingIcon=null]
+ * @param {Array<{id: string, label: string, count: number}>} [props.suggestedFilters=[]]
+ * @param {string[]} [props.activeFilterIds=[]]
+ * @param {function(string): void} props.onToggleFilter
+ * @param {function(boolean): string} props.getToggleClassName
  * @param {string} props.quickTermsLabel
  * @param {string} [props.quickTermsLabelClassName=""]
  * @param {string} props.quickTermsHint
@@ -190,20 +190,20 @@ export function SearchCaptionFilterCard({
 }
 
 /**
- * Carte de filtre par CUI (identifiant de concept médical) avec selects par type.
+ * Render free-text CUI search plus type-specific CUI select controls.
  *
  * @component
  * @param {object} props
  * @param {string} props.label
  * @param {string} [props.labelClassName=""]
- * @param {string} props.value - Valeur courante du champ texte CUI
+ * @param {string} props.value
  * @param {function(string): void} props.onChange
  * @param {string} props.placeholder
  * @param {string} [props.inputClassName=""]
- * @param {Array<{label: string, value: string, onChange: function, options: Array<{cui: string, label_fr: string, label_en: string}>}>} props.selectGroups - Groupes de selects par type CUI
+ * @param {Array<{label: string, value: string, onChange: function, options: Array<{cui: string, label_fr: string, label_en: string}>}>} props.selectGroups
  * @param {string} [props.selectLabelClassName=""]
  * @param {string} [props.selectClassName=""]
- * @param {string} props.lang - Langue active ("fr" ou "en")
+ * @param {string} props.lang
  * @returns {JSX.Element}
  */
 export function SearchCuiFilterCard({
@@ -271,17 +271,17 @@ export function SearchCuiFilterCard({
 }
 
 /**
- * Carte de filtre par score minimum (slider 0–100%).
+ * Render the minimum-score filter as a percentage slider.
  *
  * @component
  * @param {object} props
  * @param {string} props.label
  * @param {string} [props.labelClassName=""]
- * @param {number} props.value - Score minimum entre 0 et 1
+ * @param {number} props.value
  * @param {function(number): void} props.onChange
  * @param {string} [props.sliderClassName=""]
  * @param {string} [props.scoreClassName=""]
- * @param {object} [props.scoreStyle] - Style inline sur la valeur affichée
+ * @param {object} [props.scoreStyle]
  * @param {string} [props.scaleClassName=""]
  * @returns {JSX.Element}
  */
@@ -323,7 +323,7 @@ export function SearchScoreFilterCard({
 }
 
 /**
- * Carte de filtre par référence image (champ texte libre).
+ * Render the image/reference identifier text filter.
  *
  * @component
  * @param {object} props
@@ -360,17 +360,17 @@ export function SearchReferenceFilterCard({
 }
 
 /**
- * Carte de filtre de tri avec boutons de sélection d'option.
+ * Render the result sort control as a segmented option group.
  *
  * @component
  * @param {object} props
  * @param {string} props.label
  * @param {string} [props.labelClassName=""]
  * @param {string} [props.shellClassName=""]
- * @param {Array<{value: string, label: string}>} props.options - Options de tri disponibles
- * @param {string} props.currentValue - Option active
+ * @param {Array<{value: string, label: string}>} props.options
+ * @param {string} props.currentValue
  * @param {function(string): void} props.onChange
- * @param {function(string, boolean): string} props.getOptionClassName - Retourne la classe CSS d'une option
+ * @param {function(string, boolean): string} props.getOptionClassName
  * @returns {JSX.Element}
  */
 export function SearchSortFilterCard({

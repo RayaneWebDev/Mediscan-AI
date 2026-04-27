@@ -1,5 +1,5 @@
-/** 
- * @fileoverview Section de démonstrations visuelles du projet MediScan CBIR.
+/**
+ * @fileoverview Documentation for components/DemosShowcase.
  * @module components/DemosShowcase
  */
 
@@ -9,8 +9,7 @@ import { useTheme } from "../context/useTheme";
 import FeatureCarousel from "./FeatureCarousel";
 
 /**
- * Sets d'images de démo par mode (light/dark).
- * Chaque entrée correspond à une carte de démo dans content.demoCards.
+ * Documentation for components/DemosShowcase.
  */
 const DEMO_IMAGE_SETS = [
   {
@@ -29,20 +28,19 @@ const DEMO_IMAGE_SETS = [
 
 
 /**
- * Section de démonstrations avec carousel d'images par mode.
- * Peut être utilisée en mode standalone (page dédiée) ou embarquée dans la HomePage.
+ * Documentation for components/DemosShowcase.
  *
  * @component
  * @param {object} props
- * @param {boolean} [props.embedded=false] - Mode embarqué dans la HomePage
- * @param {function(string): void} [props.onNavigate] - Callback de navigation vers une page
+ * @param {boolean} [props.embedded=false]
+ * @param {function(string): void} [props.onNavigate]
  * @returns {JSX.Element}
  */
 export default function DemosShowcase({ embedded = false, onNavigate }) {
   const { t } = useContext(LangContext);
   const { theme } = useTheme();
   const content = t.demos;
-  /** @type {[boolean, function]} Déclenche les animations d'entrée après le premier frame */
+  /** Trigger entry animations after the first frame. */
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -50,7 +48,7 @@ export default function DemosShowcase({ embedded = false, onNavigate }) {
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  /** Cartes de démo enrichies avec les images selon le thème actif */
+  /** Demo cards enriched with images for the active theme. */
   const demoCards = (content?.demoCards ?? [])
     .slice(0, DEMO_IMAGE_SETS.length)
     .map((card, index) => ({

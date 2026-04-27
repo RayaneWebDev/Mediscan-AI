@@ -1,5 +1,5 @@
-/** 
- * @fileoverview Panneau de contrôles de la recherche CBIR (mode, nombre de résultats, bouton lancer).
+/**
+ * @fileoverview Shared search controls for mode selection, k depth, and guarded launch actions.
  * @module components/Controls
  */
 
@@ -8,31 +8,32 @@ import { createPortal } from "react-dom";
 import { LangContext } from "../context/LangContextValue";
 
 /**
- * Panneau de contrôle de la recherche CBIR.
- * Regroupe le toggle de mode visuel/sémantique, le slider top-k,
- * le bouton de lancement et un popover de confirmation de changement de mode.
+ * Render the shared search control panel.
+ *
+ * The panel owns the k slider, the optional visual/semantic mode toggle, the
+ * launch button, and the confirmation popover used before discarding results.
  *
  *
  * @component
  * @param {object} props
- * @param {"visual"|"semantic"} props.mode - Mode de recherche actif.
- * @param {function(string, object): string|void} props.onModeChange - Callback de changement de mode.
- * @param {number} props.k - Nombre de résultats demandés.
- * @param {function(number): void} props.onKChange - Callback de changement de K.
- * @param {function(): void} props.onSearch - Callback de lancement de la recherche.
- * @param {boolean} props.disabled - Désactive le bouton de recherche.
- * @param {boolean} [props.loading=false] - Affiche un spinner dans le bouton si "true".
- * @param {boolean} [props.showModeToggle=true] - Affiche ou masque le toggle de mode.
- * @param {boolean} [props.useHomeVisualTone=false] - Utilise le thème primary de la home page.
- * @param {boolean} [props.enableToneTransition=false] - Active les transitions CSS de changement de ton.
- * @param {boolean} [props.modeToggleDisabled=false] - Désactive les boutons de toggle de mode.
- * @param {boolean} [props.modeChangeGuardActive=false] - Active la protection contre le changement de mode.
- * @param {string} [props.modeChangeConfirmMessage=""] - Message du popover (Fenêtre surgissante) de confirmation.
- * @param {string} [props.modeChangeConfirmActionLabel=""] - Label du bouton de confirmation.
- * @param {string} [props.modeChangeCancelLabel=""] - Label du bouton d'annulation.
- * @param {function(): void} [props.onModeInfoClick=null] - Callback du bouton d'info sur le mode.
- * @param {string} [props.modeInfoLabel=""] - Texte aria du bouton d'info.
- * @param {boolean} [props.modeInfoHighlighted=false] - Active l'illumination du bouton d'info.
+ * @param {"visual"|"semantic"} props.mode
+ * @param {function(string, object): string|void} props.onModeChange
+ * @param {number} props.k
+ * @param {function(number): void} props.onKChange
+ * @param {function(): void} props.onSearch
+ * @param {boolean} props.disabled
+ * @param {boolean} [props.loading=false]
+ * @param {boolean} [props.showModeToggle=true]
+ * @param {boolean} [props.useHomeVisualTone=false]
+ * @param {boolean} [props.enableToneTransition=false]
+ * @param {boolean} [props.modeToggleDisabled=false]
+ * @param {boolean} [props.modeChangeGuardActive=false]
+ * @param {string} [props.modeChangeConfirmMessage=""]
+ * @param {string} [props.modeChangeConfirmActionLabel=""]
+ * @param {string} [props.modeChangeCancelLabel=""]
+ * @param {function(): void} [props.onModeInfoClick=null]
+ * @param {string} [props.modeInfoLabel=""]
+ * @param {boolean} [props.modeInfoHighlighted=false]
  * @returns {JSX.Element}
  *
  */
@@ -58,17 +59,17 @@ export default function Controls({
 }) {
   const { t } = useContext(LangContext);
 
-  /** @type {[string|null, function]} Mode en attente de confirmation via le popover (Fenêtre surgissante). */
+  /** Mode waiting for confirmation through the popover. */
   const [pendingMode, setPendingMode] = useState(null);
-  /** @type {[{top: number, left: number, width: number}|null, function]} Style CSS positionnel du popover (Fenêtre surgissante) de confirmation (calculé dynamiquement). */
+  /** CSS position applied to the confirmation popover. */
   const [popoverStyle, setPopoverStyle] = useState(null);
   const useHomePrimaryTone = useHomeVisualTone && mode === "visual";
   const useAccentTone = mode === "semantic";
   const toneSyncClass = enableToneTransition ? "search-tone-sync" : "";
   const sliderToneClass = mode === "visual" ? "search-slider-track-primary" : "search-slider-track-accent";
-  /** Référence sur le toggle de mode pour calculer la position du popover (Fenêtre surgissante)*/
+  /** Reference to the mode toggle used to position the popover.*/
   const modeToggleRef = useRef(null);
-  /** Référence sur le popover (Fenêtre surgissante) pour détecter les clics en dehors */
+  /** Reference to the popover used to detect outside clicks. */
   const popoverRef = useRef(null);
 
   const panelSurfaceClass = mode === "visual"
@@ -109,10 +110,14 @@ export default function Controls({
       ? pendingMode
       : null;
 
-  // Fermeture du popover au clic en dehors.
+  // Close the popover when the user clicks outside it.
   useEffect(() => {
     if (!effectivePendingMode) return undefined;
 
+    /**
+     * Dismiss the pending mode when pointer input happens outside the popover.
+     * @param {MouseEvent|TouchEvent} event
+     */
     const handlePointerDown = (event) => {
       const target = event.target;
       if (popoverRef.current?.contains(target) || modeToggleRef.current?.contains(target)) {
@@ -130,13 +135,16 @@ export default function Controls({
       document.removeEventListener("touchstart", handlePointerDown);
     };
   }, [effectivePendingMode]);
-  
-  // Calcul dynamique de la position du popover (recalculé au resize/scroll).
+
+  // Dynamically compute the popover position on resize and scroll.
   useLayoutEffect(() => {
     if (!effectivePendingMode || !modeToggleRef.current || typeof window === "undefined") {
       return undefined;
     }
 
+    /**
+     * Keep the floating confirmation popover aligned with the mode toggle.
+     */
     const updatePopoverPosition = () => {
       const rect = modeToggleRef.current?.getBoundingClientRect();
       if (!rect) return;
@@ -167,11 +175,11 @@ export default function Controls({
   }, [effectivePendingMode]);
 
   /**
-   * Tente de changer le mode de recherche.
-   * Si "modeChangeGuardActive" est vrai et "force" est faux, déclenche le popover de confirmation.
+   * Attempt to change the search mode, optionally asking the parent for confirmation.
    *
-   * @param {"visual"|"semantic"} nextMode - Mode cible.
-   * @param {{force?: boolean}} [options={}]
+   * @param {"visual"|"semantic"} nextMode
+   * @param {object} [options={}]
+   * @param {boolean} [options.force]
   */
   function handleModeAttempt(nextMode, options = {}) {
     const { force = false } = options;
@@ -194,7 +202,7 @@ export default function Controls({
   }
 
   /**
-   * Confirme le changement de mode en attente (appelé depuis le popover).
+   * Confirm a guarded mode change and force the parent to clear existing results.
    */
   function handleConfirmModeChange() {
     if (!effectivePendingMode) return;

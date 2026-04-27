@@ -1,5 +1,5 @@
-/** 
- * @fileoverview Composant de génération de conclusion clinique IA (Groq + Llama) à partir des résultats CBIR.
+/**
+ * @fileoverview AI conclusion panel for summarizing the current search result context.
  * @module components/ClinicalConclusion
  */
 
@@ -9,10 +9,10 @@ import { LangContext } from "../context/LangContextValue";
 import Spinner from "./Spinner";
 
 /**
- * Transforme une chaîne de texte brute en blocs JSX formatés (paragraphes et listes à puces).
+ * Split a generated conclusion into paragraphs and bullet lists for display.
  *
- * @param {string} conclusion - Texte brut de la conclusion générée par l'IA.
- * @returns {JSX.Element[]} Tableau de paragraphes ou de listes "<ul>".
+ * @param {string} conclusion
+ * @returns {JSX.Element[]}
  */
 function renderConclusionBlocks(conclusion) {
   return conclusion
@@ -45,44 +45,42 @@ function renderConclusionBlocks(conclusion) {
 }
 
 /**
- * Permet de générer une conclusion clinique IA à partir des 5 meilleurs résultats de recherche CBIR.
+ * Render the optional clinical-style conclusion generator.
  *
- * Fonctionnement :
- * 1. L'utilisateur clique sur "Générer".
- * 2. Les 5 premiers résultats sont envoyés à l'API via "fetchConclusion".
- * 3. La réponse texte est formatée en blocs JSX et affichée.
- * 4. L'utilisateur peut copier la conclusion ou en générer une nouvelle.
+ * The backend reconstructs sensitive caption context server-side, so the frontend
+ * sends only the selected search result metadata and displays the cautious summary
+ * returned by the API.
  *
  * @component
  * @param {object} props
- * @param {object|null} props.searchResult - Résultat de recherche complet retourné par l'API CBIR.
- * @param {boolean} [props.isAccent=false] - Utilise la palette de recherche sémantique.
- * @param {string} [props.className="mt-6"] - Classes CSS supplémentaires pour le conteneur.
+ * @param {object|null} props.searchResult
+ * @param {boolean} [props.isAccent=false]
+ * @param {string} [props.className="mt-6"]
  * @returns {JSX.Element}
  *
  */
 export default function ClinicalConclusion({ searchResult, isAccent = false, className = "mt-6" }) {
-  
+
   const { t } = useContext(LangContext);
   const content = t.search.conclusion;
-  /** @type {[string|null, function]} Texte de la conclusion générée */
+  /** Generated conclusion text. */
   const [conclusion, setConclusion] = useState(null);
-  /** @type {[boolean, function]} Indique si la génération est en cours */
+  /** Indicate whether generation is in progress. */
   const [loading, setLoading] = useState(false);
-  /** @type {[string|null, function]} Message d'erreur possible*/
+  /** Possible error message. */
   const [error, setError] = useState(null);
-  /** @type {[boolean, function]} État d'ouverture/fermeture */
+  /** Open/closed state. */
   const [open, setOpen] = useState(false);
 
-  /** Les 5 premiers résultats utilisés comme contexte pour la génération IA */
+  /** Top five results used as AI generation context. */
   const topResults = useMemo(() => searchResult?.results?.slice(0, 5) || [], [searchResult]);
-  
+
   const accentColor = isAccent ? "text-accent border-accent/30 bg-accent/5" : "search-conclusion-note-primary";
   const btnColor = isAccent ? "mediscan-accent-action search-ai-summary-button-accent text-on-strong" : "mediscan-primary-action search-ai-summary-button-primary text-white";
   const canGenerate = topResults.length > 0;
-  
+
   /**
-   * Clé unique représentant l'état du résumé pour forcer le rendu de l'animation.
+   * Stable key used to reset panel animation when summary state changes.
   */
   const summaryStateKey = loading
     ? "loading"
@@ -93,7 +91,7 @@ export default function ClinicalConclusion({ searchResult, isAccent = false, cla
         : "idle";
 
   /**
-  * Lance la génération de la conclusion via l'API et gère les états loading/erreur.
+  * Request a new conclusion for the current result set.
   */
   async function handleGenerate() {
     if (!canGenerate) {
@@ -117,7 +115,7 @@ export default function ClinicalConclusion({ searchResult, isAccent = false, cla
   }
 
   /**
-   * Copie la conclusion dans le presse-papier du navigateur.
+   * Copy the generated conclusion to the browser clipboard.
   */
   function handleCopy() {
     if (conclusion) navigator.clipboard.writeText(conclusion);
@@ -168,7 +166,7 @@ export default function ClinicalConclusion({ searchResult, isAccent = false, cla
             <span>{content.disclaimer}</span>
           </div>
 
-          {/* Tags des résultats utilisés comme contexte */}
+          {/* Tags for the results used as context. */}
           <div className="mb-4 flex flex-wrap gap-1.5">
             {topResults.map((r, i) => (
               <span key={i} className="search-tone-sync search-conclusion-chip text-[11px] px-2 py-1 rounded-lg bg-bg border border-border text-muted font-mono">
@@ -177,7 +175,7 @@ export default function ClinicalConclusion({ searchResult, isAccent = false, cla
             ))}
           </div>
 
-          {/* États : bouton, chargement, erreur, conclusion */}
+          {/* States: button, loading, error, conclusion. */}
           <div key={summaryStateKey} className="mediscan-results-stage-enter">
             {!conclusion && !loading && (
               <button onClick={handleGenerate} className={`search-tone-sync search-conclusion-action w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${btnColor}`}>

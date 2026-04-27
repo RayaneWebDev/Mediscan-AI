@@ -1,5 +1,5 @@
-/** 
- * @fileoverview Page à propos du projet MediScan CBIR, présente l'équipe et le projet.
+/**
+ * @fileoverview Documentation for components/AboutPage.
  * @module components/AboutPage
  */
 
@@ -8,7 +8,7 @@ import { LangContext } from "../context/LangContextValue";
 import { useTheme } from "../context/useTheme";
 
 /**
- * Icône GitHub en SVG.
+ * Documentation for components/AboutPage.
  * @component
  * @param {object} props
  * @param {string} [props.className=""]
@@ -28,9 +28,9 @@ function GitHubMark({ className = "" }) {
 }
 
 /**
- * Retourne les initiales d'un nom complet (2 lettres max).
- * @param {string} name - Nom complet
- * @returns {string} Initiales en majuscules
+ * Documentation for components/AboutPage.
+ * @param {string} name
+ * @returns {string}
  */
 function initials(name) {
   return name
@@ -42,15 +42,14 @@ function initials(name) {
 }
 
 /**
- * Avatar d'un membre de l'équipe.
- * Affiche la photo si disponible, sinon un cercle avec les initiales.
+ * Documentation for components/AboutPage.
  *
  * @component
  * @param {object} props
- * @param {object} props.member - Données du membre
- * @param {string} props.member.name - Nom du membre
- * @param {string} [props.member.photo] - URL de la photo
- * @param {"visual"|"semantic"} [props.member.color] - Couleur du fallback
+ * @param {object} props.member
+ * @param {string} props.member.name
+ * @param {string} [props.member.photo]
+ * @param {"visual"|"semantic"} [props.member.color]
  * @returns {JSX.Element}
  */
 function TeamAvatar({ member }) {
@@ -97,20 +96,19 @@ function SectionLabel({ children }) {
 }
 
 /**
- * Page À propos du projet MediScan CBIR.
- * Affiche le hero, les cartes mission/vision, l'équipe et le disclaimer.
+ * Documentation for components/AboutPage.
  *
  * @component
  * @returns {JSX.Element}
  */
 export default function AboutPage() {
-  
+
   const { t } = useContext(LangContext);
   const content = t.about;
 
-  /** @type {[boolean, function]} Passe à true après le premier frame pour déclencher les animations */
+  /** Set to true after the first frame to trigger animations. */
   const [ready, setReady] = useState(false);
-  /** Thème actif du site */
+  /** Active site theme. */
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -119,8 +117,8 @@ export default function AboutPage() {
   }, []);
 
   /**
-   * Classe CSS d'animation selon la direction et l'état ready.
-   * @param {"up"|"left"|"right"} [dir="up"] - Direction d'entrée
+   * Documentation for components/AboutPage.
+   * @param {"up"|"left"|"right"} [dir="up"]
    * @returns {string}
   */
   const anim = (dir = "up") =>
@@ -209,16 +207,16 @@ export default function AboutPage() {
                   <TeamAvatar member={member} />
                   <div className="flex items-center justify-center gap-1.5 mb-1">
                     {member.github && (
-                      <a 
-                        href={member.github} 
-                        target="_blank" 
+                      <a
+                        href={member.github}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="group text-muted"
                       >
                         <GitHubMark className="w-4 h-4 md:w-4 md:h-4 group-hover:translate-y-[-2px] transition-transform" />
                       </a>
                     )}
-                    
+
                     <h3 className="font-semibold text-title text-[12px] md:text-sm leading-tight whitespace-nowrap">
                       {member.name}
                     </h3>

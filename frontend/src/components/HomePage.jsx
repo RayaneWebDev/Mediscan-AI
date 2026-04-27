@@ -1,4 +1,4 @@
-/** 
+/**
  * @fileoverview Page d'accueil de l'application MediScan CBIR.
  * @module components/HomePage
  */
@@ -18,7 +18,7 @@ import { InterpretiveModeIcon } from "./icons";
 import FeaturesShowcase from "./FeaturesShowcase";
 import DemosShowcase from "./DemosShowcase";
 
-/** Bibliothèque d'icônes utilisées dans le hub */
+/** Icon library used in the hub. */
 const HUB_ICONS = {
   image: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -72,8 +72,7 @@ const HUB_ICONS = {
 };
 
 /**
- * Icônes médicales autour de l'anneau pointillé du hub.
- * Chaque entrée : { style (position CSS), d (chemin SVG) }
+ * Decorative organ markers positioned around the hub visual.
  */
 const HUB_ORGANS = [
   { style: { top: "-14px", left: "50%", transform: "translateX(-50%)" },    d: "M12 2C8 2 4 6 4 10c0 5 8 12 8 12s8-7 8-12c0-4-4-8-8-8z" },
@@ -83,16 +82,14 @@ const HUB_ORGANS = [
 ];
 
 /**
- * Cartes du hub.
- * position : "tl" | "tr" | "bl" | "br" (grid-area CSS)
- * tone : "visual" | "semantic" (couleur icône/bordure)
- * icon : clé dans HUB_ICONS
- * cardIndex : index dans content.hub.cards[]
+ * Hub cards.
+ * position: "tl" | "tr" | "bl" | "br" (CSS grid-area)
+ * cardIndex: index in content.hub.cards[]
  */
 const HUB_CARDS = [
-  { position: "tl", tone: "semantic", icon: "interpretive", cardIndex: 4 }, // 315° haut-gauche
-  { position: "tr", tone: "semantic", icon: "text", cardIndex: 3 }, // 45°  haut-droit
-  { position: "bc", tone: "visual",   icon: "eye",  cardIndex: 0 }, // centre-bas
+  { position: "tl", tone: "semantic", icon: "interpretive", cardIndex: 4 }, // 315deg top-left
+  { position: "tr", tone: "semantic", icon: "text", cardIndex: 3 }, // 45deg top-right
+  { position: "bc", tone: "visual",   icon: "eye",  cardIndex: 0 }, // bottom-center
 ];
 
 const HUB_INTRO_ANIMATION = {
@@ -101,7 +98,7 @@ const HUB_INTRO_ANIMATION = {
 
 const HUB_INTRO_TOTAL_MS = 2400;
 
-/** Map des icônes lucide utilisées dans les cartes de cas d'usage */
+/** Map of Lucide icons used by use-case cards. */
 const useCaseIcons = {
   stethoscope: Stethoscope,
   microscope: Microscope,
@@ -112,12 +109,11 @@ const useCaseIcons = {
 };
 
 /**
- * Page d'accueil de MediScan CBIR.
- * Affiche le hero, le hub animé, la section démos et la section fonctionnalités.
+ * Render the MediScan CBIR home page.
  *
  * @component
  * @param {object} props
- * @param {function(string): void} props.onPageChange - Callback de navigation vers une page
+ * @param {function(string): void} props.onPageChange
  * @returns {JSX.Element}
  */
 export default function HomePage({
@@ -135,7 +131,7 @@ export default function HomePage({
   const hubLayoutRef = useRef(null);
   const hubDonutRef = useRef(null);
   const hubCardRefs = useRef({});
-  /** @type {[string, function]} État d'animation du hub : "idle"|"playing"|"done"|"disabled" */
+  /** Hub animation state: "idle"|"playing"|"done"|"disabled". */
   const [hubIntroState, setHubIntroState] = useState(() => {
     if (!HUB_INTRO_ANIMATION.enabled) {
       return "disabled";
@@ -147,12 +143,12 @@ export default function HomePage({
 
     return "idle";
   });
-  /** @type {[{width: number, height: number}, function]} Dimensions du viewBox SVG des lignes du hub */
+  /** Dimensions du viewBox SVG des lignes du hub. */
   const [hubViewBox, setHubViewBox] = useState({ width: 1060, height: 640 });
-  /** @type {[Array<{x1: number, y1: number, x2: number, y2: number, tone: string}>, function]} Lignes pointillées entre le donut et les cartes */
+  /** Dotted lines between the donut and cards. */
   const [hubLines, setHubLines] = useState([]);
 
-  // Déclenche l'animation du hub quand la section entre dans le viewport
+  // Trigger the hub animation when the section enters the viewport
   useEffect(() => {
     if (!HUB_INTRO_ANIMATION.enabled || hubIntroState !== "idle" || typeof window === "undefined") {
       return undefined;
@@ -196,7 +192,7 @@ export default function HomePage({
     };
   }, [hubIntroState]);
 
-  // Passe à "done" après la durée totale de l'animation
+  // Switch to "done" after the full animation duration
   useEffect(() => {
     if (hubIntroState !== "playing" || typeof window === "undefined") {
       return undefined;
@@ -211,7 +207,7 @@ export default function HomePage({
     };
   }, [hubIntroState]);
 
-  // Calcule et met à jour les lignes SVG entre le donut et les cartes
+  // Compute and update SVG lines between the donut and cards
   useEffect(() => {
     if (typeof window === "undefined") {
       return undefined;
@@ -219,6 +215,9 @@ export default function HomePage({
 
     let frameId = 0;
 
+    /**
+     * Mesure le hub et reconstruit les lignes SVG reliant le donut aux cartes.
+     */
     const updateHubLines = () => {
       const layoutNode = hubLayoutRef.current;
       const donutNode = hubDonutRef.current;
@@ -309,6 +308,9 @@ export default function HomePage({
       setHubLines(computed);
     };
 
+    /**
+     * Regroupe les recalculs dans une frame d'animation.
+     */
     const scheduleUpdate = () => {
       if (frameId !== 0) {
         cancelAnimationFrame(frameId);
@@ -345,7 +347,7 @@ export default function HomePage({
   return (
     <div className="home-page-content -mt-16 md:-mt-20">
       {/* Hero */}
-      <section className="relative md:min-h-[calc(100vh-5rem)] overflow-hidden pt-15 md:pt-20">
+      <section className="relative overflow-hidden pt-16 md:min-h-[calc(100vh-5rem)] md:pt-20">
         <div className="page-container relative h-full">
           <div className="home-hero-stage">
             <div className="home-hero-layout">
@@ -353,7 +355,7 @@ export default function HomePage({
                 <h1 className="home-hero-title text-[clamp(2.75rem,6vw,5.5rem)] font-extrabold tracking-[-0.05em]">
                   MEDISCAN AI
                 </h1>
-                <p className="home-hero-description mt-2 max-w-[560px] w-full text-[clamp(1rem,1.6vw,1.16rem)] leading-relaxed">
+                <p className="home-hero-description mt-6 max-w-[560px] text-[clamp(1rem,1.6vw,1.16rem)] leading-relaxed">
                   {content.description}
                 </p>
                 <div className="home-hero-actions mt-8 w-full" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
@@ -371,22 +373,22 @@ export default function HomePage({
                   aria-label={content.useCases.headline}
                 >
                   <p className="home-hero-audience-heading">{content.useCases.headline}</p>
-                  
-                  <div 
+
+                  <div
                     className="home-hero-audience-list"
-                    style={{ 
-                      display: 'grid', 
-                      gridTemplateColumns: 'repeat(2, 1fr)', 
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, 1fr)',
                       gap: '8px',
-                      marginTop: '12px' 
+                      marginTop: '12px'
                     }}
                   >
                     {content.useCases.roles.map((role) => {
                       const AudienceIcon = useCaseIcons[role.icon];
 
                       return (
-                        <div 
-                          key={role.title} 
+                        <div
+                          key={role.title}
                           className="home-hero-audience-item"
                           style={{ display: 'flex', alignItems: 'center', margin: 0 }}
                         >
@@ -402,7 +404,7 @@ export default function HomePage({
                       );
                     })}
                   </div>
-                </div>          
+                </div>
               </div>
 
               <div className="hidden md:block">
@@ -433,7 +435,7 @@ export default function HomePage({
           ref={hubLayoutRef}
           data-hub-intro={hubIntroState}
         >
-          {/* Lignes pointillées dynamiques — donut -> cartes */}
+          {/* Dynamic dotted lines from donut to cards */}
           <svg
             className="home-hub-lines"
             aria-hidden="true"
@@ -480,7 +482,7 @@ export default function HomePage({
             ))}
           </svg>
 
-          {/* Cartes — générées depuis HUB_CARDS */}
+          {/* Cards generated from HUB_CARDS */}
           {HUB_CARDS.map(({ position, cardIndex, tone, icon }) => (
             <article
               key={position}
@@ -509,7 +511,7 @@ export default function HomePage({
             <div className="home-hub-ring-dashed" aria-hidden="true">
             </div>
 
-            {/* Donut coloré */}
+            {/* Colored donut */}
             <div ref={hubDonutRef} className="home-hub-donut" aria-hidden="true">
               <div className="home-hub-donut-inner" />
             </div>

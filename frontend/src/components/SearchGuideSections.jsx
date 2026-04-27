@@ -1,15 +1,15 @@
-/** 
- * @fileoverview Composants de sections d'aide pour la page de recherche CBIR.
+/**
+ * @fileoverview Guide section components for the CBIR search page.
  * @module components/SearchGuideSections
  */
- 
+
 /**
- * En-tête de section guide avec eyebrow, titre et description.
+ * Render a guide section header with eyebrow, title, and description.
  *
  * @component
  * @param {object} props
- * @param {string} props.eyebrowId - ID HTML pour l'eyebrow (accessibilité)
- * @param {string} props.eyebrow - Texte eyebrow au-dessus du titre
+ * @param {string} props.eyebrowId
+ * @param {string} props.eyebrow
  * @param {string} props.title
  * @param {string} props.description
  * @param {string} [props.containerClassName="max-w-3xl"]
@@ -44,15 +44,15 @@ export function SearchGuideSectionHeader({
 }
 
 /**
- * Carte d'aide individuelle avec icône, label, titre, description et note.
+ * Documentation for components/SearchGuideSections.
  *
  * @component
  * @param {object} props
- * @param {React.ReactNode} props.icon - Icône SVG ou composant
- * @param {string} props.label - Chip de catégorie
+ * @param {React.ReactNode} props.icon
+ * @param {string} props.label
  * @param {string} props.title
  * @param {string} props.description
- * @param {string} [props.note] - Note complémentaire en bas de la carte
+ * @param {string} [props.note]
  * @param {string} [props.articleClassName="flex items-start gap-4"]
  * @param {string} [props.iconWrapperClassName=""]
  * @param {string} [props.contentClassName="min-w-0"]

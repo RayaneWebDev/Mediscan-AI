@@ -1,5 +1,5 @@
-/** 
- * @fileoverview Sous-composants de la grille de résultats CBIR.
+/**
+ * @fileoverview Presentational building blocks for the search results grid.
  * @module components/ResultsGridParts
  */
 
@@ -9,8 +9,7 @@ import { imageUrl } from "../api";
 import { similarityScoreToPercent } from "../utils/searchResults";
 
 /**
- * Ligne de métadonnée label/valeur dans la modale détail.
- * Retourne null si value est vide.
+ * Render one labeled detail value inside result modals.
  */
 function DetailItem({ label, value, mono = false, className = "" }) {
   if (!value) return null;
@@ -28,10 +27,10 @@ function DetailItem({ label, value, mono = false, className = "" }) {
 }
 
 /**
- * Retourne les classes CSS d'une carte résultat selon le ton et le thème home.
+ * Return tone-aware class names shared by all result cards.
  * @param {"primary"|"accent"} tone
  * @param {boolean} useHomeVisualTone
- * @returns {{shell: string, selected: string, rank: string, checkbox: string, checkboxHover: string}}
+ * @returns {{shell: string, selected: string, rank: string, checkbox: string, checkboxHover: string}
  */
 function getCardClasses(tone, useHomeVisualTone) {
   if (tone === "accent") {
@@ -54,7 +53,7 @@ function getCardClasses(tone, useHomeVisualTone) {
 }
 
 /**
- * Barre de score visuelle avec pourcentage et couleur adaptative.
+ * Render the visual score bar with percentage and adaptive color.
  * @param {{score: number, tone: "primary"|"accent"}} props
  */
 function ScoreBar({ score, tone }) {
@@ -88,21 +87,20 @@ function ScoreBar({ score, tone }) {
 }
 
 /**
- * Carte individuelle d'un résultat CBIR.
- * Gère le fallback image, la sélection, l'ouverture détail et comparaison.
+ * Render one interactive result card with selection and modal entry anchors.
  *
  * @param {object} props
- * @param {object} props.result - Résultat CBIR
- * @param {boolean} props.selected - Carte sélectionnée ou non
- * @param {function|null} props.onToggleSelect - Callback de sélection, null si désactivé
- * @param {function} props.onOpenDetails - Ouvre la modale détail
- * @param {function|null} props.onOpenCompare - Ouvre la modale comparaison, null si désactivé
- * @param {object} props.content - Traductions
+ * @param {object} props.result
+ * @param {boolean} props.selected
+ * @param {function|null} props.onToggleSelect
+ * @param {function} props.onOpenDetails
+ * @param {function|null} props.onOpenCompare
+ * @param {object} props.content
  * @param {"primary"|"accent"} props.tone
- * @param {number} [props.entryIndex=0] - Index pour le délai d'animation
+ * @param {number} [props.entryIndex=0]
  * @param {boolean} [props.animateOnMount=false]
  * @param {boolean} [props.useHomeVisualTone=false]
- * @param {{src: string, alt?: string}|null} [props.comparisonSource=null]
+ * @param {object|null} [props.comparisonSource=null]
  */
 function ResultCard({
   result,
@@ -124,6 +122,7 @@ function ResultCard({
   const [imageFailed, setImageFailed] = useState(false);
   const cardClasses = getCardClasses(tone, useHomeVisualTone);
 
+  /** Switch to the proxied URL, then show the fallback if the image remains unavailable. */
   function handleImageError() {
     if (!imageFailed && directImageSrc && currentImageSrc !== proxiedImageSrc) {
       setCurrentImageSrc(proxiedImageSrc);
@@ -133,6 +132,7 @@ function ResultCard({
     setImageFailed(true);
   }
 
+  /** Open the detail modal with the animation start position. */
   function handleOpenDetails() {
     const rect = previewRef.current?.getBoundingClientRect();
     if (rect) {
@@ -148,6 +148,7 @@ function ResultCard({
     onOpenDetails(result, null);
   }
 
+  /** Open the compare modal when compare mode is available. */
   function handleOpenCompare() {
     if (!onOpenCompare) return;
 
@@ -165,6 +166,10 @@ function ResultCard({
     onOpenCompare(result, null);
   }
 
+  /**
+   * Open the card details from keyboard activation.
+   * @param {KeyboardEvent} event
+   */
   function handleCardKeyDown(event) {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
@@ -275,14 +280,14 @@ function ResultCard({
 }
 
 /**
- * Contrôles de pagination avec ellipsis pour les grandes listes.
+ * Render pagination controls with compact page tokens.
  *
  * @component
  * @param {object} props
  * @param {number} props.currentPage
  * @param {number} props.totalPages
  * @param {function(number): void} props.onPageChange
- * @param {object} props.content - Traductions
+ * @param {object} props.content
  * @param {"primary"|"accent"} props.tone
  * @param {boolean} [props.useHomeVisualTone=false]
  * @param {boolean} [props.showPageSummary=true]
@@ -395,7 +400,7 @@ export function PaginationControls({
 }
 
 /**
- * Bouton d'export avec état de chargement.
+ * Render one export button and expose a loading label while it runs.
  * @param {{label: string, isLoading: boolean, disabled: boolean, onClick: function, className: string}} props
  */
 function ExportButton({ label, isLoading, disabled, onClick, className }) {
@@ -412,14 +417,14 @@ function ExportButton({ label, isLoading, disabled, onClick, className }) {
 }
 
 /**
- * En-tête de la grille : nombre de résultats et badge de mode.
+ * Render the result-count header and active search-mode badge.
  *
  * @component
  * @param {object} props
  * @param {number} props.resultCount
- * @param {object} props.content - Traductions
+ * @param {object} props.content
  * @param {string} props.modeLabel
- * @param {string} props.modeColor - Classes CSS du badge de mode
+ * @param {string} props.modeColor
  * @param {boolean} [props.headerHiddenOnDesktop=false]
  */
 export function ResultsGridHeader({
@@ -442,20 +447,20 @@ export function ResultsGridHeader({
 }
 
 /**
- * Barre d'outils de la grille : pagination et boutons d'export.
+ * Render the grid toolbar with pagination and export buttons.
  *
  * @component
  * @param {object} props
  * @param {number} props.currentPage
  * @param {number} props.totalPages
  * @param {function(number): void} props.onPageChange
- * @param {object} props.content - Traductions
+ * @param {object} props.content - Localized copy.
  * @param {"primary"|"accent"} props.tone
  * @param {boolean} [props.useHomeVisualTone=false]
  * @param {string} props.exportLabel
  * @param {boolean} props.exportDisabled
  * @param {string} props.exportButtonClass
- * @param {"json"|"csv"|"pdf"|null} props.activeExport - Format d'export en cours
+ * @param {"json"|"csv"|"pdf"|null} props.activeExport - Export format currently running.
  * @param {function} props.onExportJson
  * @param {function} props.onExportCsv
  * @param {function} props.onExportPdf
@@ -517,16 +522,16 @@ export function ResultsGridToolbar({
 }
 
 /**
- * Grille de cartes résultats avec placeholders desktop pour aligner la hauteur.
+ * Render the paginated result-card collection and desktop placeholders.
  *
  * @component
  * @param {object} props
- * @param {object[]} props.results - Page courante de résultats
+ * @param {object[]} props.results
  * @param {string[]} props.selectedIds
  * @param {function|null} props.onToggleSelect
  * @param {function} props.onOpenDetails
  * @param {function|null} props.onOpenCompare
- * @param {object} props.content - Traductions
+ * @param {object} props.content
  * @param {"primary"|"accent"} props.tone
  * @param {boolean} [props.animateOnMount=false]
  * @param {boolean} [props.useHomeVisualTone=false]
@@ -534,7 +539,7 @@ export function ResultsGridToolbar({
  * @param {number} [props.desktopPlaceholderCount=0]
  * @param {string} [props.desktopLockedHeightClass=""]
  * @param {boolean} [props.desktopThreeColumns=false]
- * @param {function} props.onGridRef - Callback ref sur le conteneur
+ * @param {function} props.onGridRef
  */
 export function ResultsGridCards({
   results,
@@ -588,17 +593,16 @@ export function ResultsGridCards({
 }
 
 /**
- * Vue de la modale détail (rendu pur, sans logique).
- * Utilisée via createPortal dans ResultDetailsModal.
+ * Render the full detail-modal presentation layer.
  *
  * @component
  * @param {object} props
  * @param {React.Ref} props.modalRef
- * @param {object} props.backdropStyle - Style inline du fond
- * @param {object} props.panelStyle - Style inline du panneau (animation)
+ * @param {object} props.backdropStyle
+ * @param {object} props.panelStyle
  * @param {"primary"|"accent"} props.tone
  * @param {string} props.modeLabel
- * @param {object} props.content - Traductions
+ * @param {object} props.content
  * @param {object} props.result
  * @param {string} props.imageSrc
  * @param {string} props.cuiValue
@@ -705,8 +709,7 @@ export function ResultDetailsModalView({
 }
 
 /**
- * Vue de la modale de comparaison (rendu pur, sans logique).
- * Utilisée via createPortal dans ResultCompareModal.
+ * Render the full comparison-modal presentation layer.
  *
  * @component
  * @param {object} props
@@ -714,9 +717,9 @@ export function ResultDetailsModalView({
  * @param {object} props.backdropStyle
  * @param {object} props.panelStyle
  * @param {"primary"|"accent"} props.tone
- * @param {object} props.content - Traductions
+ * @param {object} props.content
  * @param {object} props.result
- * @param {{src: string, alt?: string, meta?: string}} props.comparisonSource
+ * @param {object} props.comparisonSource
  * @param {string} props.imageSrc
  * @param {string} props.cuiValue
  * @param {string} props.scorePercent

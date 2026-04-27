@@ -59,7 +59,7 @@
   .features-showcase-header {
     padding-inline: 1.25rem;
   }
-  
+
   .demos-page-embedded {
     margin-bottom: 1.5rem;
   }
@@ -75,7 +75,7 @@
   .demos-page-embedded {
     margin-bottom: 0.5rem;
   }
-  
+
   .features-showcase-section {
     padding-top: 1rem;
   }
@@ -181,7 +181,7 @@
   .nav-shell-track {
     width: 100%;
     min-width: 0;
-    padding-left: 0.32frem;
+    padding-left: 0.32rem;
     padding-right: 0.32rem;
     gap: 0.18rem;
   }
@@ -195,7 +195,7 @@
     font-size: clamp(10.5px, 1.35vw, 13px);
   }
 
-.home-hero-layout {
+  .home-hero-layout {
     grid-template-columns: minmax(0, 1fr) minmax(11rem, 0.8fr);
     gap: 1rem;
     align-items: flex-start;
@@ -581,7 +581,7 @@
     transition: opacity 0.8s ease !important;
   }
 
-   .features-showcase-carousel-rail {
+  .features-showcase-carousel-rail {
     --features-carousel-edge-pad: 1.5rem;
   }
 
@@ -722,4 +722,3 @@
     );
   }
 }
-

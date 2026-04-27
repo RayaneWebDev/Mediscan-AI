@@ -1,11 +1,11 @@
 /**
- * @fileoverview Utilitaires de filtrage, export et suggestions pour les résultats CBIR.
+ * @fileoverview Search-result filtering, score formatting, and export helpers.
  * @module utils/searchResults
  */
 
 
 /**
- * Extrait le tableau de résultats depuis un payload brut ou un tableau direct.
+ * Return the result rows from either a raw array or the standard API payload.
  * @param {object|Array|null} payload
  * @returns {Array}
  */
@@ -21,11 +21,23 @@ function getResultRows(payload) {
   return Array.isArray(payload.results) ? payload.results : [];
 }
 
+/**
+ * Convert a cosine-like similarity score in [-1, 1] to a display percentage.
+ * @param {number} score
+ * @returns {number}
+ */
 export function similarityScoreToPercent(score) {
   const boundedScore = Number.isFinite(score) ? Math.min(1, Math.max(-1, score)) : 0;
   return Math.round(((boundedScore + 1) / 2) * 100);
 }
 
+/**
+ * Curated caption filters used to suggest common radiology terms.
+ *
+ * The labels stay short for filter chips while terms include common spelling
+ * variants used in ROCO captions.
+ * @type {Array<{id: string, label: string, terms: string[]}>}
+ */
 export const CURATED_CAPTION_FILTERS = [
   { id: "xray", label: "X-ray", terms: ["xray", "x-ray", "radiograph"] },
   { id: "ct", label: "CT", terms: ["ct", "computed tomography"] },
@@ -45,7 +57,7 @@ export const CURATED_CAPTION_FILTERS = [
 ];
 
 /**
- * Normalise une valeur texte : supprime accents, casse et espaces superflus.
+ * Normalize free-text filter values for case-insensitive and accent-insensitive matching.
  * @param {*} value
  * @returns {string}
  */
@@ -59,7 +71,7 @@ function normalizeFilterValue(value) {
 }
 
 /**
- * Échappe les caractères spéciaux pour usage dans une RegExp.
+ * Escape user-entered text before embedding it in a regular expression.
  * @param {string} value
  * @returns {string}
  */
@@ -68,7 +80,10 @@ function escapeRegExp(value) {
 }
 
 /**
- * Vérifie si un terme apparaît dans une source avec correspondance sur mot entier.
+ * Match a normalized term against word boundaries inside a normalized source.
+ *
+ * Boundary matching prevents short terms from accidentally matching unrelated
+ * substrings while still allowing flexible whitespace in multi-word terms.
  * @param {string} source
  * @param {string} term
  * @returns {boolean}
@@ -89,7 +104,7 @@ function matchesNormalizedTerm(source, term) {
 }
 
 /**
- * Retourne true si la caption contient au moins un terme du groupe.
+ * Check whether a caption matches at least one term from a curated term group.
  * @param {string} caption
  * @param {string[]} termGroup
  * @returns {boolean}
@@ -103,7 +118,7 @@ function matchesCaptionTermGroup(caption, termGroup) {
 }
 
 /**
- * Retourne la valeur CUI d'un résultat normalisée en chaîne unique.
+ * Normalize the CUI field regardless of whether it arrived as a string or array.
  * @param {object} result
  * @returns {string}
  */
@@ -120,8 +135,11 @@ function getNormalizedResultCui(result) {
 }
 
 /**
- * Retourne l'ensemble des CUI d'un résultat en majuscules.
- * Gère les formats string, tableau et JSON sérialisé.
+ * Extract a stable uppercase CUI set from a result row.
+ *
+ * Backend rows can expose CUIs as arrays, JSON-encoded arrays, or raw strings
+ * depending on the source artifact. This helper gives filters one consistent
+ * representation.
  * @param {object} result
  * @returns {Set<string>}
  */
@@ -144,10 +162,10 @@ export function getResultCuiSet(result) {
 }
 
 /**
- * Retourne les filtres de caption pertinents triés par fréquence dans les résultats.
+ * Suggest caption filters that actually match the current result set.
  * @param {object[]} rows
  * @param {number} [limit=8]
- * @returns {Array<{id, label, terms, count}>}
+ * @returns {Array<{id: string, label: string, terms: string[], count: number}>}
  */
 export function getSuggestedCaptionFilters(rows, limit = 8) {
   if (!Array.isArray(rows) || rows.length === 0) {
@@ -168,7 +186,7 @@ export function getSuggestedCaptionFilters(rows, limit = 8) {
 }
 
 /**
- * Télécharge un Blob comme fichier via un lien temporaire.
+ * Trigger a browser download and revoke the generated object URL afterward.
  * @param {Blob} blob
  * @param {string} filename
  */
@@ -182,7 +200,7 @@ function downloadBlob(blob, filename) {
 }
 
 /**
- * Charge une image depuis une URL et la retourne en base64 (pour export PDF).
+ * Fetch an image and convert it to a data URL for PDF embedding.
  * @param {string} url
  * @returns {Promise<string>}
  */
@@ -198,8 +216,10 @@ async function loadImageAsBase64(url) {
 }
 
 /**
- * Filtre et trie un payload de résultats selon les options fournies.
- * Retourne null si le payload est invalide.
+ * Apply all client-side result filters and sorting without mutating the source payload.
+ *
+ * The returned object keeps the original payload metadata, replacing only the
+ * results array so downstream export and grid components can consume the same shape.
  *
  * @param {object|null} payload
  * @param {object} [options={}]
@@ -284,6 +304,11 @@ export function filterResultsPayload(
   return { ...payload, results: filteredResults };
 }
 
+/**
+ * Export the current result payload as formatted JSON.
+ * @param {object|null} payload
+ * @param {string} filename
+ */
 export function exportResultsAsJson(payload, filename) {
   if (!payload) {
     return;
@@ -295,6 +320,11 @@ export function exportResultsAsJson(payload, filename) {
   );
 }
 
+/**
+ * Export visible result rows as a compact CSV file.
+ * @param {object|Array|null} payload
+ * @param {string} filename
+ */
 export function exportResultsAsCsv(payload, filename) {
   const rows = getResultRows(payload);
   if (!rows.length) {
@@ -318,6 +348,14 @@ export function exportResultsAsCsv(payload, filename) {
   );
 }
 
+/**
+ * Export visible result rows as a PDF report with thumbnails when available.
+ * @param {object} payload
+ * @param {string} filename
+ * @param {object} [options]
+ * @param {string} [options.title]
+ * @returns {Promise<void>}
+ */
 export async function exportResultsAsPdf(
   payload,
   filename,

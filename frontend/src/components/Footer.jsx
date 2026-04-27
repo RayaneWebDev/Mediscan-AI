@@ -1,4 +1,4 @@
-/** 
+/**
  * @fileoverview Pied de page de l'application MediScan.
  * @module components/Footer
  */
@@ -7,7 +7,7 @@ import { useContext } from "react";
 import { LangContext } from "../context/LangContextValue";
 
 /**
- * Icône GitHub en SVG.
+ * Documentation for components/Footer.
  * @component
  * @param {object} props
  * @param {string} [props.className=""]
@@ -22,11 +22,11 @@ function GitHubMark({ className = "" }) {
 }
 
 /**
- * Pied de page avec colonnes de navigation, support, mentions légales et lien GitHub.
+ * Documentation for components/Footer.
  *
  * @component
  * @param {object} props
- * @param {function(string): void} props.onPageChange - Callback de navigation vers une page
+ * @param {function(string): void} props.onPageChange
  * @returns {JSX.Element}
  */
 export default function Footer({ onPageChange }) {
@@ -108,7 +108,7 @@ export default function Footer({ onPageChange }) {
               </ul>
             </div>
 
-            {/* Mentions légales */}
+            {/* Legal notices */}
             <div>
               <h4 className="text-xs font-semibold text-on-strong uppercase tracking-widest mb-4">
                 {f.legalTitle || "Mentions légales"}

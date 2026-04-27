@@ -1,7 +1,4 @@
-"""
-Point d'entrée de l'application FastAPI MediScan.
-Initialise les services, configure le CORS et monte le router.
-"""
+"""FastAPI application entrypoint for MediScan."""
 
 import logging
 from contextlib import asynccontextmanager
@@ -15,8 +12,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.api.routes import router
-from backend.app.config import CORS_ALLOWED_ORIGINS
+from backend.app.config import (
+    CONCURRENCY_LIMITS,
+    CORS_ALLOWED_ORIGINS,
+    RATE_LIMITS,
+    RATE_LIMIT_WINDOW_SECONDS,
+)
 from backend.app.services.email_service import EmailService
+from backend.app.services.request_guards import InMemoryRateLimiter, RequestConcurrencyLimiter
 from backend.app.services.search_service import SearchService
 
 try:
@@ -34,15 +37,17 @@ if load_dotenv is not None:
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
-    """Initialise SearchService et EmailService au démarrage (ressources chargées à la demande)."""
+    """Initialize SearchService and EmailService at startup with resources loaded on demand."""
     application.state.search_service = SearchService(resources={})
     application.state.email_service = EmailService()
+    application.state.rate_limiter = InMemoryRateLimiter(RATE_LIMITS, RATE_LIMIT_WINDOW_SECONDS)
+    application.state.concurrency_limiter = RequestConcurrencyLimiter(CONCURRENCY_LIMITS)
     logger.info("Search resources will be loaded lazily on the first request.")
     yield
 
 
 def configure_cors(application: FastAPI) -> None:
-    """Configure le middleware CORS avec les origines autorisées."""
+    """Configure CORS middleware with the allowed origins."""
     application.add_middleware(
         CORSMiddleware,
         allow_origins=CORS_ALLOWED_ORIGINS,
@@ -52,7 +57,7 @@ def configure_cors(application: FastAPI) -> None:
 
 
 def create_app() -> FastAPI:
-    """Crée et configure l'application FastAPI."""
+    """Create and configure the FastAPI application."""
     application = FastAPI(title="MEDISCAN API", version="1.0", lifespan=lifespan)
     configure_cors(application)
     application.include_router(router, prefix="/api")

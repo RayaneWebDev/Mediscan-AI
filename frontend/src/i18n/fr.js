@@ -1,3 +1,11 @@
+/**
+ * @fileoverview French interface translation dictionary for MediScan.
+ * @module i18n/fr
+ */
+
+/**
+ * French translations organized by application feature area.
+ */
 export const fr = {
   // Navigation
   nav: {
@@ -627,7 +635,7 @@ export const fr = {
       security: "Sécurité"
     },
     items: [
-      // --- GÉNÉRAL ---
+      // --- GENERAL ---
       { 
         category: "general",
         q: "Quel est l'objectif principal de MEDISCAN AI ?", 
@@ -693,7 +701,7 @@ export const fr = {
         r: "Le prototype s'appuie sur un jeu de données de recherche et accepte des uploads JPEG/PNG via l'interface. L'ingestion DICOM et une couverture complète des modalités ne sont pas implémentées ici." 
       },
 
-      // --- SÉCURITÉ ---
+      // --- SECURITY ---
       { 
         category: "security",
         q: "La plateforme est-elle conforme au RGPD et à la loi HIPAA ?", 
@@ -720,7 +728,7 @@ export const fr = {
     contactBtn: "Contactez notre équipe"
   },
 
-  // Page Fonctionnalités
+  // Features page
   features: {
     heroEyebrow: "Fonctionnalités",
     heroHeadline: "Des fonctionnalités claires pour des usages cliniques exigeants.",

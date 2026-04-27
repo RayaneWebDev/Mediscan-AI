@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Dictionnaire de traductions anglaises de l'interface MediScan.
+ * @module i18n/en
+ */
+
+/**
+ * English translations organized by application feature area.
+ */
 export const en = {
   // Navigation
   nav: {

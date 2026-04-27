@@ -1,20 +1,19 @@
 """
-Test de reverse engineering des embeddings MediScan AI.
+Reverse-engineering check for MediScan AI embeddings.
 
-Ce script vérifie si un attaquant pourrait reconstruire une image médicale
-originale à partir de son embedding vectoriel (DINOv2 ou BioMedCLIP).
+This script verifies whether an attacker could reconstruct an original
+medical image from its vector embedding (DINOv2 or BioMedCLIP).
 
-Résultat attendu : la reconstruction est mathématiquement impossible car
-l'embedding compresse l'image avec un ratio de ~1993x (DINOv2) ou ~2989x
-(BioMedCLIP), avec perte irréversible de 99.95% de l'information originale.
-De plus, la normalisation L2 efface l'amplitude du vecteur, rendant toute
-reconstruction encore moins envisageable.
+Expected result: reconstruction is mathematically impractical because the
+embedding compresses the image by roughly 1993x for DINOv2 or 2989x for
+BioMedCLIP, with irreversible loss of about 99.95% of the original
+information. L2 normalization also removes vector amplitude, making
+reconstruction even less realistic.
 
-Ce script constitue une preuve technique de la confidentialité des données
-dans MediScan AI — les images uploadées ne peuvent pas être retrouvées
-depuis les embeddings stockés dans l'index FAISS.
+This script is a technical privacy proof for MediScan AI: uploaded images
+cannot be recovered from the embeddings stored in the FAISS index.
 
-Usage :
+Usage:
     python scripts/test_reverse_engineering.py
 """
 
@@ -33,18 +32,19 @@ configure_cpu_environment()
 
 def load_first_local_image(resources) -> tuple[Path, str] | tuple[None, None]:
     """
-    Trouve la première image disponible localement dans l'index FAISS.
+    Find the first indexed image that is available on the local filesystem.
 
-    Parcourt les enregistrements de l'index et retourne le chemin et
-    l'identifiant de la première image dont le fichier existe sur disque.
+    The search resources may contain rows for images that are not present in
+    the current local checkout. This helper keeps the proof script robust by
+    selecting the first row whose image path can actually be opened.
 
     Args:
-        resources (SearchResources): Ressources de recherche contenant
-            les métadonnées de toutes les images indexées.
+        resources (SearchResources): Search resources containing metadata for
+            indexed images.
 
     Returns:
-        tuple[Path, str] | tuple[None, None]: Un couple (chemin, image_id)
-            si une image locale est trouvée, ou (None, None) sinon.
+        tuple[Path, str] | tuple[None, None]: The local image path and image
+            identifier when available, otherwise ``(None, None)``.
     """
     for row in resources.rows:
         p = Path(row.get("path", ""))
@@ -55,16 +55,16 @@ def load_first_local_image(resources) -> tuple[Path, str] | tuple[None, None]:
 
 def compute_embedding(image_path: Path, resources) -> np.ndarray:
     """
-    Encode une image en vecteur d'embedding via l'embedder chargé.
+    Encode an image into an embedding vector with the loaded embedder.
 
     Args:
-        image_path (Path): Chemin vers l'image à encoder.
-        resources (SearchResources): Ressources contenant l'embedder
-            (DINOv2 ou BioMedCLIP) à utiliser pour l'encodage.
+        image_path (Path): Path of the image to encode.
+        resources (SearchResources): Search resources containing the active
+            DINOv2 or BioMedCLIP embedder.
 
     Returns:
-        np.ndarray: Vecteur d'embedding de forme (dim,) où dim vaut
-            768 pour DINOv2 et 512 pour BioMedCLIP.
+        np.ndarray: Embedding vector shaped ``(dim,)``, where ``dim`` is 768
+            for DINOv2 and 512 for BioMedCLIP.
     """
     with Image.open(image_path) as pil_image:
         return resources.embedder.encode_pil(pil_image)
@@ -72,14 +72,14 @@ def compute_embedding(image_path: Path, resources) -> np.ndarray:
 
 def get_image_pixel_count(image_path: Path) -> tuple[int, int, int]:
     """
-    Retourne les dimensions et le nombre total de valeurs d'une image RGB.
+    Return image dimensions and the total number of RGB channel values.
 
     Args:
-        image_path (Path): Chemin vers l'image à analyser.
+        image_path (Path): Path of the image to analyze.
 
     Returns:
-        tuple[int, int, int]: Un triplet (largeur, hauteur, n_pixels) où
-            n_pixels = largeur × hauteur × 3 (canaux RGB).
+        tuple[int, int, int]: A ``(width, height, value_count)`` tuple where
+            ``value_count = width * height * 3`` for RGB channels.
     """
     with Image.open(image_path) as img:
         w, h = img.size
@@ -88,10 +88,10 @@ def get_image_pixel_count(image_path: Path) -> tuple[int, int, int]:
 
 def print_embedding_stats(embedding: np.ndarray) -> None:
     """
-    Affiche les statistiques du vecteur d'embedding dans la console.
+    Print diagnostic statistics for an embedding vector.
 
     Args:
-        embedding (np.ndarray): Vecteur d'embedding à analyser.
+        embedding (np.ndarray): Embedding vector to inspect.
 
     Returns:
         None
@@ -99,8 +99,8 @@ def print_embedding_stats(embedding: np.ndarray) -> None:
     print(f"Embedding shape    : {embedding.shape}")
     print(f"Embedding dtype    : {embedding.dtype}")
     print(f"Embedding min/max  : {embedding.min():.4f} / {embedding.max():.4f}")
-    print(f"Norme L2           : {np.linalg.norm(embedding):.4f}")
-    print(f"10 premières valeurs : {embedding[:10].round(4)}")
+    print(f"L2 norm            : {np.linalg.norm(embedding):.4f}")
+    print(f"First 10 values    : {embedding[:10].round(4)}")
 
 
 def print_reverse_engineering_conclusion(
@@ -110,56 +110,56 @@ def print_reverse_engineering_conclusion(
     embedding: np.ndarray,
 ) -> None:
     """
-    Affiche la conclusion sur l'impossibilité du reverse engineering.
+    Print the conclusion about reverse-engineering feasibility.
 
-    Compare le nombre de valeurs dans l'image originale avec celui
-    de l'embedding pour démontrer l'impossibilité mathématique de
-    reconstruire l'image depuis son embedding.
+    The comparison makes the privacy argument concrete by showing the gap
+    between the number of original pixel-channel values and the much smaller
+    embedding vector.
 
     Args:
-        w (int): Largeur de l'image originale en pixels.
-        h (int): Hauteur de l'image originale en pixels.
-        n_pixels (int): Nombre total de valeurs dans l'image (w × h × 3).
-        embedding (np.ndarray): Vecteur d'embedding de l'image.
+        w (int): Original image width in pixels.
+        h (int): Original image height in pixels.
+        n_pixels (int): Total image values, computed as ``w * h * 3``.
+        embedding (np.ndarray): Image embedding vector.
 
     Returns:
         None
     """
     ratio = n_pixels / embedding.shape[0]
-    print(f"\nImage originale    : {w}x{h} pixels = {n_pixels} valeurs")
-    print(f"Embedding          : {embedding.shape[0]} valeurs")
-    print(f"Ratio de compression : {ratio:.0f}x")
-    print(f"\n✓ Conclusion : impossible de reconstruire {n_pixels} valeurs")
-    print(f"  depuis seulement {embedding.shape[0]} valeurs.")
-    print("  L'embedding est une compression avec perte d'information irréversible.")
-    print("  La normalisation L2 efface en plus l'amplitude du vecteur.")
-    print("  → Les images uploadées dans MediScan AI ne peuvent pas être")
-    print("    reconstituées depuis l'index FAISS.")
+    print(f"\nOriginal image     : {w}x{h} pixels = {n_pixels} values")
+    print(f"Embedding          : {embedding.shape[0]} values")
+    print(f"Compression ratio  : {ratio:.0f}x")
+    print(f"\nConclusion: reconstructing {n_pixels} values")
+    print(f"  from only {embedding.shape[0]} values is not feasible.")
+    print("  The embedding is an irreversible lossy compression.")
+    print("  L2 normalization also removes the vector amplitude.")
+    print("  Uploaded MediScan AI images cannot be reconstructed")
+    print("  from the FAISS index.")
 
 
 def main() -> None:
     """
-    Point d'entrée principal du test de reverse engineering.
+    Run the reverse-engineering proof script.
 
-    Charge l'index visuel, sélectionne la première image locale disponible,
-    calcule son embedding, et démontre l'impossibilité de reconstruire
-    l'image originale depuis ce vecteur.
+    The workflow loads the visual index, selects the first locally available
+    image, computes its embedding, and prints why the original image cannot be
+    reconstructed from that compressed vector.
 
     Returns:
         None
 
     Raises:
-        SystemExit: Si aucune image locale n'est disponible dans l'index.
+        SystemExit: If no local image is available in the index.
     """
-    print("Chargement des ressources visual (DINOv2)...")
+    print("Loading visual resources (DINOv2)...")
     resources = load_resources(mode="visual")
 
     image_path, image_id = load_first_local_image(resources)
     if image_path is None:
-        print("[ERREUR] Aucune image locale trouvée dans l'index.")
+        print("[ERROR] No local image found in the index.")
         raise SystemExit(1)
 
-    print(f"Image test : {image_id}")
+    print(f"Test image: {image_id}")
 
     embedding = compute_embedding(image_path, resources)
     print_embedding_stats(embedding)

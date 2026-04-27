@@ -1,0 +1,174 @@
+/* Mobile-only search hub corrections.
+   The general home responsive layer hides the shared donut pieces on phones,
+   so this file is imported last and restores the hub-specific version. */
+@media (max-width: 767px) {
+  .search-hub-page {
+    min-height: calc(100dvh - 4rem);
+    padding: 1rem 1rem 2rem !important;
+  }
+
+  .search-hub-shell {
+    min-height: auto;
+    justify-content: flex-start;
+    max-width: 32rem;
+    padding: clamp(0.75rem, 4vw, 1.25rem) 0 2rem !important;
+    transform: none;
+  }
+
+  .search-hub-intro {
+    margin-bottom: 1.15rem !important;
+  }
+
+  .search-hub-intro > div:first-child {
+    width: 4rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .search-hub-title {
+    margin-bottom: 0.6rem;
+    font-size: clamp(1.85rem, 8vw, 2.35rem) !important;
+    line-height: 1.05;
+  }
+
+  .search-hub-description {
+    max-width: 23rem;
+    font-size: 0.94rem !important;
+    line-height: 1.55;
+  }
+
+  .search-hub-donut-grid {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.8rem;
+  }
+
+  .search-hub-donut-choice {
+    --hub-donut-size: 148px;
+    --hub-donut-inset: 34px;
+    --hub-ring-size: calc(var(--hub-donut-size) + 28px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    max-width: none;
+    min-height: 0;
+    padding: 0.25rem 0.5rem;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    text-align: center;
+  }
+
+  .search-hub-donut-choice-visual {
+    width: calc(var(--hub-ring-size) + 18px) !important;
+    height: calc(var(--hub-ring-size) + 18px) !important;
+  }
+
+  .search-hub-donut-choice .home-hub-ring-dashed,
+  .search-hub-donut-choice .home-hub-donut {
+    display: block !important;
+  }
+
+  .search-hub-donut-choice .home-hub-core {
+    display: flex !important;
+  }
+
+  .search-hub-donut-choice .home-hub-ring-dashed,
+  .search-hub-donut-choice .home-hub-donut,
+  .search-hub-donut-choice .home-hub-core {
+    /* Disable intro animation on phones: the choices should be visible at once. */
+    opacity: 1 !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .search-hub-donut-choice .home-hub-ring-dashed {
+    transform: translate(-50%, -50%) !important;
+    --hub-ring-reveal: 360deg !important;
+  }
+
+  .search-hub-donut-choice .home-hub-donut {
+    transform: none !important;
+    --hub-donut-reveal: 360deg !important;
+  }
+
+  .search-hub-donut-choice .home-hub-core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) !important;
+    width: auto !important;
+    height: auto !important;
+    border-radius: 0;
+    background: transparent;
+    color: color-mix(in srgb, var(--theme-title) 78%, white 22%);
+    filter: none;
+  }
+
+  .search-hub-donut-choice-accent .home-hub-core {
+    background: transparent;
+  }
+
+  .search-hub-donut-choice-copy {
+    align-items: center;
+    gap: 0.6rem;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .search-hub-donut-choice-title {
+    font-size: 1.08rem !important;
+    line-height: 1.15;
+    letter-spacing: 0;
+    text-align: center;
+  }
+
+  .search-hub-donut-choice-description {
+    font-size: 0.86rem !important;
+    line-height: 1.48;
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  .search-hub-donut-choice-cta {
+    margin-top: 0.1rem;
+    gap: 0.45rem;
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+  }
+}
+
+@media (max-width: 430px) {
+  .search-hub-page {
+    padding-left: 0.85rem !important;
+    padding-right: 0.85rem !important;
+  }
+
+  .search-hub-title {
+    font-size: 1.82rem !important;
+  }
+
+  .search-hub-description {
+    font-size: 0.9rem !important;
+  }
+
+  .search-hub-donut-choice {
+    --hub-donut-size: 132px;
+    --hub-donut-inset: 30px;
+    gap: 0.85rem;
+    padding: 0.1rem 0;
+  }
+
+  .search-hub-donut-choice-visual {
+    width: calc(var(--hub-ring-size) + 16px) !important;
+    height: calc(var(--hub-ring-size) + 16px) !important;
+  }
+
+  .search-hub-donut-choice-title {
+    font-size: 1rem !important;
+  }
+
+  .search-hub-donut-choice-description {
+    font-size: 0.82rem !important;
+  }
+}

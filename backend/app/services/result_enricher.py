@@ -1,82 +1,60 @@
-"""
-Enrichissement optionnel des résultats de recherche avec les métadonnées MongoDB.
-
-Ce module complète les résultats bruts du pipeline FAISS (qui ne contiennent que
-rank, image_id et score) avec les métadonnées textuelles stockées dans MongoDB
-(caption, CUI — identifiant de concept médical UMLS).
-La connexion MongoDB est optionnelle : si elle échoue, les résultats bruts sont retournés.
-"""
+"""Optional search result enrichment with MongoDB metadata."""
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
-from backend.app.config import COLLECTION_NAME, DB_NAME, MONGO_URI
+from backend.app.config import (
+    COLLECTION_NAME,
+    DB_NAME,
+    MONGO_CONNECT_TIMEOUT_MS,
+    MONGO_SERVER_SELECTION_TIMEOUT_MS,
+    MONGO_URI,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def _load_mongo_collection():
-    """
-    Tente de se connecter à MongoDB et retourne la collection Mediscan.
-
-    Returns:
-        La collection PyMongo si la connexion réussit, None sinon.
-        Retourne None si MONGO_URI n'est pas défini ou si la connexion échoue.
-    """
+    """Try to connect to MongoDB and return the MediScan collection."""
     if not MONGO_URI:
         return None
 
     try:
         from pymongo import MongoClient
 
-        return MongoClient(MONGO_URI)[DB_NAME][COLLECTION_NAME]
-    except Exception:
+        client = MongoClient(
+            MONGO_URI,
+            serverSelectionTimeoutMS=MONGO_SERVER_SELECTION_TIMEOUT_MS,
+            connectTimeoutMS=MONGO_CONNECT_TIMEOUT_MS,
+        )
+        client.admin.command("ping")
+        return client[DB_NAME][COLLECTION_NAME]
+    except Exception as exc:
+        logger.warning("MongoDB enrichment disabled: %s", exc)
         return None
 
 
 class MongoResultEnricher:
-    """
-    Couche d'enrichissement optionnelle des résultats de recherche via MongoDB.
-
-    Récupère en batch les métadonnées (caption, CUI) depuis MongoDB pour
-    compléter les résultats FAISS, qui ne contiennent que les informations
-    d'index brutes. Si MongoDB est indisponible, les résultats originaux
-    sont retournés sans modification.
-    """
+    """Optional search result enrichment layer backed by MongoDB."""
 
     def __init__(self, collection=None) -> None:
-        """
-        Initialise l'enrichisseur avec une collection MongoDB.
-
-        Args:
-            collection: La collection PyMongo à utiliser, ou None si MongoDB
-                        n'est pas configuré ou indisponible.
-        """
+        """Initialize the enricher with a MongoDB collection."""
         self._collection = collection
 
     @classmethod
     def from_environment(cls) -> "MongoResultEnricher":
         """
-        Crée un enrichisseur en lisant la configuration depuis les variables d'environnement.
+        Create an enricher by reading configuration from environment variables.
 
         Returns:
-            Une instance de MongoResultEnricher, avec ou sans connexion MongoDB active.
+            MongoResultEnricher instance, with or without an active MongoDB connection.
         """
         return cls(collection=_load_mongo_collection())
 
     def enrich(self, results: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """
-        Enrichit une liste de résultats de recherche avec les métadonnées MongoDB.
-
-        Récupère les documents correspondants en une seule requête batch ($in)
-        et fusionne les champs caption et CUI dans chaque résultat.
-
-        Args:
-            results: Liste de résultats bruts du pipeline FAISS (rank, image_id, score, path).
-
-        Returns:
-            La liste enrichie avec caption et CUI depuis MongoDB, ou la liste originale
-            si MongoDB est indisponible ou si la requête échoue.
-        """
+        """Enrich a search result list with MongoDB metadata."""
         if self._collection is None or not results:
             return results
 
@@ -90,7 +68,8 @@ class MongoResultEnricher:
                     {"image_id": 1, "caption": 1, "cui": 1},
                 )
             }
-        except Exception:
+        except Exception as exc:
+            logger.warning("MongoDB enrichment query failed: %s", exc)
             return results
 
         enriched_results = []

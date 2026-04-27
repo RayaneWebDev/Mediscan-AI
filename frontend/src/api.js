@@ -1,14 +1,14 @@
 /**
- * @fileoverview Client HTTP de l'API MediScan.
+ * @fileoverview HTTP client for MediScan API calls.
  * @module api
  */
 
-// Supprime le slash final si présent
+// Remove the trailing slash when present
 const API_BASE = (import.meta.env.VITE_API_BASE || "/api").replace(/\/$/, "");
 const JSON_HEADERS = { "Content-Type": "application/json" };
 
 /**
- * Construit l'URL complète d'un endpoint.
+ * Build the full URL for an endpoint.
  * @param {string} path
  * @returns {string}
  */
@@ -17,7 +17,7 @@ function buildApiUrl(path) {
 }
 
 /**
- * Parse la réponse JSON sans lever d'erreur si le body est vide ou invalide.
+ * Parse the JSON response without throwing when the body is empty or invalid.
  * @param {Response} response
  * @returns {Promise<object>}
  */
@@ -26,8 +26,11 @@ async function parseJsonSafely(response) {
 }
 
 /**
- * Formate le champ "detail" d'une erreur API en message lisible.
- * Gère les cas string, tableau de validations FastAPI et objet générique.
+ * Format backend errors into a single user-facing message.
+ *
+ * FastAPI can return plain strings, validation arrays, or structured objects.
+ * Keeping this normalization here prevents each component from duplicating API
+ * error-shape handling.
  * @param {string|object|Array} detail
  * @param {string} fallbackMessage
  * @returns {string}
@@ -77,8 +80,8 @@ function formatApiError(detail, fallbackMessage) {
 }
 
 /**
- * Effectue une requête vers l'API et retourne le JSON.
- * Lève une Error avec le message formaté si la réponse n'est pas ok.
+ * Send an API request and return the JSON payload.
+ * Throw an Error with the formatted message when the response is not ok.
  * @param {string} path
  * @param {RequestInit} [options={}]
  * @returns {Promise<object>}
@@ -95,7 +98,7 @@ async function requestJson(path, options = {}) {
 }
 
 /**
- * Raccourci POST JSON.
+ * Send a JSON POST request to the API.
  * @param {string} path
  * @param {object} payload
  * @returns {Promise<object>}
@@ -108,6 +111,13 @@ function postJson(path, payload) {
   });
 }
 
+/**
+ * Send a local image to the search engine.
+ * @param {File|Blob} file
+ * @param {"visual"|"semantic"} mode
+ * @param {number} k
+ * @returns {Promise<object>}
+ */
 export async function searchImage(file, mode, k) {
   const formData = new FormData();
   formData.append("image", file);
@@ -120,26 +130,81 @@ export async function searchImage(file, mode, k) {
   });
 }
 
+/**
+ * Build the public URL for an image served through the API.
+ * @param {string} imageId
+ * @returns {string}
+ */
 export function imageUrl(imageId) {
   return buildApiUrl(`/images/${encodeURIComponent(imageId)}`);
 }
 
+/**
+ * Run a text-to-image search.
+ * @param {string} text
+ * @param {number} k
+ * @returns {Promise<object>}
+ */
 export async function searchText(text, k) {
   return postJson("/search-text", { text, k });
 }
 
+/**
+ * Re-run a search from one image identifier.
+ * @param {string} imageId
+ * @param {string} mode
+ * @param {number} k
+ * @returns {Promise<object>}
+ */
 export async function searchById(imageId, mode, k) {
   return postJson("/search-by-id", { image_id: imageId, mode, k });
 }
 
+/**
+ * Re-run a search from multiple image identifiers.
+ * @param {string[]} imageIds
+ * @param {string} mode
+ * @param {number} k
+ * @returns {Promise<object>}
+ */
 export async function searchByIds(imageIds, mode, k) {
   return postJson("/search-by-ids", { image_ids: imageIds, mode, k });
 }
 
-export async function fetchConclusion(searchResult) {
-  return postJson("/generate-conclusion", searchResult);
+/**
+ * Reduce a search result to the minimal context accepted by the LLM API.
+ * Captions remain server-side to avoid sending free text to the LLM.
+ * @param {object} searchResult
+ * @returns {object}
+ */
+function buildConclusionPayload(searchResult) {
+  const rows = Array.isArray(searchResult?.results) ? searchResult.results : [];
+
+  return {
+    mode: searchResult?.mode,
+    embedder: searchResult?.embedder,
+    results: rows.slice(0, 6).map((result, index) => ({
+      rank: Number.isFinite(Number(result?.rank)) ? Number(result.rank) : index + 1,
+      image_id: String(result?.image_id || ""),
+      score: Number.isFinite(Number(result?.score)) ? Number(result.score) : 0,
+    })),
+  };
 }
 
+/**
+ * Request assisted clinical conclusion generation.
+ * @param {object} searchResult
+ * @returns {Promise<object>}
+ */
+export async function fetchConclusion(searchResult) {
+  return postJson("/generate-conclusion", buildConclusionPayload(searchResult));
+}
+
+/**
+ * Envoie un message de contact au backend.
+ * @param {object} payload
+ * @returns {Promise<object>}
+ */
 export async function sendContactMessage(payload) {
   return postJson("/contact", payload);
 }

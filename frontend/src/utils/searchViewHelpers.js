@@ -1,12 +1,12 @@
 /**
- * @fileoverview Utilitaires partagés entre ImageSearchView et TextSearchView.
+ * @fileoverview Shared UI helpers for image and text search workflows.
  * @module utils/searchViewHelpers
  */
 
 import { getResultCuiSet } from "./searchResults";
 
 /**
- * Annule le timeout stocké dans une ref.
+ * Clear a timer stored in a React ref.
  * @param {{ current: number }} timeoutRef
  */
 export function clearTimeoutRef(timeoutRef) {
@@ -14,7 +14,7 @@ export function clearTimeoutRef(timeoutRef) {
 }
 
 /**
- * Retourne les filtres de caption actifs depuis leurs identifiants.
+ * Resolve the active caption filter ids into full filter definitions.
  * @param {string[]} activeFilterIds
  * @param {Array<{id: string, terms: string[]}>} availableFilters
  * @returns {Array}
@@ -26,10 +26,12 @@ export function getSelectedCaptionFilters(activeFilterIds, availableFilters) {
 }
 
 /**
- * Construit les options de sélect CUI disponibles par type (modalite, anatomie, finding)
- * à partir des résultats courants.
- * @param {object[]} rows - Résultats de recherche
- * @param {object} cuiTypes - Définitions des types CUI
+ * Build the available CUI filter groups from the current result rows.
+ *
+ * Only CUIs present in the results are returned, keeping the filter UI focused
+ * on options that can change the visible result set.
+ * @param {object[]} rows
+ * @param {object} cuiTypes
  * @returns {{ modalite: object[], anatomie: object[], finding: object[] }}
  */
 export function buildAvailableCuiByType(rows, cuiTypes) {
@@ -58,8 +60,7 @@ export function buildAvailableCuiByType(rows, cuiTypes) {
 }
 
 /**
- * Redéclenche l'animation de highlight d'une section guide.
- * Coupe le highlight courant, attend un frame, puis relance pour 2200ms.
+ * Restart a temporary highlight animation for a guide note.
  * @param {function(boolean): void} setter
  * @param {{ current: number }} timerRef
  */
@@ -76,11 +77,10 @@ export function restartNoteHighlight(setter, timerRef) {
 }
 
 /**
- * Retourne les classes CSS de highlight des éléments guide selon le ton.
- * Retourne des chaînes vides si isHighlighted est faux.
+ * Return the CSS classes used to highlight guide-note elements by tone.
  * @param {boolean} isHighlighted
  * @param {"primary"|"accent"} [tone="accent"]
- * @returns {{ icon: string, heading: string, chip: string, title: string, copy: string }}
+ * @returns {{ icon: string, heading: string, chip: string, title: string, copy: string }
  */
 export function getGuideHighlightClasses(isHighlighted, tone = "accent") {
   if (!isHighlighted) {
@@ -105,9 +105,15 @@ export function getGuideHighlightClasses(isHighlighted, tone = "accent") {
 }
 
 /**
- * Scrolle vers une section guide et déclenche un callback une fois arrivé.
- * Respecte prefers-reduced-motion.
- * @param {{ sectionId: string, eyebrowId?: string, scrollTimerRef: object, onComplete?: function }} params
+ * Scroll to an explanatory section and optionally run a completion callback.
+ *
+ * Respects prefers-reduced-motion by skipping smooth scrolling when users ask
+ * the browser to reduce animation.
+ * @param {object} params
+ * @param {string} params.sectionId
+ * @param {string} [params.eyebrowId]
+ * @param {object} params.scrollTimerRef
+ * @param {function} [params.onComplete]
  */
 export function scrollToInfoSection({
   sectionId,

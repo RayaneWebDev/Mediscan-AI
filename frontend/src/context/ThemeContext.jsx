@@ -1,5 +1,5 @@
 /**
- * @fileoverview Provider de thème (clair/sombre) et de palette de couleurs.
+ * @fileoverview Documentation for context/ThemeContext.
  * @module context/ThemeContext
  */
 
@@ -14,7 +14,10 @@ import {
 } from "../theme/palettes";
 import { ThemeContext } from "./ThemeContextValue";
 
-// Vérifie si View Transitions API est disponible et que l'utilisateur accepte les animations
+/**
+ * Documentation for context/ThemeContext.
+ * @returns {boolean}
+ */
 function canUseAnimatedViewTransitions() {
   if (typeof document === "undefined" || typeof window === "undefined") {
     return false;
@@ -25,7 +28,10 @@ function canUseAnimatedViewTransitions() {
   return !prefersReduced && typeof document.startViewTransition === "function";
 }
 
-// Lit le thème initial depuis localStorage ou la préférence système
+/**
+ * Documentation for context/ThemeContext.
+ * @returns {"light"|"dark"}
+ */
 function getInitialTheme() {
   const stored = localStorage.getItem("theme");
   if (stored === "light" || stored === "dark") {
@@ -34,7 +40,10 @@ function getInitialTheme() {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-// Lit la palette initiale depuis l'URL ou localStorage
+/**
+ * Documentation for context/ThemeContext.
+ * @returns {string}
+ */
 function getInitialPalette() {
   const params = new URLSearchParams(window.location.search);
   const paletteFromUrl = params.get("palette");
@@ -50,6 +59,11 @@ function getInitialPalette() {
   return DEFAULT_PALETTE_ID;
 }
 
+/**
+ * Documentation for context/ThemeContext.
+ * @param {{children: React.ReactNode}} props
+ * @returns {JSX.Element}
+ */
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(getInitialTheme);
   const [palette, setPaletteState] = useState(getInitialPalette);
@@ -64,6 +78,12 @@ export function ThemeProvider({ children }) {
     localStorage.setItem(PALETTE_STORAGE_KEY, palette);
   }, [theme, palette]);
 
+  /**
+   * Documentation for context/ThemeContext.
+   * @param {"light"|"dark"} newTheme
+   * @param {number} [clickX]
+   * @param {number} [clickY]
+   */
   function setTheme(newTheme, clickX, clickY) {
     if (newTheme === theme) return;
 
@@ -79,7 +99,7 @@ export function ThemeProvider({ children }) {
       flushSync(() => setThemeState(newTheme));
     });
 
-    // Cercle qui s'étend depuis le centre du bouton cliqué
+    // Circle expanding from the clicked button center
     transition.ready.then(() => {
       const x = clickX ?? window.innerWidth / 2;
       const y = clickY ?? window.innerHeight / 2;
@@ -104,6 +124,10 @@ export function ThemeProvider({ children }) {
     });
   }
 
+  /**
+   * Change la palette active si l'identifiant est valide.
+   * @param {string} newPalette
+   */
   function setPalette(newPalette) {
     if (!isPaletteId(newPalette) || newPalette === palette) return;
     setPaletteState(newPalette);

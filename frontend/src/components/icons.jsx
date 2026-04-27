@@ -1,11 +1,11 @@
-/** 
- * @fileoverview Icônes SVG des modes de recherche CBIR.
+/**
+ * @fileoverview Documentation for components/icons.
  * @module components/icons
  */
 
 
 /**
- * Icône du mode visuel.
+ * Documentation for components/icons.
  *
  * @component
  * @param {object} props
@@ -22,7 +22,7 @@ export function VisualModeIcon({ className = "h-4 w-4" }) {
 }
 
 /**
- * Icône du mode sémantique / interprétatif (livre ouvert).
+ * Documentation for components/icons.
  *
  * @component
  * @param {object} props
