@@ -75,6 +75,20 @@ class ConclusionSearchResult(BaseModel):
         """Validate the identifier before any server-side resolution."""
         return sanitize_image_id(value.strip())
 
+    @field_validator("score", mode="before")
+    @classmethod
+    def normalize_score(cls, value: object) -> float:
+        """Clamp conclusion scores to the supported similarity interval."""
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Score must be a finite number.") from exc
+
+        if numeric != numeric or numeric in (float("inf"), float("-inf")):
+            raise ValueError("Score must be a finite number.")
+
+        return min(1.0, max(0.0, numeric))
+
 
 class ConclusionRequest(BaseModel):
     """Request for AI clinical conclusion generation."""

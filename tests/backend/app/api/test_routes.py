@@ -455,6 +455,33 @@ def test_generate_conclusion_rejects_client_supplied_captions(client: TestClient
 
 
 @patch("backend.app.api.routes.generate_clinical_conclusion")
+def test_generate_conclusion_clamps_out_of_range_scores(
+    mock_generate: MagicMock,
+    client: TestClient,
+) -> None:
+    """Out-of-range frontend scores are normalized before hitting the summary service."""
+    mock_generate.return_value = "Resume de recherche."
+
+    response = client.post(
+        "/api/generate-conclusion",
+        json={
+            "mode": "visual",
+            "results": [
+                {
+                    "rank": 1,
+                    "image_id": "ROCOv2_2023_train_000123",
+                    "score": 1.37,
+                }
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    sent_context = mock_generate.call_args.args[0]
+    assert sent_context["results"][0]["score"] == 1.0
+
+
+@patch("backend.app.api.routes.generate_clinical_conclusion")
 def test_generate_conclusion_maps_errors(mock_generate: MagicMock, client: TestClient) -> None:
     """Conclusion service failures become 503 errors."""
     mock_generate.side_effect = ClinicalConclusionError("Service indisponible")

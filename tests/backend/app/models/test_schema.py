@@ -66,7 +66,6 @@ def test_conclusion_request_optional_validators_accept_none() -> None:
     "payload",
     [
         {"mode": "visual", "results": [{"rank": 1, "image_id": "bad.png", "score": 0.5}]},
-        {"mode": "visual", "results": [{"rank": 1, "image_id": "ROCOv2_2023_train_000001", "score": 1.5}]},
         {"mode": "unknown", "results": [{"rank": 1, "image_id": "ROCOv2_2023_train_000001", "score": 0.5}]},
         {
             "mode": "visual",
@@ -85,6 +84,19 @@ def test_conclusion_request_rejects_untrusted_or_out_of_bounds_fields(payload: d
     """Conclusion requests only accept bounded IDs and scores, never client captions."""
     with pytest.raises(ValidationError):
         ConclusionRequest(**payload)
+
+
+def test_conclusion_request_clamps_scores_into_supported_range() -> None:
+    """Conclusion scores are normalized so oversized raw values do not break the feature."""
+    request = ConclusionRequest(
+        results=[
+            {"rank": 1, "image_id": "ROCOv2_2023_train_000001", "score": 1.5},
+            {"rank": 2, "image_id": "ROCOv2_2023_train_000002", "score": -0.2},
+        ]
+    )
+
+    assert request.results[0].score == 1.0
+    assert request.results[1].score == 0.0
 
 
 def test_contact_request_strips_required_text_fields() -> None:

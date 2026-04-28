@@ -141,9 +141,27 @@ describe("api client", () => {
     });
 
     const body = JSON.parse(fetch.mock.calls.at(-1)[1].body);
-    expect(body.results).toHaveLength(6);
+    expect(body.results).toHaveLength(5);
     expect(body.results[0]).toMatchObject({ rank: 1, image_id: "img-0" });
     expect(body.results[1]).toMatchObject({ image_id: "" });
     expect(body.results[2]).toMatchObject({ score: 0 });
+  });
+
+  it("clamps conclusion scores to the backend-supported range", async () => {
+    fetch.mockResolvedValueOnce(jsonResponse({ ok: true }));
+
+    await fetchConclusion({
+      mode: "visual",
+      results: [
+        { rank: 1, image_id: "img-high", score: 1.42 },
+        { rank: 2, image_id: "img-low", score: -0.3 },
+      ],
+    });
+
+    const body = JSON.parse(fetch.mock.calls.at(-1)[1].body);
+    expect(body.results).toEqual([
+      { rank: 1, image_id: "img-high", score: 1 },
+      { rank: 2, image_id: "img-low", score: 0 },
+    ]);
   });
 });

@@ -8,6 +8,20 @@ const API_BASE = (import.meta.env.VITE_API_BASE || "/api").replace(/\/$/, "");
 const JSON_HEADERS = { "Content-Type": "application/json" };
 
 /**
+ * Clamp a conclusion-context score to the backend's supported similarity range.
+ * Non-finite values fall back to zero so the request stays valid.
+ * @param {unknown} value
+ * @returns {number}
+ */
+function normalizeConclusionScore(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return 0;
+  }
+  return Math.min(1, Math.max(0, numeric));
+}
+
+/**
  * Build the full URL for an endpoint.
  * @param {string} path
  * @returns {string}
@@ -183,10 +197,10 @@ function buildConclusionPayload(searchResult) {
   return {
     mode: searchResult?.mode,
     embedder: searchResult?.embedder,
-    results: rows.slice(0, 6).map((result, index) => ({
+    results: rows.slice(0, 5).map((result, index) => ({
       rank: Number.isFinite(Number(result?.rank)) ? Number(result.rank) : index + 1,
       image_id: String(result?.image_id || ""),
-      score: Number.isFinite(Number(result?.score)) ? Number(result.score) : 0,
+      score: normalizeConclusionScore(result?.score),
     })),
   };
 }
