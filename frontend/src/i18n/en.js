@@ -897,4 +897,41 @@ export const en = {
       { type: "image", src: null, alt: "Text search demo", label: "Text search", desc: "Explore related cases from a clinical query written in free text.", interval: 3500 },
     ],
   },
+  // Privacy Page
+  privacy: {
+    headline: "Privacy Policy",
+    lastUpdate: "Last updated: April 2026",
+    sections: [
+      { title: "1. Overview", body: "MEDISCAN AI is a university prototype developed by the L3X1 team at Université Paris Cité. It is intended for research use only and is not designed for clinical use." },
+      { title: "2. Data Collected", body: "MEDISCAN AI collects the minimum data necessary for its operation: medical images uploaded for search (processed in memory and deleted immediately after embedding extraction), text queries entered in the search field (used only for the current search), and contact form data (name, email address, subject and message, used only to respond to your request)." },
+      { title: "3. Handling of Uploaded Images", body: "Uploaded medical images are never stored permanently. The process follows this cycle: the image is received and written to a temporary file, the AI model encodes the image into a mathematical vector (embedding), the temporary file is immediately deleted after encoding, and only the embedding vector is used for the search — the original image is no longer accessible." },
+      { title: "4. Impossibility of Reconstruction", body: "It is mathematically impossible to reconstruct a medical image from its embedding. An image of 682×748 pixels contains 1,530,408 values, while the Visual Analysis mode embedding contains only 768 values (1,993× compression) and the Interpretive Analysis mode embedding contains only 512 values (2,989× compression). 99.95% of the original information is irreversibly lost." },
+      { title: "5. Third-Party Sharing", body: "No medical image uploaded by the user is transmitted to third-party services. The only data transmitted are: the public metadata of the ROCOv2 dataset to the database (read-only), and the text captions of the search results to the AI synthesis service." },
+      { title: "6. Cookies and Tracking", body: "MEDISCAN AI does not use any cookies, tracking tools, or advertising networks. No browsing data is collected." },
+      { title: "7. Your Rights", body: "The only personal data collected by MEDISCAN AI is that voluntarily entered in the contact form (name and email address). This data is used only to respond to your message and is not retained beyond that purpose. For any deletion request, please contact us directly." },
+      { title: "8. Contact", body: "For any questions regarding this privacy policy:" },
+    ],
+    contactQuestion: "A question about your data?",
+    contactBtn: "Contact us",
+  },
+
+  // Legal Page
+  legal: {
+    headline: "Legal Notice",
+    lastUpdate: "Last updated: April 2026",
+    sections: [
+      { title: "1. Publisher", lines: [
+        "MEDISCAN AI is a university prototype developed as part of a bachelor's project at Université Paris Cité.",
+        "Team: L3X1 (Taskin Ozan, Rayane Taouache, Ales Ferhani, Maxime Huang)",
+        "Supervisor: Camille Kurtz",
+        "Contact: mediscanaisupport@gmail.com",
+      ]},
+      { title: "2. Hosting", body: "This prototype is hosted via Hostinger." },
+      { title: "3. Intellectual Property", body: "All source code, interfaces, and documents produced as part of this project are the intellectual property of their authors. The ROCOv2 dataset used as a database is a public medical research dataset whose rights belong to their respective authors. The DINOv2 (Meta AI) and BioMedCLIP (Microsoft) models are used in accordance with their respective open source licenses." },
+      { title: "4. Limitation of Liability", body: "MEDISCAN AI is a non-clinical university research tool. The results provided by the application are mathematical similarity measurements between medical images and do not constitute a medical diagnosis, therapeutic advice, or clinical recommendation. The team declines all responsibility for the use of results for medical or diagnostic purposes." },
+      { title: "5. Medical Data", body: "The medical images in the database come exclusively from the public ROCOv2 dataset, composed of anonymized images from scientific publications. No identifiable real patient image is used or stored by the application." },
+    ],
+    contactQuestion: "A question about the project?",
+    contactBtn: "Contact us",
+  },
 };

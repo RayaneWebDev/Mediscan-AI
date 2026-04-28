@@ -115,14 +115,22 @@ export default function Footer({ onPageChange }) {
               </h4>
               <ul className="flex flex-col gap-3">
                 <li>
-                  <span className="text-sm text-footer-muted opacity-50 cursor-default select-none">
+                  <button
+                    type="button"
+                    onClick={() => onPageChange("privacy")}
+                    className="text-sm text-footer-muted hover:text-on-strong transition-colors duration-200 text-left"
+                  >
                     {f.privacy || "Confidentialité"}
-                  </span>
+                  </button>
                 </li>
                 <li>
-                  <span className="text-sm text-footer-muted opacity-50 cursor-default select-none">
+                  <button
+                    type="button"
+                    onClick={() => onPageChange("legal")}
+                    className="text-sm text-footer-muted hover:text-on-strong transition-colors duration-200 text-left"
+                  >
                     {f.terms || "Mentions légales"}
-                  </span>
+                  </button>
                 </li>
               </ul>
             </div>

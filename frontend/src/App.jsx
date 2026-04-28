@@ -19,6 +19,8 @@ const ContactPage = lazy(() => import("./components/ContactPage"));
 const HowItWorks = lazy(() => import("./components/HowItWorks"));
 const FAQPage = lazy(() => import("./components/FAQPage"));
 const AboutPage = lazy(() => import("./components/AboutPage"));
+const PrivacyPage = lazy(() => import("./components/PrivacyPage"));
+const LegalPage = lazy(() => import("./components/LegalPage"));
 
 // Preload chunks while idle to speed up navigation
 const lazyPagePreloaders = [
@@ -63,6 +65,8 @@ const PAGE_COMPONENTS = {
   how: HowItWorks,
   faq: FAQPage,
   about: AboutPage,
+  privacy: PrivacyPage,
+  legal: LegalPage,
 };
 
 const STATIC_ROUTE_SURFACES = {

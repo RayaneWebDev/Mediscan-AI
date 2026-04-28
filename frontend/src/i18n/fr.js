@@ -893,4 +893,41 @@ export const fr = {
       { type: "image", src: null, alt: "Démo texte", label: "Recherche textuelle", desc: "Exploration de cas proches à partir d'une requête clinique rédigée en texte libre.", interval: 3500 },
     ],
   },
+  // Privacy Page
+  privacy: {
+    headline: "Politique de confidentialité",
+    lastUpdate: "Dernière mise à jour : avril 2026",
+    sections: [
+      { title: "1. Présentation", body: "MEDISCAN AI est un prototype universitaire développé par l'équipe L3X1 de l'Université Paris Cité. Il est destiné à un usage de recherche uniquement et n'a pas vocation à être utilisé dans un contexte clinique." },
+      { title: "2. Données collectées", body: "MEDISCAN AI collecte le minimum de données nécessaires à son fonctionnement : images médicales uploadées pour la recherche (traitées en mémoire et supprimées immédiatement après l'extraction de l'embedding), requêtes textuelles saisies dans le champ de recherche (utilisées uniquement pour la recherche en cours), et formulaire de contact (nom, adresse email, objet et message, utilisés uniquement pour répondre à votre demande)." },
+      { title: "3. Traitement des images uploadées", body: "Les images médicales uploadées ne sont jamais stockées de manière permanente. Le traitement suit le cycle suivant : l'image est reçue et écrite dans un fichier temporaire, le modèle d'IA encode l'image en un vecteur mathématique (embedding), le fichier temporaire est immédiatement supprimé après l'encodage, et seul le vecteur d'embedding est utilisé pour la recherche — l'image originale n'est plus accessible." },
+      { title: "4. Impossibilité de reconstruction", body: "Il est mathématiquement impossible de reconstruire une image médicale depuis son embedding. Une image de 682×748 pixels contient 1 530 408 valeurs, alors que l'embedding du mode Analyse Visuelle ne contient que 768 valeurs (compression de 1 993×) et l'embedding du mode Analyse Interprétative ne contient que 512 valeurs (compression de 2 989×). 99,95% de l'information originale est perdue de manière irréversible." },
+      { title: "5. Partage avec des tiers", body: "Aucune image médicale uploadée par l'utilisateur n'est transmise à des services tiers. Les seules données transmises sont : les métadonnées publiques du dataset ROCOv2 vers la base de données (en lecture seule), et les légendes textuelles des résultats de recherche vers le service de synthèse IA." },
+      { title: "6. Cookies et tracking", body: "MEDISCAN AI n'utilise aucun cookie, aucun outil de tracking et aucune régie publicitaire. Aucune donnée de navigation n'est collectée." },
+      { title: "7. Vos droits", body: "Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles. Pour exercer ces droits ou pour toute question relative à la confidentialité, contactez-nous à l'adresse indiquée ci-dessous." },
+      { title: "8. Contact", body: "Pour toute question relative à cette politique de confidentialité :" },
+    ],
+    contactQuestion: "Une question sur vos données ?",
+    contactBtn: "Contactez-nous",
+  },
+
+  // Legal Page
+ legal: {
+    headline: "Mentions légales",
+    lastUpdate: "Dernière mise à jour : avril 2026",
+    sections: [
+      { title: "1. Éditeur", lines: [
+        "MEDISCAN AI est un prototype universitaire développé dans le cadre d'un projet de licence à l'Université Paris Cité.",
+        "Équipe : L3X1 (Taskin Ozan, Rayane Taouache, Ales Ferhani, Maxime Huang)",
+        "Encadrant : Camille Kurtz",
+        "Contact : mediscanaisupport@gmail.com",
+      ]},
+      { title: "2. Hébergement", body: "Ce prototype est hébergé via Hostinger." },
+      { title: "3. Propriété intellectuelle", body: "L'ensemble du code source, des interfaces et des documents produits dans le cadre de ce projet sont la propriété intellectuelle de leurs auteurs. Le dataset ROCOv2 utilisé comme base de données est un dataset public de recherche médicale dont les droits appartiennent à leurs auteurs respectifs. Les modèles DINOv2 (Meta AI) et BioMedCLIP (Microsoft) sont utilisés conformément à leurs licences open source respectives." },
+      { title: "4. Limitation de responsabilité", body: "MEDISCAN AI est un outil de recherche universitaire non clinique. Les résultats fournis par l'application sont des mesures de similarité mathématique entre images médicales et ne constituent en aucun cas un diagnostic médical, un avis thérapeutique ou une recommandation clinique. L'équipe décline toute responsabilité quant à l'utilisation des résultats à des fins médicales ou diagnostiques." },
+      { title: "5. Données médicales", body: "Les images médicales présentes dans la base de données proviennent exclusivement du dataset public ROCOv2, composé d'images anonymisées issues de publications scientifiques. Aucune image de patient réel identifiable n'est utilisée ou stockée par l'application." },
+    ],
+    contactQuestion: "Une question sur le projet ?",
+    contactBtn: "Contactez-nous",
+  },
 };
